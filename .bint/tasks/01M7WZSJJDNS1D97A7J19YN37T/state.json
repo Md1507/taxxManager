@@ -1,0 +1,180 @@
+{
+  "schema": 1,
+  "id": "01M7WZSJJDNS1D97A7J19YN37T",
+  "status": "planned",
+  "workflow": "b-do",
+  "agent_choices": {
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-20T17:24:16Z",
+  "updated_at": "2026-11-20T17:59:12Z",
+  "reason": "Khôi phục đúng trạng thái chỉ lập kế hoạch như lúc bàn giao. S0 tham chiếu tài liệu đã hoàn tất, không cần biến phiếu roadmap thành phiếu triển khai.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "default",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-20T17:24:16Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "failed",
+      "at": "2026-11-20T17:24:20Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "adapter Claude Code không khả dụng: không tìm thấy chương trình trên máy này (cài đặt, hoặc đặt harnesses.claude.binary, hoặc chọn harness khác bằng --role/--harness)"
+    },
+    {
+      "from": "failed",
+      "to": "created",
+      "at": "2026-11-20T17:29:15Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Người dùng xác nhận dùng hoàn toàn Codex; đã đổi roles và bổ sung phạm vi lập kế hoạch, thử lại bước planner chưa khởi chạy."
+    },
+    {
+      "from": "created",
+      "to": "failed",
+      "at": "2026-11-20T17:29:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req: codex báo lỗi: Reconnecting... 2/5 (unexpected status 503 Service Unavailable: No available accounts. Service is operating in degraded mode: all upstream accounts are unavailable)"
+    },
+    {
+      "from": "failed",
+      "to": "created",
+      "at": "2026-11-20T17:36:58Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Tiếp tục theo yêu cầu người dùng sau khi đổi model Codex và cập nhật PLAN.md; chạy lại riêng bước b-req."
+    },
+    {
+      "from": "created",
+      "to": "interrupted",
+      "at": "2026-11-20T17:38:34Z",
+      "by": "bint",
+      "reason": "tiến trình bint run (pid 22876) kết thúc bất thường"
+    },
+    {
+      "from": "interrupted",
+      "to": "created",
+      "at": "2026-11-20T17:38:45Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Bỏ model gpt-6-astra lưu từ lượt cũ; chạy mới planner gpt-6.1-sol theo cấu hình người dùng."
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-20T17:46:27Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-20T17:57:14Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Đối chiếu và chốt đầu ra chỉ lập kế hoạch trước khi bắt đầu phiếu S0 riêng."
+    },
+    {
+      "from": "in_progress",
+      "to": "interrupted",
+      "at": "2026-11-20T17:59:12Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Dừng thao tác finalize phát sinh ngoài bước lập kế hoạch: phiếu không có baseline Git cho PLAN.md chưa theo dõi; giữ nguyên đầu ra đã lint đạt, không tự duyệt hay ép done."
+    },
+    {
+      "from": "interrupted",
+      "to": "planned",
+      "at": "2026-11-20T17:59:12Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Khôi phục đúng trạng thái chỉ lập kế hoạch như lúc bàn giao. S0 tham chiếu tài liệu đã hoàn tất, không cần biến phiếu roadmap thành phiếu triển khai."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Đã đọc requirement.md mục hiện trạng và plan.md:23-38; có roadmap từng chặng, mốc MVP và mở rộng bám PLAN.md.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T17:57:13Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Đã đọc plan.md:40-51 và tasks.md:17-54; có 27 BL với ưu tiên, phụ thuộc, phạm vi, điều kiện bắt đầu và xong khi; chi tiết Bước 0 và 1.1.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T17:57:14Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "plan.md:53-70 liệt kê L0-L9, nguồn chính thức và dữ liệu chờ người dùng; không bổ sung luật từ trí nhớ.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T17:57:14Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Ba tài liệu có trong .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T; bint task lint --strict thoát 0, không lỗi/cảnh báo/câu hỏi. SHA256 PLAN và config cuối lượt khớp mốc trong plan.md:21; chưa có src/tests.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T17:57:14Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "requirement.md yêu cầu 5-7, plan.md lựa chọn metadata và tasks.md BL-13/15/20/31/40 có mapping theo kỳ, UI ? giải thích 2-3 câu, link vbpl.vn và test; ví dụ 10% được ghi chờ xác minh.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T17:57:14Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-req",
+      "message": "adapter Claude Code không khả dụng: không tìm thấy chương trình trên máy này (cài đặt, hoặc đặt harnesses.claude.binary, hoặc chọn harness khác bằng --role/--harness)",
+      "at": "2026-11-20T17:24:20Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M7WZSPPPW2XZ40ASRNNMEGQP"
+    },
+    {
+      "step": "b-req",
+      "message": "b-req: codex báo lỗi: Reconnecting... 2/5 (unexpected status 503 Service Unavailable: No available accounts. Service is operating in degraded mode: all upstream accounts are unavailable)",
+      "at": "2026-11-20T17:29:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M7X02R7QFJXKWMB5W7TAMZ0P"
+    },
+    {
+      "message": "tiến trình điều phối kết thúc bất thường",
+      "at": "2026-11-20T17:38:34Z",
+      "by": "bint",
+      "run_id": "01M7X0GWPW622DRGY3MTRHJ1NG"
+    }
+  ],
+  "runs": [
+    "01M7WZSPPPW2XZ40ASRNNMEGQP",
+    "01M7X02R7QFJXKWMB5W7TAMZ0P",
+    "01M7X02RGGSQMNGKE9RY437P9G",
+    "01M7X0GWPW622DRGY3MTRHJ1NG",
+    "01M7X0GWXWGQCNNWFH0CGC9KCM",
+    "01M7X0M5B4HE8FWYEV0H43Q2G1",
+    "01M7X0M5JCVA307EECYAK8B7Z8"
+  ],
+  "review_rounds": 0,
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-20T17:45:35Z",
+    "requirement": "2026-11-20T17:44:54Z",
+    "tasks": "2026-11-20T17:45:37Z"
+  }
+}

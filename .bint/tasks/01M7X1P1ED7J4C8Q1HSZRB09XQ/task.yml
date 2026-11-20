@@ -1,0 +1,45 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7X1P1ED7J4C8Q1HSZRB09XQ
+goal: 'S0: chuẩn bị .NET10 SDK, pin SDK và .gitignore theo BL-00/BL-01'
+request: |-
+  Người dùng yêu cầu bắt đầu các bước đầu tiên theo roadmap đã lập. Chỉ thực hiện Bước 0, BL-00 và BL-01 trong .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/plan.md và tasks.md, cùng PLAN.md làm đầu vào. Phiếu lập roadmap đó đã hoàn tất chỉ về mặt tài liệu. Chưa triển khai Bước 1.1 hay tạo solution/project.
+
+  Orchestrator đã kiểm: Git 2.47.1 và VS Code đã có; dotnet --info chỉ có runtime8.0.34 x64, không có SDK; global.json chưa có; .gitignore mới có khối Bint. Cấu hình Bint dùng hoàn toàn Codex: planner/reviewer gpt-6.1-sol, implementer gpt-6.1-terra. Giữ nguyên cấu hình và model. Metadata chính thức https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json đang báo latest-sdk 10.0.404, release-type lts, support-phase active. Chọn bản SDK ổn định này và kiểm lại nguồn Microsoft trước khi tải.
+
+  Triển khai: cài .NET10 SDK x64 riêng tại .dotnet/ trong repository (binaries bị ignore, không commit), sử dụng gói/script chính thức Microsoft; đối chiếu SHA512 nếu dùng archive và metadata. Không sửa hoặc gỡ .NET hệ thống, không sửa user/machine PATH lâu dài, registry hay profile. Khi kiểm chứng dùng đường dẫn tuyệt đối .dotnet/dotnet.exe hoặc prepend PATH chỉ trong phiên. Không cần cài lại Git/editor.
+
+  Tạo global.json pin đúng SDK đã thực sự cài, allowPrerelease false, rollForward latestPatch trong cùng feature band. Bổ sung .gitignore .NET: bin/obj, IDE state, test results, secrets/.env và .dotnet; giữ nguyên khối Bint; không ignore source/tests/global.json/các tệp mẫu cấu hình an toàn. Nếu cần một helper nhẹ trong scripts/dev/ để kích hoạt PATH/DOTNET_ROOT trong phiên PowerShell thì tạo, không sửa thiết lập máy; helper báo hướng dẫn rõ khi SDK chưa được cài và dùng được nếu clone repository sang vị trí khác. Ghi docs/decisions/ tài liệu setup tiếng Việt: phiên bản và nguồn, cách cài lại đã kiểm tra, kích hoạt trong VSCode/Codex terminal, kiểm dotnet --version từ root, quyết định TaxManager.sln cho bước1.1 sau này, cách khôi phục thay đổi môi trường theo phiên. Không tạo solution, project hay test ứng dụng.
+
+  Kiểm chứng phù hợp Bước0: SDK --info/--list-sdks/--version từ repository chọn đúng global.json; PowerShell helper nếu có; git check-ignore cho cả đường dẫn cần ignore và đường dẫn source/test/global.json cần giữ, không phải tạo file giả trong source tree. Chạy kiểm hẹp và ghi bằng chứng lệnh+kết quả vào bint task criteria cho từng tiêu chí. Do không có solution, không chạy dotnet test và không tạo test rỗng. Không đặt verify.command chưa được người xác nhận rồi tìm cách tự approve; tác vụ setup này có thể hoàn thành theo các tiêu chí có bằng chứng. Planner chỉ lập kế hoạch phần repo/setup, không tải hay cài ở bước chỉ đọc. Implementer chịu trách nhiệm cài và sửa; reviewer chỉ review diff và bằng chứng. Không commit trong các agent; orchestrator sẽ bàn giao kết quả sau review.
+verify:
+  command: ""
+  criteria:
+    - SDK .NET10 ổn định x64 được cài trong .dotnet từ nguồn Microsoft; --info và --list-sdks có phiên bản đã chọn, Git và editor đã có được ghi nhận.
+    - global.json pin phiên bản SDK thực sự được cài, allowPrerelease false và rollForward latestPatch; dotnet --version từ root trong môi trường kích hoạt khớp pin.
+    - .gitignore giữ nguyên khối Bint, loại .dotnet, bin/obj, IDE state, test results và secrets; git check-ignore chứng minh đường dẫn phát sinh bị ignore còn source/tests/global.json và mẫu cấu hình an toàn không bị ignore.
+    - Có tài liệu setup tiếng Việt trong docs/decisions với phiên bản/nguồn, cách cài và kích hoạt lặp lại được, kiểm SDK, quyết định solution .sln cho bước sau; helper nếu có chỉ thay đổi môi trường phiên và xử lý rõ SDK thiếu.
+    - Chỉ thay đổi trong phạm vi Bước0; không đổi PLAN.md/config Codex, không tạo solution/src/tests hay test giả; từng tiêu chí có bằng chứng kiểm chứng phù hợp và review không còn lỗi nghiêm trọng.
+scope:
+  allow:
+    - .gitignore
+    - global.json
+    - .dotnet/**
+    - scripts/dev/**
+    - docs/decisions/**
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - src/**
+    - tests/**
+references:
+  - .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/plan.md
+  - PLAN.md
+constraints:
+  - Chỉ Bước 0 BL-00/BL-01. Giữ nguyên PLAN.md, cấu hình Codex và nội dung ngoài phạm vi; không tạo solution/project hoặc tính năng; không git init lại.
+  - Cài SDK project-local từ nguồn Microsoft; không gỡ phần mềm, không sửa PATH lâu dài/profile/registry hay cấu hình máy; binaries và secrets không được đưa vào Git; các agent không commit.
+  - 'Sửa quan hệ do orchestrator lập nhầm: phiếu 01M7WZSJJDNS1D97A7J19YN37T là tài liệu lập kế hoạch đã bàn giao ở planned, dùng làm references thay vì phụ thuộc hoàn thành workflow b-do triển khai. Không chạy thêm hoặc thay trạng thái phiếu roadmap. Chỉ thực hiện S0 đã được người dùng yêu cầu; giữ nguyên mọi scope.deny và không tự duyệt bất kỳ cổng nào.'
+  - 'Khôi phục sau lỗi mạng của sandbox: orchestrator đã tải archive chính thức và kiểm SHA512 tại C:\Users\LENOVO\AppData\Local\Temp\taxxManager-sdk-10.0.404-win-x64.zip (303618098 bytes). URL gốc https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk-10.0.404-win-x64.zip. SHA512 chính thức 330ddd2665b43cd2e428216a0d8ea1ac7bb19b5434fdc530e62010dc3b52823a620bf95489d628e1ed6f5122401793ee4887cca4a019122361a1231497f632ee. Dùng archive local làm đầu vào, tự đối chiếu lại hash rồi cài vào .dotnet; không cần gọi mạng trong sandbox. Đã có đủ điều kiện để hoàn thành phần SDK và global.json. Log debug.log do code --version phát sinh đã được orchestrator bảo toàn sang TEMP, không còn trong repo; không gọi code --version lần nữa tại repo. Cập nhật tài liệu thành kết quả thực tế với đường cài online dùng curl.exe và đường dùng ZIP có sẵn; không để mô tả lỗi mạng cũ như trạng thái hiện tại. Kiểm helper kích hoạt/lặp/deactivate, phục hồi môi trường và từ cwd khác. Đối chiếu lại các tiêu chí 1,2,4,5 bằng bint task criteria sau khi thực hiện thành công; tiêu chí 3 đã có bằng chứng. Tiếp tục đúng cùng phạm vi, model Codex và các tệp của S0, không chạy bước1.1 hay sửa phiếu roadmap.'
+autonomy: ask_on_protected

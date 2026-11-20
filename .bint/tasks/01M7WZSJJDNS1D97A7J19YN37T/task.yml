@@ -1,0 +1,39 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7WZSJJDNS1D97A7J19YN37T
+goal: Lập roadmap và backlog từ PLAN.md cho dự án thuế cá nhân .NET/C#, phát triển hoàn toàn bằng Codex, bổ sung trích dẫn pháp lý theo ngữ cảnh.
+request: |-
+  Yêu cầu nguyên văn: đây là project cá nhân của tôi làm về web quản lí thuế cá nhân bằng platform .NET, C#. Tôi có tự tạo plan qua file D:\Project\taxxManager\PLAN.md, dựa vào plan này để tạo plan và task cho hướng đi tới.
+
+  Phạm vi được yêu cầu trong lượt này CHỈ là lập kế hoạch và backlog cho dự án, không triển khai ứng dụng. Đọc PLAN.md làm tài liệu đầu vào, đối chiếu hiện trạng repository. Tạo requirement.md, plan.md, tasks.md bằng bint task write cho phiếu này. Giữ nguyên PLAN.md.
+
+  Đầu ra bằng tiếng Việt: (1) hiện trạng có bằng chứng và khoảng cách với PLAN.md; (2) roadmap từ chuẩn bị, lõi tính thuế, dữ liệu/bảo mật, web MVP đến hoàn thiện/deploy; (3) backlog có mã việc, ưu tiên, phụ thuộc, phạm vi, điều kiện bắt đầu và xong khi đo được, phân biệt MVP với phần mở rộng; (4) kế hoạch và task chi tiết cho chặng đầu Bước 0 và Bước 1.1, các chặng sau là đề xuất tách giai đoạn để người dùng xem; (5) danh sách dữ liệu luật, nguồn chính thức và quyết định cần người dùng cung cấp trước từng bước liên quan; (6) việc nên bắt đầu ngay và cách kiểm chứng phù hợp.
+
+  Hiện trạng quan sát của orchestrator: repository chỉ có PLAN.md, cấu hình/skills Bint, .gitignore chỉ chứa khối Bint; chưa có .sln/.csproj, chưa có commit, bint task list đang rỗng; dotnet --list-sdks không liệt kê SDK nào. Planner tự đối chiếu những bằng chứng cần thiết. Không coi số liệu luật trong PLAN.md là đã xác minh hiện hành, không tự bổ sung mức thuế/bảo hiểm hay diễn giải pháp luật từ trí nhớ. Công việc lần này là lập roadmap, không phải tư vấn hay xác thực pháp luật.
+
+  Trong plan.md có mục đề xuất phiếu cha/con cho việc triển khai tương lai, nêu thứ tự và depends_on; không tự lập các phiếu triển khai hoặc chạy các giai đoạn đó. Trong tasks.md phân biệt rõ backlog thực thi tương lai với kết quả lập kế hoạch hiện tại; tuân thủ hợp đồng AC/TSK của Bint. Không biến điều kiện chưa cần đến ở giai đoạn sau thành câu hỏi chặn việc lập roadmap. Chỉ đưa Q mở nếu thực sự không thể hoàn thành đầu ra lập kế hoạch nếu thiếu câu trả lời.
+verify:
+  command: ""
+  criteria:
+    - Có đánh giá hiện trạng repository và roadmap theo giai đoạn bám PLAN.md, phân biệt MVP với phần mở rộng.
+    - Có backlog với ưu tiên, phụ thuộc, phạm vi, điều kiện bắt đầu và tiêu chí hoàn thành kiểm chứng được; chi tiết chặng Bước 0 và Bước 1.1.
+    - Có danh sách dữ liệu pháp lý và quyết định cần bổ sung theo từng chặng, không tự điền luật chưa được xác minh.
+    - Ba tài liệu requirement.md, plan.md, tasks.md bằng tiếng Việt được lưu gắn với phiếu và vượt qua bint task lint --strict; không sửa PLAN.md hoặc mã ứng dụng.
+    - 'Roadmap và backlog bao phủ Trích dẫn pháp lý theo ngữ cảnh: metadata theo quy tắc và kỳ áp dụng, giải thích 2-3 câu cạnh kết quả qua nút ?, liên kết văn bản gốc vbpl.vn, test mapping và dữ liệu chưa xác minh; ví dụ 10% được ghi rõ là minh họa chờ xác minh.'
+scope:
+  allow:
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - src/**
+    - tests/**
+references:
+  - PLAN.md
+  - plan.md
+constraints:
+  - Chỉ lập kế hoạch; không sửa mã, không cài đặt công cụ, không commit, không triển khai tính năng, không chạy b-feat.
+  - PLAN.md là tài liệu tham chiếu, giữ nguyên; không tự xác nhận số liệu pháp luật.
+  - 'Bổ sung của người dùng: làm hoàn toàn bằng Codex. Lập kế hoạch tính năng Trích dẫn pháp lý theo ngữ cảnh gắn trực tiếp với từng công thức/kết quả, không xây kho luật toàn văn. Biểu tượng ? mở popover gồm giải thích 2-3 câu, điểm/khoản/điều/số văn bản và link trực tiếp đến văn bản gốc vbpl.vn; hỗ trợ bàn phím và mobile. Metadata căn cứ gắn với rule/version/kỳ áp dụng; xác minh nguồn và hiệu lực trước khi dùng, không tra cứu mạng lúc tính thuế. Ví dụ người dùng cung cấp: 2.500.000 đồng vãng lai khấu trừ 250.000 đồng (10%), tham chiếu điểm i khoản 1 Điều 25 Thông tư 111/2013/TT-BTC; đây là ví dụ UX, không tự coi là luật hiện hành. Backlog có task cho metadata, mapping kết quả tính, UI, xác minh liên kết/hiệu lực và test đúng căn cứ theo kỳ. Chưa hiện thực chức năng.'
+  - 'Cập nhật hiện trạng trước lần lập kế hoạch này: người dùng đã đổi model Codex trong .bint/config.yml thành planner/reviewer gpt-6.1-sol, implementer gpt-6.1-terra; giữ nguyên lựa chọn mới. PLAN.md đã được bổ sung mục 1.8 Contextual Legal Citation cùng task liên quan tại 1.1, 1.2, 1.5, 2.2, 3.1 qua phiếu 01M7X0ADTRPA8G6VN3H7J474JY đã done và review xong. Đọc lại bản PLAN.md mới trước khi tạo roadmap/backlog; không sửa tiếp PLAN.md trong phiếu lập kế hoạch này. Tạo đầu ra requirement.md/plan.md/tasks.md đầy đủ, backlog tương lai không được đánh dấu đã thực hiện. Không cần cài SDK hay xác minh luật để hoàn thành việc lập kế hoạch; ghi thành điều kiện đầu vào của task thực thi. Chỉ còn một phiếu lập kế hoạch này chưa hoàn tất, không tự lập phiếu triển khai.'
+autonomy: ask_on_protected

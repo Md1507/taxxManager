@@ -1,0 +1,42 @@
+# Kế hoạch
+
+## Hướng triển khai và căn cứ
+Chỉ S0 BL-00/BL-01; phạm vi đủ nhỏ để triển khai một phiếu. Chọn archive ZIP Microsoft và SHA512: dễ xác minh và giải nén riêng trong repository, không cần installer/registry/PATH lâu dài. Chọn một helper kích hoạt PowerShell vì terminal hiện chưa chọn được SDK local; không thêm installer tự động hoặc framework bootstrap.
+
+Đã đọc PLAN.md, ba tài liệu roadmap phụ thuộc và cấu hình hiện tại; không có mã ứng dụng/caller/API cần sửa. Không áp dụng mục tri thức Bint nào vì MCP không trả mục liên quan. Trạng thái phụ thuộc còn in_progress dù có bằng chứng đối chiếu tài liệu; việc chốt trạng thái thuộc Core/orchestrator.
+
+Ngày khảo sát 21/11/2026 (giờ Việt Nam), [metadata Microsoft](https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json) ghi latest-sdk 10.0.404, release-type lts, support-phase active; có ZIP win-x64. Nguồn dự kiến: https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.404/dotnet-sdk-10.0.404-win-x64.zip. SHA512 ghi trong metadata: 330ddd2665b43cd2e428216a0d8ea1ac7bb19b5434fdc530e62010dc3b52823a620bf95489d628e1ed6f5122401793ee4887cca4a019122361a1231497f632ee. Đây là dữ liệu tra cứu, chưa tải archive hay xác minh file thực tế; implementer phải đọc lại đúng entry phiên bản/RID trước tải.
+
+Tham chiếu [global.json](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) cho version/allowPrerelease/latestPatch và [cài .NET Windows](https://learn.microsoft.com/en-us/dotnet/core/install/windows) cho cài thủ công. latestPatch cho phép patch cao nhất cùng feature band, nên pin không phải cam kết chọn duy nhất bản này khi sau này có thêm patch local; lần bàn giao S0 chỉ cài bản đã chọn và phải trả 10.0.404.
+
+## Tệp và thứ tự thực hiện
+1. Chụp hiện trạng: hash PLAN.md, .bint/config.yml, .gitignore; danh sách tệp ngoài .git/.bint/tasks; môi trường Process/User/Machine PATH và DOTNET_ROOT chỉ so sánh tại máy, không đưa giá trị môi trường riêng vào báo cáo. Ghi nhận Git/editor đã có, kiểm vị trí .dotnet trước ghi để không đè dữ liệu có sẵn.
+2. Bổ sung .gitignore trước khi tải: /.dotnet/, [Bb]in/, [Oo]bj/, .vs/, *.user, *.suo, TestResults/, đầu ra coverage, secrets/, .env/.env.* và appsettings cục bộ mang bí mật. Chỉ ignore trạng thái IDE; giữ cấu hình chia sẻ an toàn nếu có. Ngoại lệ rõ cho .env.example/.env.sample và mẫu tương ứng ở thư mục con; không ignore appsettings.json/appsettings.Development.json chỉ vì tên, không đưa giá trị bí mật vào mẫu. Giữ nguyên khối # bint:begin đến # bint:end.
+3. Tạo scripts/dev/activate-dotnet.ps1: suy root từ PSScriptRoot, kiểm dotnet.exe và SDK pin trước thay đổi môi trường. Dot-source để sửa phiên gọi; chụp giá trị gốc một lần, hỗ trợ -Deactivate để khôi phục và không tích lũy PATH khi kích hoạt lặp. Khi thiếu SDK, trả lỗi kèm đường dẫn hướng dẫn setup, không fallback âm thầm sang host hệ thống. Kiểm nhánh thiếu SDK trước cài trong PowerShell con.
+4. BL-00: đọc lại metadata chính thức, chọn entry sdk.version 10.0.404, file win-x64.zip và hash; không lấy hash từ file EXE hoặc RID khác. Tải vào vùng tạm bị ignore trong .dotnet, dùng Get-FileHash -Algorithm SHA512 so metadata, chỉ giải nén khi khớp. Không thực thi installer toàn máy; không gọi setx/sửa profile/registry. Kiểm host local --info/--list-sdks trước pin; nếu lỗi hoặc hash sai dừng và ghi bằng chứng.
+5. BL-01: tạo global.json sdk.version 10.0.404, allowPrerelease false, rollForward latestPatch sau khi SDK đã cài đúng. Kích hoạt helper và kiểm từ root bằng host tuyệt đối lẫn dotnet qua PATH, rồi hoàn tất ma trận ignore.
+6. Tạo docs/decisions/0001-dev-setup.md tiếng Việt: điều kiện Windows x64/PowerShell/Git/editor; nguồn/hash và ngày kiểm; lệnh tải, so hash, giải nén cài lại đúng bản; dot-source helper ở VS Code/Codex terminal từ clone có vị trí bất kỳ; kiểm SDK từ root; -Deactivate hoặc đóng terminal để bỏ thay đổi phiên. Ghi quyết định TaxManager.sln cho Bước 1.1, chưa tạo tệp đó. Tài liệu phải phản ánh lệnh thực tế đã kiểm, phân biệt thao tác chưa kiểm nếu gặp trở ngại.
+7. Ghi bằng chứng AC qua bint task criteria, rồi chuyển reviewer đọc tệp mới/diff và bằng chứng theo flow hiện hành. Không commit, không chuyển trạng thái hay tự phê duyệt.
+
+Tệp triển khai có thể theo dõi: .gitignore, global.json, scripts/dev/activate-dotnet.ps1, docs/decisions/0001-dev-setup.md. SDK/vùng tải tạm chỉ trong .dotnet/** bị ignore; tài liệu/bằng chứng tác vụ qua .bint/tasks/** và runtime do CLI quản lý. Lượt planner chỉ ghi requirement.md, plan.md, tasks.md của phiếu này.
+
+## Chiến lược kiểm chứng cho implementer/reviewer
+Giữ verify.command trống và không đặt lệnh mới rồi tự approve. Các kiểm setup dưới đây đã được yêu cầu trong phạm vi phiếu; chỉ triển khai mới chạy chúng, không chạy ở lượt b-req. Bằng chứng ghi theo số tiêu chí bằng bint task criteria với --evidence chứa lệnh cụ thể, working directory, kết quả và mã thoát.
+
+| Tiêu chí | Kiểm hẹp và kết quả cần thấy |
+|---|---|
+| AC-1 | Metadata đúng version/RID, Get-FileHash ZIP khớp SHA512; từ root chạy host tuyệt đối .dotnet/dotnet.exe --info và --list-sdks: x64, base path trong .dotnet/sdk/10.0.404 và liệt kê bản đã cài; ghi Git 2.47.1/VS Code sẵn có hoặc kiểm lại phiên bản. |
+| AC-2 | Đọc JSON xác nhận ba trường, từ root chạy & (Resolve-Path .dotnet/dotnet.exe).Path --version; sau dot-source helper chạy Get-Command dotnet và dotnet --version: host local và 10.0.404, mã thoát 0. |
+| AC-3 | Dùng git check-ignore -v --no-index --stdin với đường dẫn giả định, không tạo file trong source tree: .dotnet/dotnet.exe, src/Demo/bin/Debug/a.dll, src/Demo/obj/project.assets.json, .vs/state, Demo.csproj.user, TestResults/a.trx, coverage.xml, secrets/key.json, .env, src/Demo/.env.local phải match ignore. Nhóm giữ gồm src/Demo/Class.cs, tests/Demo.Tests/Test.cs, global.json, .env.example, src/Demo/.env.example, appsettings.example.json và appsettings.Development.json phải không match. Chạy hai nhóm riêng: nhóm ignore cần đủ mọi dòng (exit 0 chỉ chứng minh ít nhất một match), nhóm giữ không có dòng/exit 1; exit >=2 là lỗi. So khối Bint với bản đầu. |
+| AC-4 | PowerShell con sạch: SDK thiếu báo rõ trước mọi sửa PATH/DOTNET_ROOT; sau cài dot-source, kích hoạt hai lần không nhân PATH, -Deactivate trả nguyên trạng kể cả DOTNET_ROOT ban đầu không tồn tại. Gọi helper từ cwd khác root và so đường dẫn vẫn dựa vào PSScriptRoot; review không có đường dẫn clone hardcode hay SetEnvironmentVariable User/Machine. Đọc tài liệu, chạy lại chuỗi cài/kiểm trong đích local sạch nếu cần để khẳng định lặp lại được. |
+| AC-5 | So hash PLAN.md/config; kiểm danh sách tệp kể cả untracked bằng git status --short --untracked-files=all và đọc tệp mới (git diff không đủ khi chưa có commit). Không có .sln/.slnx/.csproj/src/tests mới; host hệ thống và PATH User/Machine giữ nguyên. Chỉ có tệp trong allow; AC-1..4 có bằng chứng, reviewer không còn phát hiện nghiêm trọng chưa xử lý. |
+
+Không chạy dotnet test/restore/build, không tạo test ứng dụng hoặc test rỗng. Planner chỉ chạy bint task lint 01M7X1P1ED7J4C8Q1HSZRB09XQ --strict để kiểm hợp đồng tài liệu và so hash đầu vào; lint không chứng minh SDK đã cài. Chưa kiểm được tải/cài, helper hay ignore ở lượt này.
+
+## Rủi ro và rollback
+Sai kiến trúc/hash hoặc download gián đoạn: kiểm RID/hash trước giải nén, không nhận cài dở là thành công; SDK không xác minh được thì ghi trở ngại thay vì đổi bản tùy ý. Ignore quá rộng có thể che nguồn/mẫu: ma trận cả hai nhóm và so khối Bint phát hiện. Host hệ thống có thể được gọi nhầm: kiểm Get-Command và --info/base path. Helper làm mất PATH gốc: kiểm lặp/-Deactivate trong PowerShell con trước bàn giao.
+
+Khi rollback, -Deactivate hoặc đóng terminal; phục hồi nội dung .gitignore/global.json/helper/docs theo snapshot trước thay đổi, không giả định git checkout dùng được với tệp untracked. Chỉ xóa phần cài/tạm do phiếu tạo sau khi xác minh đường dẫn tuyệt đối nằm trong .dotnet của repository và không có dữ liệu có trước; không xóa .NET hệ thống. Không chạm PLAN.md hay config.
+
+## Mốc giữ nguyên và bàn giao
+SHA256 trước planner: PLAN.md = 24C8613968B7B5F3CF5A7A68B07AB4307D0935F52EB2A6C058070B6F3AE19953; .bint/config.yml = 1DCA80D30C76A7528DD1A59F5CAC16F1748BE64D693B50D5DDE5FF616F59E147; .gitignore = FBDC8F87663AEDBFD5CBAF562DE531ABD74ED3951662762160A8A8BA4139FEC2. Implementer chụp lại trước thực thi nếu hiện trạng đổi. AC-1/2/3/4/5 tương ứng TSK-2/3/1/4/5; TSK-1 cũng phủ phần ignore của AC-5. Không có câu hỏi cản lập kế hoạch, không đề xuất phiếu con; giai đoạn S11/BL-10 trở đi nằm ngoài phạm vi.

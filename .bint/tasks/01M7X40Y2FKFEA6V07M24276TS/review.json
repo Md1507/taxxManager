@@ -1,0 +1,46 @@
+{
+  "task_id": "01M7X40Y2FKFEA6V07M24276TS",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-20T18:51:21Z",
+      "by": "agent",
+      "run_id": "01M7X4J649AAJPFMB2F9PE0M71",
+      "base": "d04e58bc1590145b348ba22be71596c089eb0504",
+      "summary": "Đã đọc đúng diff Bint gồm 8 tệp, đối chiếu AC-1..7 và PLAN; không thấy lỗi số học hay snapshot trong phạm vi đã kiểm. Core.Tests --no-restore đạt 27/27; toàn TaxManager.sln --no-restore --disable-build-servers -m:1 đạt 27/27, 0 skipped bằng SDK local 10.0.404. Lệnh solution mặc định treo ở MSBuild đã được dừng, không coi là lỗi sản phẩm. Có 2 thiếu sót tài liệu bàn giao (1 medium, 1 low). Chưa đối chiếu văn bản pháp lý gốc/PDF hoặc xác nhận người dùng; Vietnam2026 vẫn phải Unverified. MCP không trả tri thức liên quan. Không sửa mã, không approve/verify/status/commit.",
+      "findings": [
+        {
+          "id": "01M7X40Y2FKFEA6V07M24276TS.1",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Bàn giao bỏ sót nguồn và ranh giới pháp lý bổ sung được yêu cầu",
+          "path": "docs/decisions/0002-core-monthly-tax.md",
+          "lines": "3-5",
+          "evidence": "Danh sách nguồn duy nhất ở dòng 5 chỉ có Luật 109, hướng dẫn quyết toán và hai bài TVPL; toàn bộ tài liệu 34 dòng không ghi NĐ398/2026/NĐ-CP, TT87/2026/TT-BTC hoặc NĐ141/2026/NĐ-CP. Trong constraints hiện hành của phiếu, người dùng yêu cầu ghi nhận cả ba nguồn cùng ranh giới: không đưa giảm 30% thu nhập kinh doanh/CIT vào engine lương, không tự đánh giá điều kiện mọi người phụ thuộc giống nhau, và không nâng seed lên Verified. Vì vậy artifact bàn giao chưa đáp ứng phần nguồn bổ sung của AC-6 dù mục này đã được đánh dấu đạt.",
+          "body": "Bổ sung các đường dẫn PDF/trang chính thức và kết quả đọc đã được điều phối cung cấp trong phiếu, ghi rõ phần nào đã đọc và phần nào chưa đối chiếu đầy đủ. Giữ nguyên phạm vi lương S11 và trạng thái Unverified; ghi nhận người dùng đã gửi hết nguồn, phần còn lại là công việc đối chiếu chứ không phải yêu cầu họ tiếp tục tìm nguồn. Không suy diễn nguồn tham khảo thành xác minh pháp lý.",
+          "criterion": 6
+        },
+        {
+          "id": "01M7X40Y2FKFEA6V07M24276TS.2",
+          "kind": "bug",
+          "severity": "low",
+          "title": "Trạng thái dependency và kiểm thử trong bàn giao đã lỗi thời",
+          "path": "docs/decisions/0002-core-monthly-tax.md",
+          "lines": "34",
+          "evidence": "Dòng 34 vẫn khẳng định chưa chạy được xUnit/toàn solution và cần phiên có mạng cấp dependency. Constraints của phiếu đã ghi orchestrator restore thành công lúc 01:47 và cache đủ package. Reviewer thực chạy .dotnet/dotnet.exe test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore: exit 0, 27 passed/0 failed/0 skipped; chạy .dotnet/dotnet.exe test TaxManager.sln --no-restore --disable-build-servers -m:1: exit 0, cùng 27 passed. Mô tả hiện tại khiến người nhận hiểu nhầm vẫn còn blocker NuGet và không có bằng chứng test.",
+          "body": "Giữ lỗi NU1301 dưới dạng lịch sử có mốc thời gian nếu cần, sau đó cập nhật restore đã hoàn tất, cache/config thực dùng và kết quả hai lệnh test. Nêu rõ lệnh solution mặc định treo trong phiên review, còn biến thể tắt build server/chạy một tiến trình đã đạt; không báo lệnh mặc định là đã thành công.",
+          "criterion": 6
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-20T18:55:23Z",
+      "by": "agent",
+      "run_id": "01M7X4XRJQVF4MEW0R5AQCR0YK",
+      "base": "d04e58bc1590145b348ba22be71596c089eb0504",
+      "summary": "Review vòng 2: đã đọc diff riêng tác vụ bằng bint task diff, gồm đúng 8 tệp trong scope (396 dòng thêm), đối chiếu AC-1..7, PLAN Bước1.1, requirement/plan/tasks. Không có phát hiện mới. Hai phát hiện vòng 1 đã xử lý: 01M7X40Y2FKFEA6V07M24276TS.1 được đáp ứng tại docs/decisions/0002-core-monthly-tax.md:7-13 với ba PDF, URL chính thức, ranh giới kinh doanh/CIT và TT87 thay TT111; 01M7X40Y2FKFEA6V07M24276TS.2 được đáp ứng tại dòng 42 với trạng thái restore và kết quả test cập nhật. Kiểm độc lập bằng SDK local 10.0.404: dotnet test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore --disable-build-servers -m:1 và dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1 đều exit 0, 27 passed, 0 failed, 0 skipped. Suite gồm đủ 7 ca PIT và 3 ca lương PLAN, kiểm biên, số lẻ, validation, snapshot và mapping; đọc mã xác nhận Core không package ngoài/Web/DB/HTTP, dữ liệu luật nằm trong rule và Vietnam2026 giữ Unverified. MCP không có tri thức liên quan. Chưa kiểm chứng độc lập nội dung/hiệu lực văn bản pháp lý gốc hoặc PDF, chưa có xác nhận người dùng tự kiểm; kết quả review và test chỉ xác nhận trong phạm vi kỹ thuật đã kiểm. Không sửa mã, không approve/verify/status/commit.",
+      "findings": []
+    }
+  ]
+}

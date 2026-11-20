@@ -1,0 +1,56 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7X40Y2FKFEA6V07M24276TS
+goal: 'S11: Core tính thuế tháng, snapshot quy tắc/căn cứ và kiểm thử xUnit theo Bước1.1'
+request: |-
+  Người dùng yêu cầu làm bước tiếp theo sau S0 và cho biết có thể hỏi họ để họ tra thông tin trên web cơ quan thuế. Chỉ thực hiện Bước 1.1, BL-10 đến BL-15 theo PLAN.md và .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/plan.md, tasks.md. S0 01M7X1P1ED7J4C8Q1HSZRB09XQ đã done, SDK project-local .dotnet/dotnet.exe là 10.0.404; global.json đã pin, helper scripts/dev/activate-dotnet.ps1 đã có. Planner/reviewer gpt-6.1-sol, implementer gpt-6.1-terra, giữ nguyên cấu hình Codex. Không đọc/tác động .dotnet toàn bộ khi tìm source vì chứa SDK lớn.
+
+  Đầu ra: TaxManager.sln (định dạng .sln theo quyết định S0), src/TaxManager.Core net10.0 thuần C# không package ngoài và tests/TaxManager.Core.Tests xUnit tham chiếu Core. Bracket, TaxRuleSet (FromYear, giảm trừ, biểu thuế, định danh phiên bản/kỳ và trạng thái căn cứ), PitCalculator tính lũy tiến từng phần không làm tròn, MonthlySalaryCalculator(grossIncome, insurance là tiền nhập vào, dependents, ruleSet) trả record chi tiết trung gian, phần thu nhập tính thuế âm do giảm trừ được chặn về 0. Mọi khoản tiền/thuế suất dùng decimal; số luật chỉ nằm ở bộ quy tắc, không hardcode thuật toán. Validation rõ cho đầu vào âm, dependents không hợp lệ, biểu thuế không hợp lệ; chọn exception .NET thông thường và ghi quyết định ngắn thay vì thêm framework. Thiết kế gọn, immutable/defensive snapshot đủ để kết quả không thay đổi khi cấu hình đầu vào bị sửa.
+
+  Tạo TaxRuleSet.Vietnam2026 từ đúng số liệu người dùng đã đưa trong PLAN.md; TUYỆT ĐỐI ghi là dữ liệu tham khảo CHƯA XÁC MINH pháp lý. Orchestrator đã hỏi người dùng về nguồn gốc chính thức và kỳ áp dụng biểu 5 bậc/giảm trừ 2026; đang chờ họ tra. Việc đó không cản viết engine tổng quát và kiểm số học theo dữ liệu PLAN. Không thêm số luật, điều khoản hay ngày hiệu lực từ trí nhớ, không khẳng định dữ liệu đã xác minh; FromYear=2026 là nhãn dữ liệu trong PLAN, không tự quy thành ngày hiệu lực/chuyển tiếp. Chưa chọn luật theo ngày/năm tự động (đó là 1.2). Không tuyên bố phần đối chiếu pháp lý/người dùng tự kiểm đã hoàn tất khi chưa có phản hồi. Có thể ghi phần kỹ thuật đã xong và dữ liệu còn chờ xác minh trong tài liệu bàn giao.
+
+  Metadata pháp lý trong Core độc lập Web/DB: ID và phiên bản rule/căn cứ, điểm/khoản/điều/số văn bản khi có thật, summary 2-3 câu khi được cung cấp, URL gốc vbpl.vn khi đã xác minh, kỳ/ngày áp dụng và trạng thái/ngày xác minh. Thiếu metadata phải biểu diễn rõ là missing/unverified, không chế nội dung luật hay URL. Các thành phần kết quả và từng phần tính thuế liên kết đúng căn cứ/snapshot thực dùng; chỉ thiết kế dữ liệu để UI ? sau này hiển thị, không HTML hay UI, không HTTP trong engine. URL không hợp lệ không được tự trở thành nguồn verified; cú pháp URL hợp lệ không phải bằng chứng pháp lý. Insurance là đầu vào người dùng, không tự coi tỷ lệ BH hoặc số nhập là đã được kiểm luật.
+
+  Kiểm thử xUnit Theory toàn bộ 7 ca thu nhập tính thuế và 3 ca lương tại PLAN Bước1.1, dùng decimal test data (MemberData/TheoryData phù hợp). Thêm ca sát các ngưỡng, thu nhập tính thuế âm sau giảm trừ, số lẻ không làm tròn, validation đầu vào/biểu thuế, snapshot và mapping căn cứ đúng rule/version, missing/unverified và URL sai. Không test rỗng, không tự sinh expected bằng chính calculator. Đưa vài ca đối chiếu số học riêng để người dùng có thể tự bấm kiểm trong tài liệu, không ghi là họ đã xác nhận. Không cần dựng toàn bộ kỳ/2025, tự tính BH, quyết toán năm, thu nhập vãng lai, Web, Data hay DB.
+
+  Chỉ thêm package cần thiết cho xUnit/test runner, chọn phiên bản cố định từ nguồn chính thức và tương thích SDK. Chạy kiểm hẹp Core.Tests rồi dotnet test TaxManager.sln khi đã restore. Luôn dùng host .dotnet/dotnet.exe hoặc kích hoạt helper; cho cache package tại .dotnet/nuget-packages (đã bị ignore). Sandbox agent đã biết chặn mạng: nếu restore NuGet không được, ghi rõ package/lệnh và phần source đã tạo để orchestrator cung cấp đầu vào dependency từ phiên có mạng; không đổi sandbox/harness/model và không báo test xanh khi chưa chạy. Không chạy code --version tại root vì tạo debug.log. Không cài lại SDK/Git/editor.
+
+  Planner chỉ đọc và viết artifact tác vụ; không tạo code trong b-req. Implementer thực thi và ghi bằng chứng từng tiêu chí bằng bint task criteria; verify.command giữ trống vì chưa được người xác nhận riêng trong Bint, không gọi task approve. Reviewer đọc diff đúng tác vụ và kiểm bằng chứng/test độc lập phù hợp. Agents không commit; orchestrator sẽ commit đúng phạm vi sau review. Lượt này shared để người dùng thấy source ngay. Giữ nguyên PLAN.md, config Codex, global.json và setup S0. Tài liệu quyết định/bàn giao thêm dưới docs/decisions, không sửa snapshot roadmap cũ.
+verify:
+  command: ""
+  criteria:
+    - Có TaxManager.sln gồm đúng Core net10.0 và Core.Tests xUnit; tests tham chiếu Core, Core không có package ngoài hay phụ thuộc Web/DB.
+    - Bracket/TaxRuleSet và snapshot Vietnam2026 dùng đúng dữ liệu PLAN bằng decimal, có validation nhất quán và trạng thái chưa xác minh; thuật toán không hardcode số luật.
+    - PitCalculator và MonthlySalaryCalculator tính đúng từng phần, không làm tròn, xử lý thu nhập tính thuế âm về 0 và trả chi tiết; đầu vào sai có lỗi rõ.
+    - Metadata và kết quả liên kết đúng căn cứ/version/kỳ thực dùng, độc lập Web/DB/mạng; thiếu hoặc URL sai không được coi là nguồn đã xác minh, snapshot không bị đổi theo đầu vào mutable.
+    - Toàn bộ 10 ca số học Bước1.1 cùng kiểm biên/không làm tròn/validation/mapping/missing/unverified có test có ý nghĩa; dotnet test Core.Tests và toàn solution thực sự đạt sau restore.
+    - Có hướng dẫn API/chạy test và ca số học cho người dùng tự đối chiếu; ghi rõ còn chờ nguồn pháp lý/người dùng kiểm, không tuyên bố đã xác minh luật hoặc đã có Web/DB.
+    - Thay đổi đúng phạm vi, giữ PLAN.md/config/setup S0; đủ bằng chứng tiêu chí và review không còn lỗi nghiêm trọng chưa xử lý.
+scope:
+  allow:
+    - TaxManager.sln
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/**
+    - .dotnet/nuget-packages/**
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+references:
+  - PLAN.md
+  - .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/plan.md
+constraints:
+  - Chỉ Bước1.1, không tự điền luật mới, không UI/DB/2025/provider/tự tính BH/năm/vãng lai; không sửa setup/model, agent không commit.
+  - Số liệu Vietnam2026 trong PLAN chỉ là dữ liệu người dùng cung cấp chưa xác minh; đang chờ nguồn từ người dùng, không chặn việc xây engine/test số học, không được tự xác nhận hiệu lực pháp luật.
+  - 'Nguoi dung da gui hai link TVPL de tham khao: https://thuvienphapluat.vn/phap-luat-doanh-nghiep/bai-viet/bieu-thue-thu-nhap-ca-nhan-2026-va-cong-thuc-tinh-thue-theo-bieu-thue-5-bac-22757.html va https://thuvienphapluat.vn/phap-luat-doanh-nghiep/bai-viet/chi-tiet-cac-khoan-giam-tru-khi-tinh-thue-tncn-2027-giam-tru-gia-canh-y-te-giao-duc-23549.html . Dieu phoi da tim nguon chinh thuc: https://vanban.chinhphu.vn/?classid=1&docid=216495&orggroupid=1&pageid=27160 (Luat 109/2025/QH15) va https://xaydungchinhsach.chinhphu.vn/huong-dan-quyet-toan-thue-thu-nhap-ca-nhan-doi-voi-thu-nhap-tu-tien-luong-tien-cong-119260306092819051.htm (Cong van1296/CT-NVT ngay04/03/2026). Co the ghi nhan cac nguon nay trong tai lieu handoff. Giu seed Unverified cho den khi hoan tat doi chieu van ban goc va cac sua doi, khong suy dien verified tu URL hay bai bao. Khong them giam tru y te/giao duc hay pham vi nam2027 trong ticket S11.'
+  - 'Bo sung nguon nguoi dung: C:/Users/LENOVO/Downloads/398+2026+ND+CP.pdf; nguon chinh thuc doi chieu https://chinhphu.vn/?docid=220138&pageid=27160 va https://xaydungchinhsach.chinhphu.vn/toan-van-nghi-dinh-398-2026-nd-cp-ve-giam-thue-thu-nhap-ca-nhan-thue-thu-nhap-doanh-nghiep-doi-voi-ca-nhan-va-doanh-nghiep-119261031044659307.htm . So dung398/2026/ND-CP ngay29/10/2026 (mo ta398/2025 cua nguoi dung la nham nam). Dieu2 giam30% PIT doi voi THU NHAP KINH DOANH cua ca nhan cu tru doanh thu nam<=10ty trong2026/2027; Dieu3 la CIT doanh nghiep; khong ap giam30% nay cho tien luong trong S11. Ghi nguon/ranh gioi nay trong tai lieu handoff, khong mo rong scope sang kinh doanh/CIT.'
+  - Nguoi dung gui them PDF C:/Users/LENOVO/Downloads/87_03072026_182404.pdf, TT87/2026/TT-BTC ngay30/06/2026. Nguon chinh thuc https://chinhphu.vn/?classid=1&docid=218772&orggroupid=4&pageid=27160 ; can doi chieu quy dinh tien luong/nguoi phu thuoc va hieu luc truoc khi dua vao du lieu san pham. Ghi nhan trong tai lieu nguon can doi chieu cua S11; chua them tu dong danh gia dieu kien nguoi phu thuoc hay khau tru vang lai, chua nang seed len Verified. Orchestrator dang doc PDF scan.
+  - 'Nguon moi va ket qua doc PDF bo sung: C:/Users/LENOVO/Downloads/141-ndcp.signed.pdf, ND141/2026/ND-CP ngay29/04/2026; trang chinh thuc https://vanban.chinhphu.vn/?docid=217960&pageid=27160 . Pham vi ho/ca nhan kinh doanh va CIT, khong tu them vao engine luong. Da doc truc quan TT87 PDF trang1-6: Dieu3 khoan1 nguong thu nhap NPT03tr/thang cho nhom duoc dieu khoan dan chieu; KHONG phai moi NPT deu co dieu kien giong nhau. Dieu6 khoan1 hieu luc01/07/2026, noi dung thu nhap kinh doanh/luong ca nhan cu tru ap dung tu ky tinh thue2026; khoan2 thay TT111/2013/TT-BTC. Vi vay vi du10%/2tr trong PLAN van chi minh hoa, can doi chieu van ban hien hanh truoc trien khai vang lai. Hien nguoi dung bao da gui het nguon; khong ghi cho nguoi dung tim nguon nhu mot blocker cua S11. Tiep tuc giu seed Unverified va ghi chinh xac phan nao chua hoan tat xac minh.'
+  - Orchestrator da restore thanh cong TaxManager.sln luc01:47 ngay21/11/2026 bang SDK .dotnet/dotnet.exe, --packages D:/Project/taxxManager/.dotnet/nuget-packages va --configfile C:/Users/LENOVO/AppData/Local/Temp/taxxmanager-nuget.config. Cac package Microsoft.NET.Test.Sdk17.14.1, xunit2.9.3, xunit.runner.visualstudio3.1.4 va dependency da co cache. Tiep tuc test project va solution --no-restore trong sandbox, khong lap download/khong doi version. Neu can restore lai dung cache/configfile tren voi --ignore-failed-sources, khong bo test.
+  - 'Cap nhat bang chung dieu phoi: root da chay dotnet test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore va dotnet test TaxManager.sln --no-restore, moi lenh exit0:27 passed,0 failed,0 skipped. Docs0002 hien van ghi chua chay xUnit/solution nen CAN implementer cap nhat truoc finalize; bo sung danh muc3 PDF nguoi dung (ND398/2026, TT87/2026, ND141/2026), cac URL chinh thuc va luu y TT87 Dieu6 thay TT111, khong mo rong tinh nang. Sau khi cache co san, implementer tu chay lai2 lenh va cap nhat AC5/6; root khong sua code/docs thay child.'
+autonomy: ask_on_protected

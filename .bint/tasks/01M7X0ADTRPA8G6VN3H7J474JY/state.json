@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "id": "01M7X0ADTRPA8G6VN3H7J474JY",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-20T17:33:28Z",
+  "updated_at": "2026-11-20T17:36:19Z",
+  "reason": "b-do finalize",
+  "classification": {
+    "plan": false,
+    "reason": "người dùng chỉ định",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-20T17:33:28Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "in_progress",
+      "at": "2026-11-20T17:33:33Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T17:35:19Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-20T17:36:19Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-do finalize"
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "PLAN.md:76-78,84 mô tả metadata nguồn vbpl.vn, nút ?, giải thích và không xây kho toàn văn.",
+      "by": "agent",
+      "at": "2026-11-20T17:35:04Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "PLAN.md:76-78,83-85,140,181,217,234 quy định metadata, mapping, Core độc lập, lưu DB, UI và kiểm thử theo kỳ.",
+      "by": "agent",
+      "at": "2026-11-20T17:35:06Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "PLAN.md:76,80 ghi ví dụ và tham chiếu do người dùng cung cấp, chờ xác minh hiệu lực và URL, không bịa itemid.",
+      "by": "agent",
+      "at": "2026-11-20T17:35:08Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "PLAN.md:5 ghi phát triển bằng Codex; PLAN.md:116,130,178,207,227,250 giữ thứ tự roadmap. Chỉ sửa PLAN.md; git status trước và sau không đổi danh sách tệp.",
+      "by": "agent",
+      "at": "2026-11-20T17:35:10Z"
+    }
+  ],
+  "runs": [
+    "01M7X0AJMA4TWR10DQN35AMMK1",
+    "01M7X0AJXBME4D9ZY5YQNHKXDT",
+    "01M7X0DT5H3E9PN4PNJQB80BTB"
+  ],
+  "review_rounds": 1,
+  "next_finding": 0,
+  "review_decided": 1
+}

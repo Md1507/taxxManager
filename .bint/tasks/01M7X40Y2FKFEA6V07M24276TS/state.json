@@ -1,0 +1,237 @@
+{
+  "schema": 1,
+  "id": "01M7X40Y2FKFEA6V07M24276TS",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-20T18:38:11Z",
+  "updated_at": "2026-11-20T18:55:50Z",
+  "base": "d04e58bc1590145b348ba22be71596c089eb0504",
+  "reason": "Hoàn tất S11: Core và tests theo Bước1.1, mọi AC có bằng chứng, review vòng2 sạch, hai lệnh test27/27; pháp lý seed Unverified được ghi rõ trong handoff.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "standard",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-20T18:38:11Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-20T18:42:12Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-20T18:42:12Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T18:47:36Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-20T18:51:29Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 5 chưa được đối chiếu; tiêu chí 7 chưa được đối chiếu; xử lý xong thì `bint run resume 01M7X40Y2FKFEA6V07M24276TS`"
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "at": "2026-11-20T18:51:50Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa hai phát hiện review tài liệu, đồng bộ bằng chứng kiểm thử sau khi đã cấp dependency; không thay thuật toán."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T18:53:45Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-20T18:55:50Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn tất S11: Core và tests theo Bước1.1, mọi AC có bằng chứng, review vòng2 sạch, hai lệnh test27/27; pháp lý seed Unverified được ghi rõ trong handoff."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "docs/decisions/0002-core-monthly-tax.md mô tả API, lệnh, ba phép tính đối chiếu, tình trạng pháp lý và lỗi restore thực tế.",
+      "by": "agent",
+      "at": "2026-11-20T18:47:17Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet sln TaxManager.sln list liệt kê đúng hai project; csproj Core net10.0 không PackageReference, Tests tham chiếu Core và xUnit; Core build thành công.",
+      "by": "agent",
+      "at": "2026-11-20T18:47:17Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.cs chứa seed decimal khớp PLAN, status Unverified và kiểm tra biểu; Core build thành công; smoke PIT 10 ca đạt.",
+      "by": "agent",
+      "at": "2026-11-20T18:47:17Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Calculators.cs tính từng bậc decimal không round, clamp và validation; Core build thành công; chương trình đối chứng tạm đạt 10 PIT và 4 lương.",
+      "by": "agent",
+      "at": "2026-11-20T18:47:17Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "TaxRuleSet.cs/Calculators.cs giữ metadata bất biến, kiểm URL Verified và tham chiếu rule/basis theo khoản; smoke xác nhận sửa collection không đổi kết quả; test mapping bổ sung đã viết, chờ restore.",
+      "by": "agent",
+      "at": "2026-11-20T18:47:17Z"
+    },
+    {
+      "index": 6,
+      "met": false,
+      "evidence": "Review vòng1 còn hai phát hiện về thiếu nguồn pháp lý bổ sung và trạng thái test lỗi thời; implementer cần sửa docs0002 trước finalize.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T18:51:50Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet sln TaxManager.sln list: đúng Core và Core.Tests; hai csproj net10.0, Core không PackageReference, Tests tham chiếu Core và xUnit.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:26Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.cs:98-110 và RuleTests.cs:12-19 kiểm seed decimal theo PLAN, Unverified; validation và thuật toán dùng rule truyền vào.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:28Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Calculators.cs:14-50 và CalculatorTests.cs:8-58 kiểm các ca số học, chặn âm, validation; Core.Tests 27 passed.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:29Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "TaxRuleSet.cs và Calculators.cs gắn metadata và snapshot; RuleTests.cs kiểm mapping, collection, Missing/Unverified và URL; Core.Tests 27 passed.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:31Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "SDK local dotnet test Core.Tests và dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1 đều exit 0, 27 passed, 0 failed, 0 skipped; CalculatorTests.cs và RuleTests.cs.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:33Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "docs/decisions/0002-core-monthly-tax.md:3-42 ghi API, ba ví dụ, kết quả test, ba PDF và nguồn chính thức; seed Unverified, đối chiếu pháp lý và người dùng tự kiểm chưa hoàn tất.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:34Z"
+    },
+    {
+      "index": 7,
+      "met": false,
+      "evidence": "Review vòng 1 còn hai phát hiện tài liệu đang mở; docs/decisions/0002-core-monthly-tax.md:7-13,42 đã sửa nội dung nhưng cần reviewer độc lập xác nhận xử lý. Không sửa source hay tệp ngoài phạm vi trong lượt này.",
+      "by": "agent",
+      "at": "2026-11-20T18:53:36Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Review vòng2: 0 findings, hai phát hiện vòng1 đã xử lý; đúng8 tệp trong scope. PLAN SHA256 24C8613968B7B5F3CF5A7A68B07AB4307D0935F52EB2A6C058070B6F3AE19953 và config SHA256 1DCA80D30C76A7528DD1A59F5CAC16F1748BE64D693B50D5DDE5FF616F59E147 giữ nguyên; git diff --exit-code cho các tệp setupS0 exit0. Root và reviewer đều kiểm project/solution27 passed,0 failed,0 skipped. Seed Unverified, không mở rộng Web/Data/kinh doanh.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T18:55:49Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "dotnet new bị từ chối ghi hồ sơ mặc định C:/Users/LENOVO/.dotnet; dùng DOTNET_CLI_HOME trong thư mục temp được phép.",
+      "at": "2026-11-20T18:43:06Z",
+      "by": "agent",
+      "run_id": "01M7X489PGJ0EH7KSPY7ZX9T1S"
+    },
+    {
+      "step": "b-feat",
+      "message": "Build Core bị sandbox từ chối đọc NuGet.Config trong AppData/Roaming; dùng config tạm trong TEMP.",
+      "at": "2026-11-20T18:44:17Z",
+      "by": "agent",
+      "run_id": "01M7X489PGJ0EH7KSPY7ZX9T1S"
+    },
+    {
+      "step": "b-feat",
+      "message": "Restore Core.Tests thất bại NU1301: api.nuget.org kết nối 127.0.0.1:9 bị từ chối; cần dependency xunit 2.9.3, xunit.runner.visualstudio 3.1.4, Microsoft.NET.Test.Sdk 17.14.1 và phụ thuộc từ phiên có mạng.",
+      "at": "2026-11-20T18:46:26Z",
+      "by": "agent",
+      "run_id": "01M7X489PGJ0EH7KSPY7ZX9T1S"
+    }
+  ],
+  "runs": [
+    "01M7X40ZXFJZ85YW2SRC4KFAY4",
+    "01M7X4103VZZC1VHY4EVJ45XCN",
+    "01M7X489PGJ0EH7KSPY7ZX9T1S",
+    "01M7X4J649AAJPFMB2F9PE0M71",
+    "01M7X4SYGF1APBWAKGQEEXH7Y6",
+    "01M7X4SYPPGQ2DB7DPBGQ21AAQ",
+    "01M7X4XRCJXXXMRAQGEMP86F40",
+    "01M7X4XRJQVF4MEW0R5AQCR0YK"
+  ],
+  "review_rounds": 2,
+  "depends_on": [
+    "01M7X1P1ED7J4C8Q1HSZRB09XQ"
+  ],
+  "next_finding": 2,
+  "artifacts": {
+    "plan": "2026-11-20T18:41:54Z",
+    "requirement": "2026-11-20T18:41:15Z",
+    "tasks": "2026-11-20T18:41:51Z"
+  },
+  "review_decided": 1
+}

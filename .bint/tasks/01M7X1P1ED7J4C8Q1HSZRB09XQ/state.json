@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "id": "01M7X1P1ED7J4C8Q1HSZRB09XQ",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-20T17:57:17Z",
+  "updated_at": "2026-11-20T18:14:07Z",
+  "reason": "S0 BL-00/BL-01 hoàn tất: SDK local đã xác minh/cài, pin/ignore/helper/docs đạt kiểm setup, review vòng2 không phát hiện, đủ5 tiêu chí có bằng chứng.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "standard",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-20T17:57:17Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-20T18:01:16Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-20T18:01:16Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T18:03:49Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-20T18:06:00Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 5 chưa được đối chiếu; tiêu chí 1 chưa đạt; tiêu chí 2 chưa đạt; tiêu chí 4 chưa đạt; xử lý xong thì `bint run resume 01M7X1P1ED7J4C8Q1HSZRB09XQ`"
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "at": "2026-11-20T18:07:10Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Nguyên nhân chặn tải SDK đã xử lý: có ZIP Microsoft local đã xác minh SHA512; tiếp tục b-feat và review phần còn lại."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T18:10:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-20T18:14:08Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S0 BL-00/BL-01 hoàn tất: SDK local đã xác minh/cài, pin/ignore/helper/docs đạt kiểm setup, review vòng2 không phát hiện, đủ5 tiêu chí có bằng chứng."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "docs/decisions/0001-dev-setup.md và scripts/dev/activate-dotnet.ps1 đã tạo; PowerShell kiểm nhánh thiếu SDK báo lỗi và giữ nguyên PATH/DOTNET_ROOT. Chưa kiểm lệnh cài, kích hoạt và khôi phục với SDK thật do sandbox chặn mạng.",
+      "by": "agent",
+      "at": "2026-11-20T18:03:22Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "Chưa có SDK local nên chưa tạo global.json và chưa thể xác minh dotnet --version khớp SDK đã cài.",
+      "by": "agent",
+      "at": "2026-11-20T18:03:22Z"
+    },
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "Sandbox từ chối kết nối Invoke-RestMethod tới builds.dotnet.microsoft.com; Test-Path .dotnet trả False, SDK chưa cài. Metadata Microsoft qua web xác nhận 10.0.404 win-x64 và hash. git --version 2.47.1.windows.2; code --version 1.146.0 x64.",
+      "by": "agent",
+      "at": "2026-11-20T18:03:22Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Tại root: git check-ignore --no-index -q từng đường dẫn: 10/10 SDK, bin, obj, .vs, *.user, TestResults, coverage, secrets, .env bị ignore; 8/8 source, tests, global.json, .env.example root/lồng, appsettings mẫu và .vscode/settings.json không bị ignore. So khối Bint bằng PowerShell: nguyên vẹn.",
+      "by": "agent",
+      "at": "2026-11-20T18:03:38Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Get-FileHash ZIP local SHA512 khớp 330ddd2665b43cd2e428216a0d8ea1ac7bb19b5434fdc530e62010dc3b52823a620bf95489d628e1ed6f5122401793ee4887cca4a019122361a1231497f632ee; Expand-Archive thành công; .dotnet/dotnet.exe --info báo SDK 10.0.404, win-x64, host x64, base path .dotnet/sdk/10.0.404; --list-sdks liệt kê 10.0.404, mã thoát 0. Git 2.47.1 và VS Code 1.146.0 x64 được ghi nhận trước đó và trong docs.",
+      "by": "agent",
+      "at": "2026-11-20T18:10:09Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "global.json đọc qua ConvertFrom-Json xác nhận version 10.0.404, rollForward latestPatch, allowPrerelease false; từ root host tuyệt đối và dotnet sau dot-source helper đều --version 10.0.404, Get-Command trỏ .dotnet/dotnet.exe; exit 0.",
+      "by": "agent",
+      "at": "2026-11-20T18:10:10Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "git check-ignore --no-index kiểm SDK, bin, obj, .vs, user, TestResults, coverage, secrets, .env đều bị ignore; source, tests, global.json, .env.example root/lồng và appsettings mẫu không bị ignore. Khối Bint được đối chiếu nguyên vẹn trong review trước; kiểm lại SDK và các đường dẫn chính exit 0.",
+      "by": "agent",
+      "at": "2026-11-20T18:10:10Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "docs/decisions/0001-dev-setup.md ghi nguồn/hash, curl và ZIP có sẵn, cài, kích hoạt và TaxManager.sln; Get-FileHash và Expand-Archive đã chạy thành công. PowerShell dot-source helper hai lần PATH không lặp, gọi từ TEMP đúng root, -Deactivate khôi phục PATH/DOTNET_ROOT; exit 0. Kiểm nhánh thiếu SDK trước đó báo rõ và không đổi môi trường. Bước curl online chưa chạy trong sandbox.",
+      "by": "agent",
+      "at": "2026-11-20T18:10:10Z"
+    },
+    {
+      "index": 5,
+      "met": false,
+      "evidence": "PLAN.md và .bint/config.yml SHA256 khớp mốc kế hoạch; git status và danh sách root không có solution/project/src/tests hoặc debug.log; các tiêu chí 1-4 có bằng chứng. Review vòng đầu không có lỗi nghiêm trọng được chứng minh, nhưng review độc lập sau các thay đổi SDK/global.json/tài liệu mới chưa thực hiện; chờ b-review.",
+      "by": "agent",
+      "at": "2026-11-20T18:10:10Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Review vòng 2 bằng Codex gpt-6.1-sol: 0 phát hiện, xác nhận debug.log cũ đã xử lý. bint task diff --stat chỉ có .gitignore, global.json, scripts/dev/activate-dotnet.ps1 và docs/decisions/0001-dev-setup.md; PLAN.md/config SHA256 khớp mốc trước sửa, không tạo solution/src/tests. SDK host local --version được orchestrator kiểm độc lập trả 10.0.404. Các AC1-4 đã có bằng chứng thành công mới nhất.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T18:14:07Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Invoke-RestMethod metadata Microsoft gagal: sandbox menolak koneksi; SDK belum diunduh atau diinstal.",
+      "at": "2026-11-20T18:02:14Z",
+      "by": "agent",
+      "run_id": "01M7X1XAVSE47RBA7WR1CZXEJ3"
+    }
+  ],
+  "runs": [
+    "01M7X1PSPJVTR93A1ZKZ9NP89R",
+    "01M7X1PSXZ3X18SRJYBARCCC13",
+    "01M7X1XAVSE47RBA7WR1CZXEJ3",
+    "01M7X220V3BQSACS7PB78268BT",
+    "01M7X285W6CV7DGQ8AW1ZEQ859",
+    "01M7X2862GRNT0R9XNXMA2T3KV",
+    "01M7X2EZXJSXZXYGNM6EH85WQS",
+    "01M7X2F059E416YEBCF7S4WDSG"
+  ],
+  "review_rounds": 2,
+  "next_finding": 1,
+  "artifacts": {
+    "plan": "2026-11-20T18:00:25Z",
+    "requirement": "2026-11-20T17:59:23Z",
+    "tasks": "2026-11-20T18:01:02Z"
+  },
+  "review_decided": 1
+}

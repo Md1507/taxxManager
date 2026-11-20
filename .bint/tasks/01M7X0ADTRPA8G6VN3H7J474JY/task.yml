@@ -1,0 +1,33 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7X0ADTRPA8G6VN3H7J474JY
+goal: Bổ sung Contextual Legal Citation và quy trình dùng Codex vào PLAN.md
+request: |-
+  Chỉ cập nhật PLAN.md của dự án theo bổ sung trực tiếp của người dùng: phát triển hoàn toàn bằng Codex và thêm tính năng Trích dẫn pháp lý theo ngữ cảnh (Contextual Legal Citation). Không xây kho luật toàn văn.
+
+  Bổ sung một mục đặc tả ngắn và tích hợp các đầu việc liên quan vào đúng giai đoạn của roadmap hiện có, kèm dòng tiến độ nếu cần: metadata căn cứ cho từng quy tắc/công thức (id ổn định, điểm/khoản/điều/số văn bản, giải thích 2-3 câu, URL văn bản gốc vbpl.vn, phiên bản/kỳ/ngày áp dụng, trạng thái và ngày xác minh); kết quả tính giữ liên kết đến đúng căn cứ đã sử dụng; metadata không buộc Core phụ thuộc Web/DB; lưu cùng phiên bản TaxRuleSet khi thêm DB; UI đặt nút ? cạnh từng kết quả để mở khung giải thích ngắn và link gốc, dùng được bằng bàn phím và trên mobile. Không tự gọi mạng trong đường tính thuế. Thể hiện trường hợp thiếu căn cứ/chưa xác minh mà không tạo nguồn giả.
+
+  Ghi ví dụ UX do người dùng cung cấp: thu nhập vãng lai 2.500.000đ, khấu trừ minh họa 250.000đ (10%); phần giải thích nói đến cá nhân cư trú không ký hợp đồng hoặc hợp đồng dưới 03 tháng, khoản chi từ 2.000.000đ/lần; người dùng dẫn điểm i khoản 1 Điều 25 Thông tư 111/2013/TT-BTC. Đánh dấu rõ ví dụ này cần đối chiếu văn bản gốc và hiệu lực theo kỳ trước khi hiện thực, không xác nhận là luật hiện hành. URL chi tiết trên vbpl.vn phải được xác minh trước khi nạp dữ liệu thật; đừng tự bịa itemid. Không cần tra cứu hay xác thực luật trong tác vụ tài liệu này.
+
+  Bổ sung acceptance/checklist có thể kiểm chứng: mỗi thành phần kết quả có căn cứ đúng rule/kỳ; nút ? hiển thị 2-3 câu và link gốc; các ca thay đổi kỳ chọn đúng phiên bản, thiếu nguồn, URL sai và thao tác bàn phím/mobile. Chỉ lập kế hoạch cho chức năng, không tạo source code hoặc solution, không cài công cụ hay commit. Giữ các nội dung và thứ tự cũ, trừ bổ sung cần thiết. Đây là cập nhật tài liệu nên không chạy dotnet test (chưa có solution).
+
+  Đối chiếu các tiêu chí bằng bint task criteria với bằng chứng PLAN.md:dòng để Bint có thể hoàn thành tác vụ tài liệu không cần verify.command. Không chạy task approve và không tự sửa tệp state. b-review đọc diff riêng của tác vụ.
+verify:
+  command: ""
+  criteria:
+    - PLAN.md mô tả nút ? cạnh kết quả, giải thích 2-3 câu và liên kết văn bản gốc vbpl.vn; không xây kho luật toàn văn.
+    - Roadmap có metadata căn cứ theo rule và kỳ/phiên bản, mapping kết quả, lưu dữ liệu, UI và kiểm thử tương ứng, giữ Core độc lập Web/DB.
+    - Ví dụ vãng lai 2.500.000đ khấu trừ 250.000đ và tham chiếu điểm i khoản 1 Điều 25 Thông tư 111/2013/TT-BTC được đánh dấu minh họa chờ xác minh; không bịa URL hay xác nhận luật hiện hành.
+    - Tài liệu ghi phát triển bằng Codex, giữ các bước cũ; chỉ PLAN.md thay đổi, không tạo mã ứng dụng.
+scope:
+  allow:
+    - PLAN.md
+  deny:
+    - src/**
+    - tests/**
+references:
+  - PLAN.md
+constraints:
+  - Chỉ sửa PLAN.md; không code tính năng, không commit, không thay cấu hình Codex của người dùng.
+autonomy: ask_on_protected

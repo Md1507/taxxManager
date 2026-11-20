@@ -1,0 +1,97 @@
+# Do Bint quản lý: phiên bản skill gốc đang dùng (mục 6.6). Không sửa tay;
+# tuỳ biến theo dự án đặt trong .bint/skills/overlays/ (lớp phủ) hoặc .bint/skills/<tên>/ (skill tuỳ biến)
+# rồi chạy `bint sync`.
+bint_version: 0.1.0-dev
+bint_revision: dd6541d2616eb05dc021ffdb0bc4fdb070523135
+bint_revision_time: "2026-11-16T15:26:49Z"
+skills:
+  b-add-flow:
+    sha256: 8f3fc4c9f47c552f
+    published:
+      - .agents/skills/b-add-flow/SKILL.md
+      - .claude/skills/b-add-flow/SKILL.md
+    variants:
+      agents: c4c6159681bc42d3
+  b-add-skill:
+    sha256: 9f396a31b854d2cc
+    published:
+      - .agents/skills/b-add-skill/SKILL.md
+      - .claude/skills/b-add-skill/SKILL.md
+    variants:
+      agents: 802d97cd6d2a01e5
+  b-bootstrap:
+    sha256: f04b7c3f6a65b7ce
+    published:
+      - .agents/skills/b-bootstrap/SKILL.md
+      - .claude/skills/b-bootstrap/SKILL.md
+    variants:
+      agents: a9fa9899d0d8addc
+  b-debug:
+    sha256: 864e4b503936d0c4
+    published:
+      - .agents/skills/b-debug/SKILL.md
+      - .claude/skills/b-debug/SKILL.md
+    variants:
+      agents: f2b29ca509e142d6
+  b-do:
+    sha256: 04a7f05ad0333ffa
+    published:
+      - .agents/skills/b-do/SKILL.md
+      - .claude/skills/b-do/SKILL.md
+    variants:
+      agents: dcd461faa5c8c1f1
+  b-feat:
+    sha256: 2d2573aae4a19512
+    published:
+      - .agents/skills/b-feat/SKILL.md
+      - .claude/skills/b-feat/SKILL.md
+    variants:
+      agents: 70646cf84435de81
+  b-fix:
+    sha256: 3134a8c1195539c7
+    published:
+      - .agents/skills/b-fix/SKILL.md
+      - .claude/skills/b-fix/SKILL.md
+    variants:
+      agents: 183a804ea303fb3b
+  b-knowledge:
+    sha256: e68587a1f0d9e429
+    published:
+      - .agents/skills/b-knowledge/SKILL.md
+      - .claude/skills/b-knowledge/SKILL.md
+    variants:
+      agents: ebe972afe95bc91f
+  b-repro:
+    sha256: 91f25768d2371ad2
+    published:
+      - .agents/skills/b-repro/SKILL.md
+      - .claude/skills/b-repro/SKILL.md
+    variants:
+      agents: b43f900e7803026a
+  b-req:
+    sha256: 7a344db90c8c0ae5
+    published:
+      - .agents/skills/b-req/SKILL.md
+      - .claude/skills/b-req/SKILL.md
+    variants:
+      agents: db33d90fae75fbea
+  b-review:
+    sha256: 6343c1d1c1b8b8f3
+    published:
+      - .agents/skills/b-review/SKILL.md
+      - .claude/skills/b-review/SKILL.md
+    variants:
+      agents: d5dd778d358814dc
+agents:
+  bint-implementer:
+    sha256: 0100c78c477c64c7
+    published:
+      - .claude/agents/bint-implementer.md
+  bint-planner:
+    sha256: d5b58b3df33a11db
+    published:
+      - .claude/agents/bint-planner.md
+  bint-reviewer:
+    sha256: dcf291864ee3f8b0
+    published:
+      - .claude/agents/bint-reviewer.md
