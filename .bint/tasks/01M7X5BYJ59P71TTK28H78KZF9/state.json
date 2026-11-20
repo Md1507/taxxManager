@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "id": "01M7X5BYJ59P71TTK28H78KZF9",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-20T19:01:41Z",
+  "updated_at": "2026-11-20T19:16:03Z",
+  "base": "7a4f622ca01d344ee56650db68b399bbd91ed133",
+  "reason": "b-do finalize",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "standard",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-20T19:01:41Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-20T19:05:29Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "blocked",
+      "at": "2026-11-20T19:05:29Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "còn 1 câu hỏi mở trong requirement.md: Q-1: Với kỳ tính thuế 2025, ngưỡng thu nhập tính thuế theo tháng của 7 bậc (kèm thuế suất tương ứng), mức giảm trừ bản thân và mỗi người phụ thuộc là bao nhiêu theo nguồn chính thức bạn đã tra; vui lòng gửi số liệu và nguồn áp dụng 2025 đang chờ để root chuyển qua Bint? — ghi câu trả lời (`- [x] Q-N: … — Trả lời: …`) bằng `bint task write 01M7X5BYJ59P71TTK28H78KZF9 requirement -`, kiểm bằng `bint task lint 01M7X5BYJ59P71TTK28H78KZF9`, rồi `bint run resume 01M7X5BYJ59P71TTK28H78KZF9`"
+    },
+    {
+      "from": "blocked",
+      "to": "planned",
+      "at": "2026-11-20T19:05:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-20T19:07:49Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-20T19:11:28Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-20T19:13:18Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 5 chưa được đối chiếu; xử lý xong thì `bint run resume 01M7X5BYJ59P71TTK28H78KZF9`"
+    },
+    {
+      "from": "blocked",
+      "to": "in_review",
+      "at": "2026-11-20T19:14:08Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-20T19:16:03Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-do finalize"
+    }
+  ],
+  "criteria": [
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.cs:97-112 dùng Q-1, decimal, căn cứ giảm trừ và bảng riêng, Unverified; Vietnam2025Tests.SeedReflectsUserSuppliedDataAndSeparateSources passed.",
+      "by": "agent",
+      "at": "2026-11-20T19:11:12Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "TaxRuleProvider.cs:3-52 đăng ký trọn tháng, chọn năm/tháng/ngày không fallback; test project 39 passed; Calculators.cs không đổi.",
+      "by": "agent",
+      "at": "2026-11-20T19:11:12Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "TaxRuleProviderTests xác nhận biên, gap, overlap, duplicate, range, snapshot và basis; dotnet test project 39 passed, 0 failed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-20T19:11:12Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "dotnet test project và TaxManager.sln --no-restore --disable-build-servers -m:1 đều exit 0, 39 passed, 0 failed/skipped; Vietnam2025Tests kiểm expected độc lập, biên kỳ; 27 case cũ không sửa.",
+      "by": "agent",
+      "at": "2026-11-20T19:11:12Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Docs0003 ghi API, exception, nguồn bảng do người dùng cung cấp riêng với nguồn bài báo giảm trừ, giới hạn Unverified và kết quả39/39. Review vòng1 của Codex gpt-6.1-sol:0 findings ở mọi mức. Root kiểm độc lập project và solution --no-restore --disable-build-servers -m:1: mỗi lệnh exit0,39passed,0failed,0skipped. Git diff --exit-code cho setup/config/PLAN/S11 calculators và hai tệp test cũ exit0; PLAN/config hash giữ nguyên. Không còn câu hỏi dữ liệu, Q1 đã được người dùng trả lời và ghi qua CLI.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-20T19:14:07Z"
+    }
+  ],
+  "runs": [
+    "01M7X5C6ANPJ268PPT9BW8PFVJ",
+    "01M7X5C6G92Z50SY56HAF179BX",
+    "01M7X5KQBS6M2DMN3AQ1DNS91K",
+    "01M7X5KQNMHFCA3P24CH9VM82P",
+    "01M7X5Q6YC9FX0GDVMQTNXYNB5",
+    "01M7X5XWGMRYNZQH0CNRBK4NMQ",
+    "01M7X62R5MZ6Z8G4CKJP62NBNT",
+    "01M7X62RG19W7KJ1ZPTA34QC22"
+  ],
+  "review_rounds": 2,
+  "depends_on": [
+    "01M7X40Y2FKFEA6V07M24276TS"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-20T19:07:32Z",
+    "requirement": "2026-11-20T19:07:32Z",
+    "tasks": "2026-11-20T19:07:33Z"
+  },
+  "review_decided": 2
+}

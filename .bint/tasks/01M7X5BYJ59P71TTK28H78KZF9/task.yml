@@ -1,0 +1,45 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7X5BYJ59P71TTK28H78KZF9
+goal: 'S12: Bộ quy tắc 2025 và chọn luật theo kỳ cho Core (Bước1.2)'
+request: |-
+  Người dùng yêu cầu bước tiếp theo sau S11 đã hoàn tất (commit2e303ed; hiệnHEAD7a4f622 đã commit cấu hình/ledger). Chỉ Bước1.2 trong PLAN.md, BL-20 của .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/tasks.md: thêm TaxRuleSet.Vietnam2025 và TaxRuleProvider chọn quy tắc theo năm/kỳ/ngày, test khác năm khác kết quả, năm/kỳ không hỗ trợ báo lỗi, căn cứ đúng phiên bản thực dùng. Đọc src/TaxManager.Core, tests/TaxManager.Core.Tests và docs/decisions/0002-core-monthly-tax.md. Phiên này chỉ điều phối; agent không commit.
+
+  Quan trọng: PLAN quy tắc5 và Bước1.2 yêu cầu người dùng tra và cung cấp ngưỡng7bậc và giảm trừ2025. Root đã gửi câu hỏi đang chờ người dùng; không tự trả lời, không coi hết thời gian chờ là đồng ý. Nguồn2026 họ đã gửi không tự thay cho dữ liệu2025. Có hướng dẫn chính thức https://xaydungchinhsach.chinhphu.vn/huong-dan-quyet-toan-thue-thu-nhap-ca-nhan-doi-voi-thu-nhap-tu-tien-luong-tien-cong-119260306092819051.htm để đối chiếu, nhưng chưa có dữ liệu2025 do người dùng cung cấp. Không tự điền số luật từ trí nhớ hoặc đánh dấu Verified. Có thể lập kế hoạch và triển khai phần độc lập bằng bộ quy tắc giả tùy biến trong lúc chờ; chưa tạo seed Vietnam2025 rỗng/0 hay giả làm luật thật và chưa báo hoàn tất Bước1.2. Nếu dữ liệu vẫn thiếu, planner ghi Q-1 rõ chỉ hỏi đúng số liệu2025 đang chờ; root chuyển câu trả lời qua Bint. Không hỏi lại SDK/model/phạm vi đã chốt.
+
+  Thiết kế gọn Core thuần C#, tiền decimal, giữ API/calculator S11 và27test cũ. TaxRuleProvider chọn tường minh đăng ký theo kỳ, không tự dùng rule gần nhất cho năm lạ, không suy ngày hiệu lực từ FromYear. Phân biệt kỳ tính thuế với ngày luật hiệu lực chung; không chọn luật2025 cho tháng01-06/2026 chỉ vì Luật109 hiệu lực chung01/07. Quy tắc2026 hiện vẫn Unverified và cần giữ trạng thái/metadata trung thực. Planner quyết định API tối thiểu hỗ trợ năm và ngày kỳ tháng; kiểm khoảng biên/gap/overlap/duplicate/range sai và snapshot không đổi khi collection đầu vào bị sửa, dùng fixture giả. Không biến thành framework versioning/DB/UI.
+
+  Nguồn đã có trong docs0002: Luật109/2025, CV1296/CT-NVT, TT87/2026 (Điều6 áp dụng nội dung lương cá nhân cư trú từ kỳ2026 và thay TT111), NĐ398/2026 và NĐ141/2026 liên quan kinh doanh/CIT không mở rộng vào engine lương. Metadata mỗi khoản đúng rule/version/period/basis; nạp2025 khi người dùng cung cấp thì lưu nguồn chính xác và Unverified cho đến đối chiếu đầy đủ, không bịa URL vbpl.vn/itemid. Không tự nâng seed2026 Verified.
+
+  Kiểm thử cần bao phủ cùng gross/insurance/dependents khác2025/2026 với expected tính riêng, biên31/12/2025-01/01/2026 và30/06-01/07/2026, năm ngoài hỗ trợ, gap/overlap/validation, metadata/snapshot và hồi quy27case. Không thêm package. SDK local .dotnet/dotnet.exe10.0.404; NuGet cache .dotnet/nuget-packages đủ xunit2.9.3, runner3.1.4, TestSdk17.14.1. Chạy project và solution --no-restore --disable-build-servers -m:1, DOTNET_CLI_HOME/APPDATA tạm nếu sandbox chặn hồ sơ. Không quét toàn .dotnet. verify.command giữ trống; chạy test như lệnh tác vụ, không approve. Ghi bằng chứng AC và docs/decisions/0003-rule-selection.md gồm API, nguồn, giới hạn, lệnh/kết quả test thật. Sau review sạch root commit riêng phạm vi.
+verify:
+  command: ""
+  criteria:
+    - 'AC-1: Hợp đồng chọn năm/kỳ rõ, không tự fallback năm lạ; phân biệt kỳ thuế và ngày hiệu lực, không đổi engineS11.'
+    - 'AC-2: Vietnam2025 được thêm sau khi có dữ liệu người dùng cung cấp với nguồn/kỳ/trạng thái đúng, số luật chỉ trong TaxRuleSet bằng decimal; không bịa nguồn hoặc Verified.'
+    - 'AC-3: Chọn đúng rule và căn cứ immutable theo kỳ/ngày; kiểm duplicate/overlap/gap/range không hợp lệ và năm ngoài hỗ trợ.'
+    - 'AC-4: Test số học độc lập khác2025/2026, biên ngày/kỳ và mapping/snapshot có ý nghĩa; project và toàn solution test xanh,27case cũ giữ nguyên.'
+    - 'AC-5: Docs0003 ghi API/quyết định/nguồn và kiểm thử thật, phạm vi đúng, review không còn lỗi nghiêm trọng; thiếu dữ liệu phải ghi chưa hoàn tất.'
+scope:
+  allow:
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/0003-rule-selection.md
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - TaxManager.sln
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+references:
+  - PLAN.md
+  - .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/tasks.md
+  - docs/decisions/0002-core-monthly-tax.md
+constraints:
+  - Chỉ Bước1.2; dữ liệu2025 cần người dùng cung cấp theo PLAN, đang có câu hỏi pending; không tự điền luật/chưa seed khi thiếu; không sửa setup/model/27case cũ, không commit trong child.
+  - 'Nguoi dung da tra loi bang link https://baochinhphu.vn/cai-cach-thue-thu-nhap-ca-nhan-nguoi-lao-dong-co-the-co-them-hang-chuc-trieu-dong-moi-nam-102261113121825969.htm . Root da doc toan bai: co giam tru cu11tr/4.4tr/thang, nguong bac1cu5tr va cao nhat80tr, co2vi du cu (sauBH25tr,1NPT=>TNTT9.6tr/PIT710k; sauBH40tr,2NPT=>TNTT20.2tr/PIT2.39tr). KHONG co day du bang7bac cu. Co the ghi nguon giam tru va test vi du, nhung Q-1 van chua du phan nguong7bac. Root da hoi tiep dung phan bang7bac con thieu; khong hoi lai giam tru, khong tu dien cac nguong trung gian tu tri nho. Khong them yte/giaoduc ngoai S12. Luu nguon tham khao Unverified.'
+  - 'Nguoi dung da tra loi day du02:05 ngay21/11/2026: bang thang2025 bac1den5tr5%; bac2tren5den10tr10%; bac3tren10den18tr15%; bac4tren18den32tr20%; bac5tren32den52tr25%; bac6tren52den80tr30%; bac7tren80tr35%. Bang rut gon PIT=TNTT*rate - offset0/0.25/0.75/1.65/3.25/5.85/9.85tr; nguoi dung dan TT111/2013/TT-BTC cho phuong phap nay. Engine van tinh tung phan; offset chi doi chung, khong can luu them thong so engine. Giam tru2025 banthan11tr,NPT4.4tr/thang theo linkBaoChinhPhu ho da gui. Du du lieu Q-1 de them Vietnam2025; root se ghi cau tra loi requirement khi planner ket thuc. Khong duoc tu xem nguoi dung da xac minh toan bo van ban/hay Verified. Luu metadata nguon BaoChinhPhu/thongtin nguoi dung; TT111 Dieu22/Dieu7 neu chua doi chieu thi khong bia pinpoint/URLvbpl. Tiep tuc implementation sau root giai dapQ1, khong can hoi lai bang.'
+autonomy: ask_on_protected

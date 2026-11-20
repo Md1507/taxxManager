@@ -94,6 +94,23 @@ public sealed class TaxRuleSet
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
     }
 
+    // User-supplied 2025 figures; not yet fully verified against original legislation.
+    public static TaxRuleSet Vietnam2025 { get; } = CreateVietnam2025();
+    private static TaxRuleSet CreateVietnam2025()
+    {
+        const string period = "2025 monthly tax period";
+        var deduction = new LegalBasis(VerificationStatus.Unverified, id: "2025-deductions", version: "user-reference-1",
+            summary: "Former personal and dependent deductions reported by Bao Chinh phu; not fully legally verified.",
+            sourceUrl: "https://baochinhphu.vn/cai-cach-thue-thu-nhap-ca-nhan-nguoi-lao-dong-co-the-co-them-hang-chuc-trieu-dong-moi-nam-102261113121825969.htm", period: period);
+        var brackets = new LegalBasis(VerificationStatus.Unverified, id: "2025-brackets", version: "user-reference-1",
+            documentNumber: "111/2013/TT-BTC", summary: "Monthly brackets supplied by user citing TT111; original text not fully checked.", period: period);
+        return new TaxRuleSet("vietnam-2025-reference", "1", period, 2025, 11_000_000m, 4_400_000m,
+            [new(5_000_000m, .05m, brackets), new(10_000_000m, .10m, brackets),
+             new(18_000_000m, .15m, brackets), new(32_000_000m, .20m, brackets),
+             new(52_000_000m, .25m, brackets), new(80_000_000m, .30m, brackets), new(null, .35m, brackets)],
+            deduction, deduction, LegalBasis.Missing, brackets);
+    }
+
     // PLAN data only; FromYear is a label, not a legal effective date.
     public static TaxRuleSet Vietnam2026 { get; } = CreateVietnam2026();
     private static TaxRuleSet CreateVietnam2026()
