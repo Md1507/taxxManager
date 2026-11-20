@@ -1,0 +1,30 @@
+# bint:begin
+.bint/local.yml
+.claude/settings.local.json
+.codex/hooks.json
+.agents/hooks.json
+# bint:end
+
+# .NET SDK and build output
+/.dotnet/
+[Bb]in/
+[Oo]bj/
+
+# IDE and test output
+.vs/
+*.user
+*.suo
+TestResults/
+coverage*.xml
+coverage*.json
+*.coverage
+*.coveragexml
+
+# Local secrets (keep safe examples)
+secrets/
+.env
+.env.*
+!.env.example
+!.env.sample
+appsettings.Local.json
+appsettings.*.local.json
