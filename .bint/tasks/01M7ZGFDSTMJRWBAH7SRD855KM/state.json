@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "id": "01M7ZGFDSTMJRWBAH7SRD855KM",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T16:54:18Z",
+  "updated_at": "2026-11-21T17:22:04Z",
+  "base": "a61c543564c96e30e33cc85e9b915beacf9da481",
+  "reason": "Hoàn tất S15d: AC1–8 đủ bằng chứng, review vòng2 xác nhận sửa hai điểm cũ và không lỗi mới; Core+solution143/143. Usertựcommit, nguồnUnverified.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T16:54:18Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T17:01:21Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T17:01:31Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T17:11:42Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T17:15:53Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa trích dẫn Điều68 và cô lập test overflow theo review vòng1."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T17:18:01Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T17:22:04Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn tất S15d: AC1–8 đủ bằng chứng, review vòng2 xác nhận sửa hai điểm cũ và không lỗi mới; Core+solution143/143. Usertựcommit, nguồnUnverified."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "MultipleSalaryPayers.cs:5-96 va MultipleSalaryPayersTests.cs: InputGuardsHaveValidControls, MissingAndMismatchedYearInputs, CollectionsAreCopiedAndFractionIsPreserved; Core 142 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:07Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "MultipleSalaryPayers.cs:112-145 tong hop payer/thang truoc mot lan AnnualSalaryCalculator; tests SimultaneousPayersDeductOnce, SwitchingAndZeroMonthsAreAnnualNotSumOfMonthlyTax, UnknownAndDuplicatesAreRejectedButActualCanExceedGross.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:08Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Tests SimultaneousPayersDeductOnce: BH 12 trieu, giam tru phu thuoc 37.2 trieu, PIT 6.48 trieu, nop thua 4.32 trieu hoac nop them 480000; OnePayerAndDependentPeriodsFollowAnnualRules.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:09Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "MultipleSalaryRuleTests: custom PIT 37.2 trieu, snapshot/version, basis va coverage guards, Missing/Unverified, deduction overflow; MultipleSalaryPayersTests: decimal 0.025 va overflow.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:11Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Core va solution SDK 10.0.404 no-restore deu 142 passed 0 failed 0 skipped gom 122 test cu; TaxRuleSet chi them optional property/factory; docs0009 ghi gioi han va trach nhiem caller.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:12Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "MultipleSalaryPayersTests va MultipleSalaryRuleTests kiem cac nhom simultaneous/switch/one payer/zero/dependents/insurance/actual/duplicate/invalid/custom/provenance/copy/overflow; Core va solution moi lenh 142 passed 0 failed 0 skipped SDK 10.0.404.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:14Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "docs/decisions/0009-multiple-salary-payers.md ghi API, vi du, can cu, pham vi va 142 tests; git status chi scope; HEAD a61c543564c96e30e33cc85e9b915beacf9da481, SHA256 index 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7.",
+      "by": "agent",
+      "at": "2026-11-21T17:11:15Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "MultipleSalaryRules.cs:59 Dieu 68 khoan 1,2,4, point null; MultipleSalaryRuleTests.cs:47-52 assert metadata, Unverified, VerifiedOn null va basis trong result; da doi chieu trang 56 ban ky; Core 143 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:17:52Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "MultipleSalaryPayersTests.cs:143 valid control BH 4e28+1 va hai thang 4e28 tran tong nam, moi thang tru duoc; giu test tran thang rieng. Core va solution SDK 10.0.404 no-restore moi lenh 143 passed, 0 failed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-21T17:17:52Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "docs0009 cap nhat Dieu 68 va 143 tests; git status chi scope allow, HEAD a61c543564c96e30e33cc85e9b915beacf9da481, SHA256 index 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7; chua stage/commit.",
+      "by": "agent",
+      "at": "2026-11-21T17:17:52Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "Review độc lập vòng2 Codex/gpt-6.1-sol run 01M7ZHVEAQ8CNB14H4N9DSJ42D: diff Bint 6 tệp +561/-1, đủ AC1–7, không phát hiện mới. Xác nhận .1 trích dẫn Điều68(1),(2),(4) và .2 fixture overflow tổng BH đã sửa nội dung; finding lịch sử chưa gắn fixed SHA vì user chưa commit, không có lỗi nghiêm trọng chưa xử lý. Reviewer chạy Core rồi solution SDK10.0.404 no-restore mỗi lệnh 143 passed, 0 failed/skipped, gồm122 test cũ. NguồnUnverified/VerifiedOn null, inputMissing; HEAD a61c543564c96e30e33cc85e9b915beacf9da481 và index SHA256 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7 nguyên, scope đúng S15d+ledger mới. User tựstage/commit, không gánSHAgiả.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T17:22:02Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Kiểm thử hẹp chưa biên dịch: target-typed new cho tham số params DependentPeriod[] không hợp lệ; sửa kiểu tường minh.",
+      "at": "2026-11-21T17:04:56Z",
+      "by": "agent",
+      "run_id": "01M7ZGWMQZKCKB57BRC1PB9P1H"
+    }
+  ],
+  "runs": [
+    "01M7ZGFJKW55BB233XCJJPVT12",
+    "01M7ZGFJX60SAF8DVNX7JM97ZG",
+    "01M7ZGWME5P0R4RADAGESR0774",
+    "01M7ZGWMQZKCKB57BRC1PB9P1H",
+    "01M7ZHGBWTVVZ5EJ3SWZMZJVS7",
+    "01M7ZHGC3SX9BCCGGQQ4BAR1JN",
+    "01M7ZHQ0YB6VTY171F61WFQV6A",
+    "01M7ZHQ19T8WZ26HDHVV6VZQ77",
+    "01M7ZHVE478J64NZW893FNV209",
+    "01M7ZHVEAQ8CNB14H4N9DSJ42D"
+  ],
+  "review_rounds": 2,
+  "depends_on": [
+    "01M7YTT7JTYQ91DH59N7E3YXVY"
+  ],
+  "next_finding": 2,
+  "artifacts": {
+    "plan": "2026-11-21T17:00:10Z",
+    "requirement": "2026-11-21T17:01:02Z",
+    "tasks": "2026-11-21T17:22:02Z"
+  }
+}

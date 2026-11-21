@@ -51,7 +51,10 @@ public sealed record AnnualSalaryResult(int Year, IReadOnlyList<SalaryMonthResul
     public decimal ExemptIncome => Months.Sum(m => m.ExemptIncome);
     public decimal ExtraTaxable => ExtraPaid - ExemptIncome;
     public decimal TaxableGrossIncome => GrossIncome - ExemptIncome;
-    public decimal TotalDeductions => Insurance + PersonalDeduction + DependentDeduction;
+    public CharitableContributionResult? ContributionDetails { get; init; }
+    public decimal EligibleCharitableContribution => ContributionDetails?.EligibleTotal ?? 0m;
+    public decimal IncomeReduction => ContributionDetails?.IncomeReduction ?? 0m;
+    public decimal TotalDeductions => Insurance + PersonalDeduction + DependentDeduction + EligibleCharitableContribution;
     public decimal RawTax => Pit.TotalTax.Value;
     public decimal AppliedTax => RawTax;
 }
@@ -65,6 +68,16 @@ public static class AnnualSalaryCalculator
         a.TaxableIncomeBasis == b.TaxableIncomeBasis && a.TaxBasis == b.TaxBasis && a.Brackets.SequenceEqual(b.Brackets);
 
     public static AnnualSalaryResult Calculate(int year, IEnumerable<SalaryMonthInput> months, IEnumerable<DependentPeriod> dependents, TaxRuleProvider provider)
+        => CalculateCore(year, months, dependents, provider, null);
+
+    public static AnnualSalaryResult Calculate(int year, IEnumerable<SalaryMonthInput> months, IEnumerable<DependentPeriod> dependents, TaxRuleProvider provider, CharitableContributionYearInput contributions)
+    {
+        ArgumentNullException.ThrowIfNull(contributions);
+        if (contributions.Year != year) throw new ArgumentException("Contribution year mismatch.");
+        return CalculateCore(year, months, dependents, provider, contributions);
+    }
+
+    private static AnnualSalaryResult CalculateCore(int year, IEnumerable<SalaryMonthInput> months, IEnumerable<DependentPeriod> dependents, TaxRuleProvider provider, CharitableContributionYearInput? contributions)
     {
         if (year is < 1 or > 9999) throw new ArgumentOutOfRangeException(nameof(year));
         ArgumentNullException.ThrowIfNull(months); ArgumentNullException.ThrowIfNull(dependents); ArgumentNullException.ThrowIfNull(provider);
@@ -134,9 +147,15 @@ public static class AnnualSalaryCalculator
         }
         decimal dependentDeduction = dependentMonths * annual.DependentMonthDeduction;
         decimal before = gross - exempt - insurance - annual.AnnualPersonalDeduction - dependentDeduction;
+        var contributionDetails = contributions is null ? null : CharitableContributionEvaluator.Evaluate(contributions, provider, before);
+        if (contributionDetails is not null)
+        {
+            var deductions = insurance + annual.AnnualPersonalDeduction + dependentDeduction + contributionDetails.EligibleTotal;
+            before = gross - exempt - deductions;
+        }
         decimal taxable = Math.Max(0, before); var pit = PitCalculator.Calculate(taxable, annual.TaxRules);
         decimal delta = pit.TotalTax.Value - withheld;
         return new(year, new ReadOnlyCollection<SalaryMonthResult>(results), annual, gross, insurance, annual.AnnualPersonalDeduction,
-            dependentDeduction, dependentMonths, before, taxable, pit, withheld, delta, Math.Max(0, delta), Math.Max(0, -delta), policy);
+            dependentDeduction, dependentMonths, before, taxable, pit, withheld, delta, Math.Max(0, delta), Math.Max(0, -delta), policy) { ContributionDetails = contributionDetails };
     }
 }

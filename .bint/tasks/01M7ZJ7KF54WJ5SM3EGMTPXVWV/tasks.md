@@ -1,0 +1,10 @@
+# Công việc
+- [x] TSK-1 [AC-1]: Tạo input năm, khoản đóng góp và evidence bất biến cùng validation scope/date/ID/enum và collection — xong khi: test mới chứng minh null/âm/default/lạ/sai năm/trùng bị reject, zero được nhận, Trim/Ordinal và copy/read-only đúng.
+- [x] TSK-2 [AC-2]: Đánh giá ba nhóm recipient và điều kiện/chứng từ theo OR, xuất eligible/reason/basis từng dòng — xong khi: từng nhóm và mỗi proof độc lập có control pass, từng điều kiện thiếu có line0 cùng lý do, hai proof không nhân khoản trừ.
+- [x] TSK-3 [AC-3]: Tích hợp overload annual và multiple từ input gốc, cập nhật đồng bộ kết quả năm — xong khi: literal E0/dưới/đúng/vượt thu nhập cho single/multiple khớp mọi trường, actual giữ nguyên, monthly trước charity, không thuế âm/trừ lặp/carryover.
+- [x] TSK-4 [AC-4]: Gắn rule/basis và factory mới trong TaxRuleSet, guard snapshot/kỳ/coverage/provenance và decimal — xong khi: custom tax/rule cùng H1/H2 dùng đúng snapshot/basis, missing/fallback bị chặn, input Missing/seed Unverified/null VerifiedOn và fraction/overflow được kiểm.
+- [x] TSK-5 [AC-5]: Bảo toàn API/seed/143 regression và ranh giới S15e, index/HEAD/staged S15d — xong khi: assertions/semantics cũ giữ nguyên, factories cũ không đổi, diff chỉ tệp cho phép, HEAD và SHA256 index khớp baseline, không thao tác stage/commit hay sửa phạm vi loại trừ.
+- [x] TSK-6 [AC-6]: Hoàn thiện ma trận test literal độc lập và chạy SDK/cache có sẵn — xong khi: đủ conditions/proof/date/ID/amount/income/multi/custom/provenance/copy/fraction/overflow với valid control từng invalid, Core rồi solution no-restore exit0 có count thật.
+- [x] TSK-7 [AC-7]: Viết docs0010 và đối chiếu bằng chứng AC1–7 trước review — xong khi: docs đủ API/result/công thức/phạm vi/kỳ/căn cứ/OR/no carryover/caller/ví dụ/count thật/user commit, task diff so snapshot staged S15d đúng scope và index/HEAD nguyên.
+- [x] TSK-8 [AC-8]: Reviewer độc lập thẩm định full diff/AC và root chốt bàn giao — xong khi: review sau AC1–7 hoàn chỉnh, test thực xanh, không lỗi nghiêm trọng chưa xử lý, root ghi bằng chứng/giới hạn nguồn Unverified và S15e chưa stage/commit.
+

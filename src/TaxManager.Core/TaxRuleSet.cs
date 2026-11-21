@@ -72,11 +72,13 @@ public sealed class TaxRuleSet
     public CashBonusRuleSet? CashBonusRules { get; }
     public SalaryExtraRuleSet? SalaryExtraRules { get; }
     public CasualWithholdingRuleSet? CasualWithholdingRules { get; }
+    public MultipleSalaryRuleSet? MultipleSalaryRules { get; }
+    public CharitableContributionRuleSet? CharitableContributionRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null, CasualWithholdingRuleSet? casualWithholdingRules = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null, CasualWithholdingRuleSet? casualWithholdingRules = null, MultipleSalaryRuleSet? multipleSalaryRules = null, CharitableContributionRuleSet? charitableContributionRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -100,6 +102,8 @@ public sealed class TaxRuleSet
         DependentDeductionBasis = dependentDeductionBasis ?? LegalBasis.Missing;
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
         InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules; SalaryExtraRules = salaryExtraRules; CasualWithholdingRules = casualWithholdingRules;
+        MultipleSalaryRules = multipleSalaryRules;
+        CharitableContributionRules = charitableContributionRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -121,6 +125,18 @@ public sealed class TaxRuleSet
 
     // PLAN data only; FromYear is a label, not a legal effective date.
     public static TaxRuleSet Vietnam2026 { get; } = CreateVietnam2026();
+    public static TaxRuleProvider CreateVietnam2026CharitableContributionProvider(InsuranceRegion region) => WithCharitableContributions(CreateVietnam2026AnnualSalaryProvider(region));
+    public static TaxRuleProvider CreateVietnam2026MultipleSalaryCharitableContributionProvider(InsuranceRegion region) => WithCharitableContributions(CreateVietnam2026MultipleSalaryProvider(region));
+    private static TaxRuleProvider WithCharitableContributions(TaxRuleProvider source)
+    {
+        var rules = CharitableContributionRuleSet.Vietnam2026();
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = source.GetForMonth(2026, month);
+            return new(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets, s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, s.CashBonusRules, s.SalaryExtraRules, s.CasualWithholdingRules, s.MultipleSalaryRules, rules);
+        }
+        return new([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
     public static TaxRuleProvider CreateVietnam2026AnnualSalaryProvider(InsuranceRegion region)
     {
         const string law = "https://xaydungchinhsach.chinhphu.vn/luat-thue-thu-nhap-ca-nhan-119260623093630882.htm";
@@ -146,6 +162,19 @@ public sealed class TaxRuleSet
                 personal, dependent, income, monthlyTax, s.InsuranceRules, s.RoundingPolicy, annual);
         }
         return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
+    public static TaxRuleProvider CreateVietnam2026MultipleSalaryProvider(InsuranceRegion region)
+    {
+        var source = CreateVietnam2026AnnualSalaryProvider(region);
+        var rules = MultipleSalaryRuleSet.Vietnam2026();
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = source.GetForMonth(2026, month);
+            return new(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets,
+                s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis,
+                s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, s.CashBonusRules, s.SalaryExtraRules, s.CasualWithholdingRules, rules);
+        }
+        return new([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
     }
     public static TaxRuleProvider CreateVietnam2026CashBonusProvider(InsuranceRegion region)
     {

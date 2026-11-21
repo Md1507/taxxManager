@@ -1,0 +1,46 @@
+{
+  "task_id": "01M7ZGFDSTMJRWBAH7SRD855KM",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-21T17:15:35Z",
+      "by": "agent",
+      "run_id": "01M7ZHGC3SX9BCCGGQQ4BAR1JN",
+      "base": "a61c543564c96e30e33cc85e9b915beacf9da481",
+      "summary": "Đã đọc bint task diff full/stat/name-only (6 tệp, +542/-1), đối chiếu AC1–7 và API S11–S15c; chưa thấy lỗi tính toán nghiêm trọng. Core rồi solution chạy SDK 10.0.404 no-restore đều exit 0, 142 passed/0 failed/0 skipped, gồm 122 test cũ không đổi. Có 1 bug metadata thấp và 1 suggestion thấp về cô lập test overflow. HEAD a61c543564c96e30e33cc85e9b915beacf9da481 và SHA256 index 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7 giữ nguyên; phạm vi đúng allow, không sửa mã/stage/commit. Đã mở URL PDF chính thức và xem trọn PNG trang 29,30,33,34,54,56,57 trong Temp để đối chiếu mapping mới. Seed vẫn Unverified/VerifiedOn null, caller Missing. Không xác minh hồ sơ/cư trú/độ đầy đủ sổ thực tế, không thẩm định toàn bộ hiệu lực pháp lý hoặc mọi seed cũ; AC8 do root chốt sau.",
+      "findings": [
+        {
+          "id": "01M7ZGFDSTMJRWBAH7SRD855KM.1",
+          "kind": "bug",
+          "severity": "low",
+          "title": "OverpaymentContextBasis chỉ sai khoản cho nội dung nộp thừa và thủ tục",
+          "path": "src/TaxManager.Core/MultipleSalaryRules.cs",
+          "lines": "59",
+          "evidence": "Vietnam2026 tạo basis overpayment với Article=68, Clause=1 nhưng Summary mô tả số nộp thừa và thủ tục. Trang 56 bản ký https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf: khoản 1 dẫn quy định quyết toán nói chung; khoản 2(a) là số đã nộp lớn hơn số phải nộp; khoản 4 là hồ sơ/thủ tục quyết toán và hoàn. Result giữ nguyên basis này, nên người đọc drill down theo Clause=1 không đến đúng căn cứ nộp thừa/thủ tục mà summary diễn giải. Không ảnh hưởng công thức PIT/delta.",
+          "body": "Gắn các khoản thực hỗ trợ nội dung, ví dụ Clause=1,2,4 (Point a chỉ gắn riêng khoản 2 nếu tách basis), hoặc dùng căn cứ ở cấp Điều 68 nếu contract cho phép; bổ sung assertion metadata tương ứng. Giữ Unverified và giới hạn không quyết định quyền hoàn.",
+          "criterion": 4
+        },
+        {
+          "id": "01M7ZGFDSTMJRWBAH7SRD855KM.2",
+          "kind": "suggestion",
+          "severity": "low",
+          "title": "Cô lập fixture tràn tổng bảo hiểm khỏi tràn phép trừ tháng",
+          "path": "tests/TaxManager.Core.Tests/MultipleSalaryPayersTests.cs",
+          "lines": "135-136",
+          "evidence": "Fixture đặt tháng 1 gross=0, insurance=decimal.MaxValue và tháng 2 insurance=1. AnnualSalaryCalculator gọi MonthlySalaryCalculator trước khi cộng insurance vào tổng năm; phép before=0-decimal.MaxValue-15_500_000 của tháng 1 đã ném OverflowException. Kiểm tra số học decimal trực tiếp cũng báo Value was either too large or too small for a Decimal. Vì Assert.Throws chỉ xét loại ngoại lệ, test này vẫn xanh dù chưa đến phép cộng BH tháng 2; nó không chứng minh riêng nhánh tràn tổng BH năm như mô tả chiến lược test.",
+          "body": "Dùng hai khoản BH mỗi tháng đủ nhỏ để tính tháng hợp lệ nhưng tổng năm vượt decimal.MaxValue, rồi có valid control chỉ giảm một khoản để cả phép tổng và kết quả không tràn. Có thể giữ fixture hiện tại như ca riêng kiểm tràn phép trừ tháng. Đây là đề xuất tăng độ chính xác bằng chứng kiểm thử, chưa phải lỗi mã tính thuế đã chứng minh.",
+          "criterion": 6
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-21T17:20:48Z",
+      "by": "agent",
+      "run_id": "01M7ZHVEAQ8CNB14H4N9DSJ42D",
+      "base": "a61c543564c96e30e33cc85e9b915beacf9da481",
+      "summary": "Review vòng 2: đã đọc bint task diff full/stat/name-only, 6 tệp +561/-1, đúng scope. Không có phát hiện mới (critical/high/medium/low đều 0). Đối chiếu AC1–7: input get-only/copy/read-only, đủ 12 tháng kể cả zero, duplicate payer-tháng và payment ID toàn năm, ngày/subject/amount/confirmation được kiểm; actual null bị từ chối theo ID, actual cao hơn gross/tax được giữ. Gross/actual cộng trước một lần AnnualSalaryCalculator; BH nhập tay cấp cá nhân/tháng và giảm trừ/lịch phụ thuộc dùng một lần. Snapshot đủ cả tháng zero; custom fixture PIT 37.200.000 và decimal PIT 0,025, provenance theo H1/H2, overflow được kiểm. Không đổi test cũ hay engine S11–S15c; chỉ thêm property/tham số trailing optional và factory TaxRuleSet. Docs0009 đúng API/phạm vi/trách nhiệm/count. Đã chạy Core rồi solution thực bằng SDK 10.0.404, --no-restore --disable-build-servers -m:1, DOTNET_ROOT/NUGET_PACKAGES dùng .dotnet và DOTNET_CLI_HOME tạm; mỗi lệnh exit 0, 143 passed, 0 failed, 0 skipped, gồm 122 test cũ.\nXác nhận nội dung sửa của finding 01M7ZGFDSTMJRWBAH7SRD855KM.1: MultipleSalaryRules.cs:59 dùng Article=68, Clause=1,2,4, Point=null; MultipleSalaryRuleTests.cs:47-52 assert metadata, Unverified/VerifiedOn null và cùng basis trong result. Đã mở URL chính thức https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf và xem trọn PNG trang29,30,33,34,54,56,57 có sẵn trong Temp; mapping Điều68 phù hợp nội dung trang56. Finding .2: MultipleSalaryPayersTests.cs:143-153 có control BH 4e28+1 tính được và variant 4e28+4e28 tràn tổng năm; từng phép trừ tháng vẫn trong miền decimal, gross/actual/NPT đều0; giữ ca tràn tháng riêng. Hai điểm vòng1 đã được xử lý trong nội dung hiện tại; không gọi findings set fixed hoặc gán SHA khi chưa commit.\nHEAD a61c543564c96e30e33cc85e9b915beacf9da481 và SHA256 index 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7 giữ nguyên; status chỉ các tệp allow và ledger tác vụ mới. Diff dùng object directory tạm vì sandbox không ghi .git/objects; không sửa mã, stage, commit, approve, verify hay status tác vụ. Không phát hiện vấn đề nghiêm trọng không phải bảo đảm an toàn: chưa xác minh cư trú/chứng từ/độ đầy đủ hoặc trùng ẩn trong sổ thực tế, chưa thẩm định toàn bộ hiệu lực pháp lý và mọi seed cũ; nguồn vẫn Unverified/VerifiedOn null, input Missing. AC8 và chuyển trạng thái do root/Bint Core chốt sau.",
+      "findings": []
+    }
+  ]
+}

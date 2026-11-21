@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "id": "01M7ZJ7KF54WJ5SM3EGMTPXVWV",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T17:24:58Z",
+  "updated_at": "2026-11-21T17:48:02Z",
+  "base": "a61c543564c96e30e33cc85e9b915beacf9da481",
+  "reason": "Hoàn tất S15e: AC1–8 đủ bằng chứng; review độc lập không finding; Core+solution169/169. NguồnUnverified, S15e chưastage/commit và indexS15d nguyên.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T17:24:58Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T17:30:06Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T17:30:48Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T17:41:12Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T17:41:58Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn thiện AC6/7 còn thiếu trước review độc lập."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T17:44:32Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T17:48:02Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn tất S15e: AC1–8 đủ bằng chứng; review độc lập không finding; Core+solution169/169. NguồnUnverified, S15e chưastage/commit và indexS15d nguyên."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "CharitableContributions.cs validation/copy; CharitableContributionTests InputValidationAndCopies, GuardsDatesCollectionsAndNoIncome; Core 165 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "CharitableContributions.cs evaluator; RecipientsAndIndependentProofs, EachConfirmationHasIndependentValidControl; Core 165 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "AnnualSalaryCalculator.cs and MultipleSalaryPayers.cs; AnnualCalculation, MultiplePayersUseOneDeduction, EmptyContributionsAndActualWithholdingPreserveMonthlyFigures; Core 165 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "CharitableContributionRuleTests custom tax, basis guards, snapshot version and coverage; FractionAndOverflow; Core 165 passed.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Core and solution each 165 passed including 143 prior tests unchanged; HEAD a61c543564c96e30e33cc85e9b915beacf9da481 and index SHA256 42DCBEED07EC070C3C958C7B4421C2FB02BA6E6083AAE988999479A344A56381; task diff --all only eight scoped files.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 6,
+      "met": false,
+      "evidence": "Core and solution 165 passed; planned exhaustive invalid-rule and arithmetic-overflow matrix is not complete, including separate before-clamp/delta overflow fixtures and all invalid enumeration/basis cases.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:20Z"
+    },
+    {
+      "index": 7,
+      "met": false,
+      "evidence": "docs0010 exists and task diff --all contains eight scoped files, but AC6 test matrix remains incomplete, so AC1-7 are not all complete before review.",
+      "by": "agent",
+      "at": "2026-11-21T17:40:21Z"
+    },
+    {
+      "index": 6,
+      "met": false,
+      "evidence": "Core and solution 166 passed; decimal.MinValue before/delta boundaries and deduction overflow are tested, but the planned exhaustive invalid-enum/basis and overflow fixture matrix remains incomplete.",
+      "by": "agent",
+      "at": "2026-11-21T17:41:00Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "CharitableContributions.cs validates input, date, ID, enum and copies collections; InputValidationAndCopies and GuardsDatesCollectionsAndNoIncome pass in Core 169/169.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "RecipientsAndIndependentProofs and EachConfirmationHasIndependentValidControl cover three groups, independent OR evidence and missing conditions; Core 169/169.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "AnnualCalculation and MultiplePayersUseOneDeduction cover literal zero, below, equal and above income; actual withholding and monthly figures retained; Core 169/169.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "CharitableContributionRuleTests cover custom rules, basis, coverage, root year/period and H1/H2 snapshots; fractional and boundary tests pass; Core 169/169.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Core and solution each 169/169 including prior 143 tests; task diff shows only eight scoped S15e files; HEAD a61c543564c96e30e33cc85e9b915beacf9da481 and index SHA256 42DCBEED07EC070C3C958C7B4421C2FB02BA6E6083AAE988999479A344A56381 unchanged.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "Core then solution dotnet test --no-restore --disable-build-servers -m:1 each passed 169, failed 0, skipped 0. New rule enum/collection/basis/coverage/root guards and declared overflow controls pass; decimal boundary tests cover deductions, before and delta.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:21Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "docs/decisions/0010-charitable-contributions.md records API, formula, sources, caller, no carryover, examples and 169 tests; TSK1-7 checked; task diff --stat and --name-only show eight scoped files; HEAD and index match baseline.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:22Z"
+    },
+    {
+      "index": 8,
+      "met": false,
+      "evidence": "Independent review after completion of AC1-7 has not yet been performed; reserved for root and reviewer.",
+      "by": "agent",
+      "at": "2026-11-21T17:44:22Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "Review độc lập vòng1 Codex/gpt-6.1-sol run01M7ZKCYWE93ZEZC57S2S0RNM8 không có finding. Đọc bint task diff full/stat/name-only đúng8tệp S15e +552/-4 so snapshot có stagedS15d; đối chiếuAC1–7 và nguồnVBHN112/NĐ253 quaURL+PNG cósẵn. Reviewer thực chạy Core rồi solution SDK10.0.404 no-restore mỗi lệnh169passed/0failed/0skipped, gồm143testcũ giữnguyên. HEADa61c543564c96e30e33cc85e9b915beacf9da481 và SHA256index42DCBEED07EC070C3C958C7B4421C2FB02BA6E6083AAE988999479A344A56381 nguyên; S15e chưastage/commit, stagedS15d giữnguyên. NguồnUnverified/VerifiedOnnull,inputMissing, chưathẩmđịnh hồsơ/tổchức/chứngtừ hoặc pháp lýtoàndiện. Không taskapprove/force/giảSHA.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T17:48:00Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Test factory so sánh toàn bộ AnnualSalaryRuleSet giữa hai factory độc lập thất bại do TaxRuleSet dùng reference equality; sửa assertion để so sánh các giá trị và basis thay vì đồng nhất tham chiếu.",
+      "at": "2026-11-21T17:35:15Z",
+      "by": "agent",
+      "run_id": "01M7ZJJ8ZJGR901R9NMY9C3JNX"
+    },
+    {
+      "step": "b-feat",
+      "message": "Chưa hoàn tất ma trận kiểm thử AC6 theo kế hoạch; cần bổ sung từng fixture rule/enum/basis và kiểm tra các trường hợp tràn còn thiếu trước khi có thể đánh dấu AC6/AC7 đạt và chuyển review.",
+      "at": "2026-11-21T17:41:00Z",
+      "by": "agent",
+      "run_id": "01M7ZJJ8ZJGR901R9NMY9C3JNX"
+    }
+  ],
+  "runs": [
+    "01M7ZJ7V6Q2ZCE82VRHSSD5KHD",
+    "01M7ZJ7VHPRYQQH0FATQHY70WY",
+    "01M7ZJJ8N2RSSR8FD0SK88FE2H",
+    "01M7ZJJ8ZJGR901R9NMY9C3JNX",
+    "01M7ZK6RHE71XZXN1W5YN6GP6E",
+    "01M7ZK6RRZY5JSRA1EC787621A",
+    "01M7ZKCYNY9W9Y3M7RQFMSW9BW",
+    "01M7ZKCYWE93ZEZC57S2S0RNM8"
+  ],
+  "review_rounds": 1,
+  "depends_on": [
+    "01M7ZGFDSTMJRWBAH7SRD855KM"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-21T17:29:31Z",
+    "requirement": "2026-11-21T17:29:31Z",
+    "tasks": "2026-11-21T17:48:00Z"
+  }
+}

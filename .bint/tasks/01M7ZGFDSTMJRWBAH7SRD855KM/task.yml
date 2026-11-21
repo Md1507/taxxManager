@@ -1,0 +1,46 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7ZGFDSTMJRWBAH7SRD855KM
+goal: 'Thực hiện bước kế tiếp theo PLAN.md: chỉ S15d / BL-23d — nhiều nơi trả lương trong cùng năm, sau S15c done 01M7YTT7JTYQ91DH59N7E3YXVY. Người dùng yêu cầu: sang bước tiếp theo. Một bước/lượt, Core trư…'
+request: |-
+  Thực hiện bước kế tiếp theo PLAN.md: chỉ S15d / BL-23d — nhiều nơi trả lương trong cùng năm, sau S15c done 01M7YTT7JTYQ91DH59N7E3YXVY. Người dùng yêu cầu: sang bước tiếp theo. Một bước/lượt, Core trước Web/DB. Mục tiêu: một cá nhân Việt Nam cư trú, kỳ năm dương lịch 2026, VND, tiền lương/công gross từ nhiều payer; tổng hợp một lần đúng thu nhập, bảo hiểm thực được trừ, giảm trừ bản thân và lịch người phụ thuộc, thuế năm và khấu trừ THỰC TẾ, có chi tiết theo nơi/tháng và căn cứ. Không cộng các kết quả quyết toán hoặc thuế lũy tiến riêng từng công ty. Không xác định nghĩa vụ khai, ủy quyền, nơi nộp hồ sơ hay quyết định hoàn. Đừng tự mở rộng sang từ thiện/hưu trí S15e/f, UI/DB/network/packages.
+
+  Đọc các API/seed hiện có, docs0005–0008 và roadmap .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T. B-req phải lập thiết kế đủ cụ thể trước b-feat. Chọn contract tường minh, nhỏ gọn, không tự suy từ label; người dùng xác nhận phạm vi cá nhân và các khoản thuộc diện tổng hợp. Cần chặn trùng nguồn-tháng/ID khoản chi, đảm bảo sổ thu nhập đủ năm với tháng không thu nhập tường minh, dữ liệu được copy/read-only. Nguồn trả thay đổi giữa năm hoặc đồng thời cùng tháng đều hỗ trợ. Giảm trừ cá nhân và phụ thuộc ở cấp cá nhân một lần, không nhân số payer. Không tự tính BH như mỗi việc là hợp đồng chính; ưu tiên tổng BH được trừ nhập tay ở cấp cá nhân/tháng và trách nhiệm chứng từ/caller rõ ràng. Không suy khấu trừ thực tế từ thuế dự kiến và không gán unknown=0. Nếu API yêu cầu actual đã biết để quyết toán thì reject thiếu rõ ràng. Dữ liệu tổng đã bao gồm bonus/extra/casual không được cộng lại qua adapter. B-req quyết định ranh giới hợp lý: hỗ trợ lương gross thông thường hoàn toàn chịu thuế, thưởng cash nếu tái sử dụng an toàn; không suy quy tắc miễn/trần phụ cấp nhân theo payer, không auto nhập casual hoặc suy đủ/miễn quyết toán từ khấu trừ10%. Với khoản vãng lai S15c chỉ thêm adapter nếu luật/phạm vi/actual/cam kết đủ rõ, còn không ghi rõ ngoài contract many-salary này. Không làm yếu hoặc thay semantics các engine S11–S15c; chỉ refactor tối thiểu để tái sử dụng khi cần và test regression.
+
+  Nguồn gốc chính thức root đã đối chiếu trọn trang bản ký: https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf . Điều46(1),(2) trang29 tính trên tổng thu nhập chịu thuế nhận trong kỳ trừ các khoản được trừ; Điều46(3) trang30 thời điểm trả/nhận; Điều48(1)a,b trang33 giảm trừ bản thân một nơi trong cùng thời điểm và đủ12tháng khi quyết toán theo phạm vi này; Điều48(2)c trang34 nhiều nguồn và mỗi phụ thuộc chỉ giảm một lần/một người nộp thuế; Điều66(1)a trang54 kỳ năm; Điều68 trang56 hoàn/nộp thừa và thủ tục riêng; Điều69(1)a trang56–57 áp dụng tiền lương kỳ2026, Điều70(2) trang57 chuyển tiếp khai tháng/quý. Không dùng Điều46(4)c riêng trường hợp gross-up làm căn cứ duy nhất cho mọi thu nhập. Các trang PNG và PDF nằm ngoài repo C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s14-sources, không copy toàn văn vào repo. Nguồn giữ Unverified/VerifiedOn null, caller amounts Missing; nguồn/phiên bản/kỳ/snapshot thật phải gắn theo kết quả. Không lấy thêm số luật từ trí nhớ: số 2026 dùng lại seed TaxRuleSet/annual hiện có. Tự lập fixture khác tham số để chứng minh không hardcode. Giữ decimal không làm tròn đúng lựa chọn user.
+
+  Đầu ra mã/test và docs/decisions/0009-multiple-salary-payers.md đủ API, ví dụ độc lập, ranh giới hỗ trợ, trách nhiệm không chia/trùng thu nhập/BH, không tự xác minh hồ sơ, provenance và test count thật. Mỗi TSK một AC; hoàn tất mã/test/docs và AC1–7 trước review, AC8 root chốt sau. Core rồi solution thực chạy SDK10.0.404 có sẵn .dotnet/dotnet.exe test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj rồi TaxManager.sln --no-restore --disable-build-servers -m:1; DOTNET_ROOT=.dotnet, NUGET_PACKAGES=.dotnet/nuget-packages, DOTNET_CLI_HOME=temp/taxxmanager-dotnet-cli. Không restore/cài thêm, verify.command giữ trống như các bước trước. Hiện122 test cũ phải giữ semantics và xanh. Negative fixture mỗi lỗi một điều kiện và valid control, tránh year2027 nhưng basis/date2026 khiến test xanh nhầm. Tính đủ ca nộp thêm/nộp thừa, không chặn actual cao hơn thuế dự kiến, overflow báo lỗi. Testexpected dùng số literal tính độc lập, không tạo từ chính API đang kiểm.
+
+  User tự stage/commit/push: tuyệt đối không đổi index, add/commit/reset/stash/unstage. Cây sạch, baseline HEAD a61c543564c96e30e33cc85e9b915beacf9da481, index SHA256 401D776AABEAE5A5F5A72B656C9641B50FB9637894700D64C001993F866F81B7. Không sửa PLAN/config/global.json/solution/csproj/packages/Web/Data/docs0001–0008 hoặc ledger cũ. Chỉ Core, test và docs0009, ledger task mới; test cũ không đổi trừ lý do refactor API tương thích được giải thích và giữ assertion. Reviewer độc lập dùng bint task diff full/stat/name-only, đối chiếu AC và chạy test thật. Nếu sandbox không ghi .git/objects, có thể dùng GIT_OBJECT_DIRECTORY tạm và ALTERNATE_OBJECT_DIRECTORIES trỏ repo như S15c, index/HEAD phải nguyên. Không task approve/force, không gán SHA giả cho findings fixed. Hoàn thành đầy đủ công việc đã ủy quyền, không dừng khi còn checklist chưa đủ.
+verify:
+  command: ""
+  criteria:
+    - 'AC1: Input nhiều payer/tháng rõ phạm vi một cá nhân cư trú 2026, đủ coverage năm và zero explicit, ID/duplicate/null/âm/year/subject validation, collection bất biến.'
+    - 'AC2: Tổng hợp đồng thời và đổi việc giữa năm, thu nhập và actual được giữ từng nguồn-tháng, không đếm trùng hoặc tính thuế riêng từng payer rồi cộng; actual unknown không thành0.'
+    - 'AC3: BH hợp lệ nhập tay một lần cấp cá nhân/tháng, giảm trừ bản thân và lịch phụ thuộc một lần cấp cá nhân; tái sử dụng quy tắc năm, kết quả thuế và delta/nộp thêm/nộp thừa đúng.'
+    - 'AC4: Căn cứ mới cho nhiều nguồn thuộc TaxRuleSet, không hardcode luật; rule/snapshot/kỳ/coverage hợp lệ, result đúng nguồn thực dùng, input Missing/nguồn Unverified, giữdecimal và overflow.'
+    - 'AC5: Giữ API/semantics và122 test S11–S15c, chỉ many-salary2026, khôngautoBH/autoquyếttoáncasual/miễn phụ cấp theo payer/S15e/f/Web/DB/config/package; trách nhiệm caller rõ.'
+    - 'AC6: Bộ test có expected độc lập đủ simultaneous/switch/onepayer/zero/dependents/insurance/refund/additional/actual/duplicate/invalid/customrule/provenance/copy/overflow; Core và solution thực chạy xanh no-restore.'
+    - 'AC7: Docs0009 đủAPI/căn cứ/phạmvi/ví dụ/testcountthật/giới hạn và usertựcommit; AC1–7 hoàn tất trước review; scope/index/HEAD nguyên theo baseline.'
+    - 'AC8: Review độc lập đủdiff/AC không còn lỗi nghiêm trọng chưa xử lý, root chốt bằng chứng/trạng thái nguồn đúng thực tế và bàn giao chưastage/commit.'
+scope:
+  allow:
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/0009-multiple-salary-payers.md
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - TaxManager.sln
+    - '**/*.csproj'
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+references:
+  - PLAN.md
+constraints:
+  - Chỉ S15d theo phạm vi đã nêu; user tự commit, không đổi index/HEAD/config/PLAN/oldledger. Hoàn tất AC1–7 trước review, AC8 root. Không lấy số luật từ trí nhớ hoặc tự mở rộng bước sau.
+  - 'Sửa sau review vòng1 trước bàn giao: finding .1 buglow OverpaymentContextBasis đang Clause1 nhưng summary nói nộp thừa và thủ tục; đối chiếu bản ký trang56 Điều68(1),(2)a,(4), chọn Clause=1,2,4 hoặc tách căn cứ chính xác, không Pointa gán nhầm chung khoản; thêm assertion seed/provenance metadata đúng. Đồng thời xử lý suggestion .2 test tràn tổng BH hiện bị overflow phép trừ tháng trước khi tới tổng năm. Tạo fixture tổng BH năm tràn mà từng tháng tính được và có valid control tránh cả tràn thu nhập/tax/actual/deduction trước; giữ test monthly subtractionoverflow riêng nếu hữu ích. Đọc đầy đủ findings/evidence. Chỉ sửa tối thiểu trong scope S15d, không làm yếu test hoặc guard. Chạy Core rồi solution no-restore, cập nhật docs0009 count thật và bằng chứngAC4/6/7/chế độkhác nếu cần. Không dùng bint findings set fixed nếu đòi SHA commit thật: user chưa commit, không giả SHA; ghi nội dung đã sửa và chờ reviewer xác nhận. Không stage/commit/index/HEAD/config/PLAN/oldledger.'
+autonomy: ask_on_protected
