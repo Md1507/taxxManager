@@ -1,0 +1,250 @@
+{
+  "schema": 1,
+  "id": "01M7YTT7JTYQ91DH59N7E3YXVY",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T10:35:43Z",
+  "updated_at": "2026-11-21T10:54:13Z",
+  "base": "5632733e626ed6a56ea1b48f42cc4c857bc5659e",
+  "reason": "Hoàn tất S15c: AC1–10 đủ bằng chứng, review độc lập không finding, Core và solution 122/122; giữ nguồn Unverified và user tự commit.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T10:35:43Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T10:41:24Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T10:41:43Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T10:46:14Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T10:47:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn thiện AC6/8/9 còn thiếu trước review độc lập; không bàn giao phần triển khai chưa đủ kiểm thử"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T10:50:35Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T10:54:14Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn tất S15c: AC1–10 đủ bằng chứng, review độc lập không finding, Core và solution 122/122; giữ nguồn Unverified và user tự commit."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "CasualWithholdingTests NormalBoundaries, VoluntaryAndCommitment: Core 116 passed; CasualWithholding.cs decision branches and rule bases.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:50Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "CasualWithholdingTests ActualAndBatch: 3m+3m=0, duplicate trimmed IDs rejected, A/a distinct; NormalBoundaries 6m=600k; Core 116 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:50Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "CasualWithholdingTests ActualAndBatch: 600k expected/400k actual/200k difference, null propagation, overflow; decimal math in CasualWithholding.cs; Core 116 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:51Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Core and solution test --no-restore: 116 passed including 103 existing tests; existing test files untouched; new factory does not use insurance region; HEAD/index unchanged.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:51Z"
+    },
+    {
+      "index": 6,
+      "met": false,
+      "evidence": "Guard tests remain incomplete: separate valid-control fixtures for every requested root key, mode, missing rule, snapshot version and basis case were not all added.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:51Z"
+    },
+    {
+      "index": 8,
+      "met": false,
+      "evidence": "Core and solution both pass 116 tests, but requested complete test matrix including every commitment flag, unsupported subject, batch actual variants and isolated rule guard cases remains incomplete.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:51Z"
+    },
+    {
+      "index": 9,
+      "met": false,
+      "evidence": "Documentation exists and HEAD/index are unchanged, but AC6 and AC8 evidence is incomplete, so AC1–9 are not all ready for review.",
+      "by": "agent",
+      "at": "2026-11-21T10:45:51Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "CasualWithholding.cs CasualPayment validation; CasualWithholdingTests ExplicitInputsAndSubjectsAreRequired and DatesAndInput; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:07Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.CreateVietnam2026CasualWithholdingProvider and CasualWithholdingRuleSet basis guards; CustomRuleAndSnapshot, GuardBasisIndependently and RuleGuardsHaveValidControl; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:07Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "NormalBoundaries, VoluntaryAndCommitment and CommitmentRequiresEveryConfirmationAndExclusiveMode; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:08Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "ActualAndBatch and BatchActualAndIdentityAreIndependentPerPayment; 3m+3m zero, 6m 600k, payer and duplicate guards; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:08Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "ActualAndBatch and BatchActualAndIdentityAreIndependentPerPayment cover known, unknown, above paid and signed difference; NormalBoundaries fractional decimal and batch overflow; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:08Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "CasualWithholdingRuleTests GuardBasisIndependently, RuleGuardsHaveValidControl, CoverageAndCopies, SnapshotAndCoverageGuardsHaveValidControl and SnapshotVersionAndBasesFollowPaymentDate; DatesAndInput and SeedAndProvenance; Core 122 passed.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:08Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Core and solution no-restore each 122 passed including 103 unchanged existing tests; git status scope limited to S15c; optional TaxRuleSet property and independent no-region factory.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:09Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "SDK 10.0.404 Core then solution test --no-restore --disable-build-servers -m:1: each 122 passed, 0 failed, 0 skipped; 103 existing tests unchanged. Literal boundaries, custom rule and guard/commitment/batch tests in CasualWithholdingTests and CasualWithholdingRuleTests.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:09Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "docs/decisions/0008-casual-withholding.md documents scope, branches, H2/legal period, actual, Unverified and 122 test counts; git status only S15c Core/tests/docs/ledger, HEAD 5632733, index SHA256 F55155534AC4F8FBAC565021C3FFF0653197333194A6A65EC0364FAFBE7B120A unchanged; AC1-8 evidence recorded, AC10 reserved for review.",
+      "by": "agent",
+      "at": "2026-11-21T10:50:09Z"
+    },
+    {
+      "index": 10,
+      "met": true,
+      "evidence": "Review độc lập vòng 1 Codex/gpt-6.1-sol, run 01M7YVQSRJZ3SDGW3DYF3BZM00: không có finding. Đã so diff Bint 5 tệp, 291 thêm/2 bỏ và AC1–9; reviewer thực chạy Core rồi solution mỗi lệnh 122 passed, 0 failed/skipped, gồm 103 regression. HEAD 5632733e626ed6a56ea1b48f42cc4c857bc5659e và index SHA256 F55155534AC4F8FBAC565021C3FFF0653197333194A6A65EC0364FAFBE7B120A không đổi; scope chỉ S15c và ledger mới. Nguồn Unverified/VerifiedOn null, người dùng tự stage/commit, không gán SHA sửa lỗi.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:54:11Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Core test đầu tiên có 1 lỗi: assertion mong ArgumentException chính xác nhưng input âm phát ArgumentOutOfRangeException; sửa assertion đúng loại lỗi, không đổi validation.",
+      "at": "2026-11-21T10:44:30Z",
+      "by": "agent",
+      "run_id": "01M7YV571EHR775PYSQWSPA0TG"
+    },
+    {
+      "step": "b-feat",
+      "message": "Triển khai và 116 test đã xanh nhưng ma trận test guard/cam kết/actual theo AC6 và AC8 chưa đầy đủ; chưa sẵn sàng review AC9. Cần bổ sung test cô lập từng guard với valid control trước khi chuyển bước.",
+      "at": "2026-11-21T10:46:00Z",
+      "by": "agent",
+      "run_id": "01M7YV571EHR775PYSQWSPA0TG"
+    },
+    {
+      "step": "b-feat",
+      "message": "bint task diff --stat thất bại trong sandbox: không có quyền ghi .git/objects khi Bint chụp cây; git status và index/HEAD vẫn kiểm tra được. Reviewer cần chạy diff trong môi trường có quyền phù hợp.",
+      "at": "2026-11-21T10:50:25Z",
+      "by": "agent",
+      "run_id": "01M7YVFKY913TG384SSH0897Y1"
+    }
+  ],
+  "runs": [
+    "01M7YTV70SRWPVVWMY6ARZRRYM",
+    "01M7YTV780JXXQVK5QJSDT7VPH",
+    "01M7YV56QBJDR90SJSK2F9M7J0",
+    "01M7YV571EHR775PYSQWSPA0TG",
+    "01M7YVFKQHNYWEM9QTZ1QT6D9J",
+    "01M7YVFKY913TG384SSH0897Y1",
+    "01M7YVQSJ2W46WEBJW8KJRKFPX",
+    "01M7YVQSRJZ3SDGW3DYF3BZM00"
+  ],
+  "review_rounds": 1,
+  "depends_on": [
+    "01M7YD4AHRXZR4V4E4X9TNVPP5"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-21T10:40:35Z",
+    "requirement": "2026-11-21T10:38:51Z",
+    "tasks": "2026-11-21T10:54:11Z"
+  }
+}

@@ -71,11 +71,12 @@ public sealed class TaxRuleSet
     public AnnualSalaryRuleSet? AnnualSalaryRules { get; }
     public CashBonusRuleSet? CashBonusRules { get; }
     public SalaryExtraRuleSet? SalaryExtraRules { get; }
+    public CasualWithholdingRuleSet? CasualWithholdingRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null, CasualWithholdingRuleSet? casualWithholdingRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -98,7 +99,7 @@ public sealed class TaxRuleSet
         PersonalDeductionBasis = personalDeductionBasis ?? LegalBasis.Missing;
         DependentDeductionBasis = dependentDeductionBasis ?? LegalBasis.Missing;
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
-        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules; SalaryExtraRules = salaryExtraRules;
+        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules; SalaryExtraRules = salaryExtraRules; CasualWithholdingRules = casualWithholdingRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -180,6 +181,25 @@ public sealed class TaxRuleSet
             return new TaxRuleSet(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets, s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, s.CashBonusRules, extra);
         }
         return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
+    public static TaxRuleProvider CreateVietnam2026CasualWithholdingProvider()
+    {
+        const string url = "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf";
+        LegalBasis Basis(string id, string article, string clause, string? point, string summary) => new(VerificationStatus.Unverified,
+            id, "1", point: point, clause: clause, article: article, documentNumber: "253/2026/ND-CP", summary: summary,
+            sourceUrl: url, period: "2026", effectiveFrom: new(2026, 7, 1));
+        var threshold = Basis("casual-threshold-2026", "50", "2", null, "Ngưỡng xét theo từng lần chi trả. Khoản đủ ngưỡng phải khấu trừ trước khi trả.");
+        var rate = Basis("casual-rate-2026", "50", "2", null, "Tỷ lệ áp dụng trên toàn bộ thu nhập của lần chi thuộc diện này. Khấu trừ được thực hiện trước khi trả.");
+        var voluntary = Basis("casual-request-2026", "50", "2", null, "Dưới ngưỡng cá nhân có thể yêu cầu khấu trừ. Yêu cầu do người gọi xác nhận.");
+        var commitment = Basis("casual-commitment-2026", "50", "2", null, "Cam kết đủ điều kiện cho phép tạm thời chưa khấu trừ. Người cam kết chịu trách nhiệm về nội dung.");
+        var timing = Basis("casual-timing-2026", "46", "3", null, "Thời điểm xác định thu nhập là khi thực nhận. Ngày chi trả được dùng để chọn kỳ.");
+        var period = Basis("casual-period-2026", "69", "1", "a", "Văn bản có hiệu lực từ ngày 1 tháng 7 năm 2026. Thu nhập tiền lương cư trú áp dụng cho kỳ thuế năm 2026.");
+        var transition = Basis("casual-transition-2026", "70", "2", null, "Không khai lại tháng hoặc quý trước hiệu lực theo quy định chuyển tiếp. Việc điều chỉnh thực hiện khi quyết toán năm 2026.");
+        var rules = new CasualWithholdingRuleSet("vn-casual-2026", "1", 2026, new(2026, 7, 1), new(2026, 12, 31), CasualTiming.ReceivedOrPaidDate, CasualRuleMode.FlatPerCompletePayment, 5_000_000m, .10m,
+            [CasualPaymentSubject.NoContract, CasualPaymentSubject.ContractUnderThreeMonths, CasualPaymentSubject.PostTerminationArticle50Paragraph2], threshold, rate, voluntary, commitment, timing, period, transition);
+        var s = Vietnam2026;
+        var snapshot = new TaxRuleSet("vn-casual-withholding-h2-2026", "1", "2026 casual withholding H2", 2026, s.PersonalDeduction, s.DependentDeduction, s.Brackets, s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, casualWithholdingRules: rules);
+        return new TaxRuleProvider([new(snapshot, new(2026, 7, 1), new(2026, 12, 31))]);
     }
     public static TaxRuleProvider CreateVietnam2026SalaryProvider(InsuranceRegion region)
     {
