@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "id": "01M7Y733A040Z7XRKCHT815N61",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T04:51:02Z",
+  "updated_at": "2026-11-21T05:28:40Z",
+  "base": "693a1dcf4bb6fdce4e3a5673b98e517c75690b68",
+  "reason": "S13 hoàn tất trong phạm vi đã chốt: 55 test đạt, review vòng2 không có finding; dữ liệu pháp lý giữ Unverified và policy decimal tham khảo.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "standard",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T04:51:02Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T04:57:19Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "blocked",
+      "at": "2026-11-21T04:57:19Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "còn 2 câu hỏi mở trong requirement.md: Q-1: Tiếp câu hỏi root đã gửi: bạn chốt nhóm người lao động/điều kiện tham gia từng BH nào (đề xuất NLĐ Việt Nam HĐLĐ thông thường, chưa được xác nhận), kỳ 2026 trước hay cả 2025–2026 và vùng nào; vui lòng cung cấp nguồn/số liệu employee BHXH/BHYT/BHTN gồm tỷ lệ, lương đóng chung hay khác từng loại, sàn/trần từng loại theo vùng/kỳ, mốc chuyển đổi và tháng bắt đầu áp dụng, cùng cách xử lý dưới sàn/không tham gia; kèm ít nhất một ca gross/base/phụ thuộc ra từng khoản BH, TNTT và thuế để đối chứng?; Q-2: Tiếp câu hỏi làm tròn đang chờ: với từng khoản BH và thuế cuối, bạn chọn giữ nguyên hay làm tròn ở bước nào, tới đơn vị/độ chính xác nào, theo chế độ nào (kể cả điểm giữa); cộng các khoản trước hay sau làm tròn và dùng tổng nào trừ TNTT; căn cứ chính thức hoặc quyết định dùng tham khảo của bạn là gì (phần chưa rõ xin ghi rõ, chưa coi là đã chốt)? — ghi câu trả lời (`- [x] Q-N: … — Trả lời: …`) bằng `bint task write 01M7Y733A040Z7XRKCHT815N61 requirement -`, kiểm bằng `bint task lint 01M7Y733A040Z7XRKCHT815N61`, rồi `bint run resume 01M7Y733A040Z7XRKCHT815N61`"
+    },
+    {
+      "from": "blocked",
+      "to": "planned",
+      "at": "2026-11-21T05:06:33Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T05:11:42Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T05:16:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-21T05:21:04Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 5 chưa được đối chiếu; xử lý xong thì `bint run resume 01M7Y733A040Z7XRKCHT815N61`"
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "at": "2026-11-21T05:23:18Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa hai phát hiện review vòng 1 trước vòng review cuối"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T05:25:54Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T05:28:40Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S13 hoàn tất trong phạm vi đã chốt: 55 test đạt, review vòng2 không có finding; dữ liệu pháp lý giữ Unverified và policy decimal tham khảo."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Bảng nguồn và phạm vi Q-1/Q-2 tại docs/decisions/0004-insurance-rounding.md; TaxRuleSet.CreateVietnam2026SalaryProvider lưu hai kỳ, bốn vùng, rate/cap/guard và căn cứ Unverified.",
+      "by": "agent",
+      "at": "2026-11-21T05:16:40Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "InsuranceRules.cs, InsuranceCalculator.cs: snapshot bất biến, ba base/rate/cap riêng và căn cứ; InsuranceTests: guard, cap, rule giả, kỳ, metadata và overflow; project test 52 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:16:41Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "InsuredMonthlySalaryCalculator.cs nối provider, bảo hiểm và MonthlySalaryCalculator; sáu ca decimal độc lập trong InsuranceTests qua, raw=applied; Calculators.cs và provider cũ không sửa.",
+      "by": "agent",
+      "at": "2026-11-21T05:16:43Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "dotnet test project và solution --no-restore --disable-build-servers -m:1 đều exit 0, 52 passed, 0 failed/skipped; gồm 39 ca cũ; InsuranceTests kiểm guard bốn vùng, cap, ca lẻ, kỳ, validation và snapshot.",
+      "by": "agent",
+      "at": "2026-11-21T05:16:44Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Q-1/Q-2 trong requirement; docs/decisions/0004-insurance-rounding.md ghi phạm vi, nguồn và Unverified; TaxRuleSet.cs:124-138 tách căn cứ BHTN.",
+      "by": "agent",
+      "at": "2026-11-21T05:25:38Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "InsuranceRules.cs:61 từ chối sàn BHTN riêng; TaxRuleSet.cs:128-138 tách căn cứ tỷ lệ và trần; InsuranceTests.cs:99-128 kiểm cấu hình và metadata cả hai kỳ; test project 55 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:25:40Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "InsuredMonthlySalaryCalculator.cs nối lương đóng riêng, bảo hiểm và thuế; InsuranceTests.cs:10-29 kiểm sáu ca độc lập raw/applied; project test 55 passed, các tệp calculator cũ không đổi.",
+      "by": "agent",
+      "at": "2026-11-21T05:25:42Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Test hẹp regression và metadata 3 passed; dotnet test project và solution --no-restore --disable-build-servers -m:1 đều exit 0, 55 passed, 0 failed/skipped; gồm 39 ca cũ.",
+      "by": "agent",
+      "at": "2026-11-21T05:25:43Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Docs0004 ghi API, phạm vi, quyết định giữ decimal, bảng nguồn chính thức và trạng thái Unverified, ví dụ độc lập, 55 test xanh. Review vòng2 run01M7Y937HAY4NCZS2QX0NM0ZG6 đối chiếu đúng6tệp, xác nhận hai lỗi vòng1 đã sửa và không có finding mới; không đổi PLAN/config/API cũ/39case cũ. Root chạy lại dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1 exit0,55passed,0failed/skipped; git diff --check exit0. Hoàn thành kỹ thuật trong phạm vi2026 đã chốt, không xác nhận pháp lý hay đổiUnverified.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T05:28:38Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Test overflow với gross decimal.MaxValue và dependents int.MaxValue không gây tràn: phép trừ và nhân trong khoảng decimal. Sửa fixture để tổng ba khoản bảo hiểm thực sự vượt giới hạn.",
+      "at": "2026-11-21T05:14:55Z",
+      "by": "agent",
+      "run_id": "01M7Y88YG2A2QWSEGN2A37MH66"
+    }
+  ],
+  "runs": [
+    "01M7Y7693HWQRN9ZR7R74V8SR4",
+    "01M7Y769APGGBWETAM7S2FG0VJ",
+    "01M7Y7ZGN0BWTXM0SV26DWAJSJ",
+    "01M7Y7ZGZTHHR0RP1QWP9F3NCT",
+    "01M7Y88YG2A2QWSEGN2A37MH66",
+    "01M7Y8JG3BTH3B2MYABXY53Y41",
+    "01M7Y8Y78NFQBK23EJQVFZQZKN",
+    "01M7Y8Y7FNE6Y10CMA7ZFEM932",
+    "01M7Y937B1X1THWA8QGHCHSVEA",
+    "01M7Y937HAY4NCZS2QX0NM0ZG6"
+  ],
+  "review_rounds": 2,
+  "depends_on": [
+    "01M7X5BYJ59P71TTK28H78KZF9"
+  ],
+  "next_finding": 2,
+  "artifacts": {
+    "plan": "2026-11-21T05:11:15Z",
+    "requirement": "2026-11-21T05:11:15Z",
+    "tasks": "2026-11-21T05:11:15Z"
+  },
+  "review_decided": 1
+}

@@ -1,0 +1,44 @@
+{
+  "task_id": "01M7Y733A040Z7XRKCHT815N61",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-21T05:20:45Z",
+      "by": "agent",
+      "run_id": "01M7Y8JG3BTH3B2MYABXY53Y41",
+      "base": "693a1dcf4bb6fdce4e3a5673b98e517c75690b68",
+      "summary": "Review đúng 6 tệp từ bint task diff: 2 bug mức medium về validation sàn BHTN và provenance tỷ lệ BHTN. Project và solution test chạy lại bằng SDK 10.0.404, --no-restore --disable-build-servers -m:1 đều exit 0, 52 passed, 0 failed/skipped; diff giữ nguyên API và 39 case S11/S12. AC-2 chưa đạt đầy đủ do hai lỗi dưới; các ca đối chứng AC-3 hiện qua, AC-4 chưa bao phủ hai lỗi này, AC-5 chưa thể coi review sạch. Đã đối chiếu requirement/plan/tasks, bảng dữ liệu và một số trang nguồn chính thức; chưa rà soát đầy đủ mọi văn bản sửa đổi/phạm vi pháp lý, không xác nhận Verified hay S13 done. Không sửa mã, không approve/status/verify.",
+      "findings": [
+        {
+          "id": "01M7Y733A040Z7XRKCHT815N61.1",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Cấu hình sàn BHTN được chấp nhận nhưng bị bỏ qua khi tính",
+          "path": "src/TaxManager.Core/InsuranceRules.cs",
+          "lines": "61-62",
+          "evidence": "Constructor chỉ kiểm social.Floor so với ScopeMinimumSalary, không kiểm unemployment.Floor. Repro độc lập biên dịch trong TEMP với Core.dll hiện tại: social=(rate .2, floor 1, cap 100), health=(.03, 1, 100), unemployment=(.04, 50, 200), scopeMinimumSalary=2, kỳ 2026, vùng I, SalaryBase=10. Cả InsuranceRuleSet và InsuranceCalculator.Calculate đều thành công; stdout: Accepted: SalaryBase=10; unemployment Floor=50; AppliedBase=10; Raw=0.40. InsuranceCalculator.cs:33 chỉ Math.Min với cap, không xét Floor. Như vậy snapshot công bố floor=50 nhưng trả base=10 dưới sàn. Test fixture hiện chỉ dùng BHTN floor=null nên không bắt được.",
+          "body": "Với phạm vi hiện tại chưa hỗ trợ sàn BHTN riêng, từ chối rõ cấu hình đó; hoặc yêu cầu mọi floor được cấu hình không vượt guard và kiểm đầu vào theo quyết định đã chốt. Không âm thầm nâng sàn. Thêm ca hồi quy cấu hình BHTN floor cao hơn guard để bảo đảm không trả kết quả trái chính snapshot. Seed hiện tại có floor BHTN null nên chưa chịu ảnh hưởng; lỗi nằm ở API cấu hình tùy biến thuộc AC-2."
+        },
+        {
+          "id": "01M7Y733A040Z7XRKCHT815N61.2",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "RateBasis của BHTN 1% trỏ tới Điều 34 thay vì nguồn quy định tỷ lệ",
+          "path": "src/TaxManager.Core/TaxRuleSet.cs",
+          "lines": "128",
+          "evidence": "Biến unemployment tại dòng 128 chỉ mang văn bản 74/2025/QH15, article=34; dòng 139 dùng cùng biến cho cả RateBasis của .01 và CapFormulaBasis. Repro với CreateVietnam2026SalaryProvider(I).GetForMonth(2026,1) in: Seed BHTN Rate=0.01; RateBasis=74/2025/QH15, Article=34. Toàn văn chính thức Luật74 cho thấy Điều34 quy định lương làm căn cứ và cap20 lần, không quy định tỷ lệ1%; Điều33 khoản1a chỉ nêu mức tối đa1%. Tỷ lệ cụ thể1% nằm ở Điều4 khoản1 NĐ374/2025/NĐ-CP (trang2 PDF đã tải), cũng đã có trong requirement và docs0004 nhưng không có trong snapshot runtime. Nguồn đối chiếu: https://xaydungchinhsach.chinhphu.vn/toan-van-luat-viec-lam-119250711173403835.htm và https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/01/374-1.signed.pdf.",
+          "body": "Tách căn cứ rate và công thức cap: RateBasis giữ NĐ374 Điều4 khoản1, còn CapFormulaBasis giữ Luật74 Điều34 khoản2 và CapValueBasis giữ nguồn minimum vùng. Bảo toàn trạng thái Unverified. Thêm assert DocumentNumber/Article/Clause cho từng căn cứ BHTN trong cả hai snapshot. Số tiền hiện đúng các ví dụ, nhưng provenance trả cho mọi kết quả seed sai và làm mất nguồn thực sự quyết định tỷ lệ, trái AC-2/TSK-5."
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-21T05:28:03Z",
+      "by": "agent",
+      "run_id": "01M7Y937HAY4NCZS2QX0NM0ZG6",
+      "base": "693a1dcf4bb6fdce4e3a5673b98e517c75690b68",
+      "summary": "Review cuối đúng 6 tệp từ bint task diff của tác vụ; không phát hiện vấn đề mới cần ghi nhận. Hai finding vòng 1 đã được xử lý: InsuranceRules.cs từ chối mọi sàn BHTN riêng chưa hỗ trợ, regression cấu hình floor 5 \u003e guard 2 kiểm đúng ArgumentException và ParamName; RateBasis BHTN trỏ NĐ374/2025 Điều4 khoản1, CapFormulaBasis trỏ Luật74/2025 Điều34 khoản2, CapValueBasis trỏ NĐ293/2025 Điều3 khoản1, test kiểm DocumentNumber/Article/Clause/URL và Unverified ở cả tháng6/7. Đã đọc requirement/plan/tasks gồm Q-1/Q-2 đã trả lời, docs0002/0003/0004 và các calculator/provider liên quan; MCP context_for_paths không có tri thức. Đối chiếu phạm vi, decimal/raw-applied, base riêng gross, guard/cap riêng, snapshot và provenance; diff không thay đổi Calculators.cs, TaxRuleProvider.cs, bốn tệp test cũ hoặc tệp ngoài scope. Chạy lại bằng .dotnet/dotnet.exe test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore --disable-build-servers -m:1 và .dotnet/dotnet.exe test TaxManager.sln --no-restore --disable-build-servers -m:1, NUGET_PACKAGES=.dotnet/nuget-packages, DOTNET_CLI_HOME/APPDATA tạm: mỗi lệnh exit0, 55 passed, 0 failed/skipped, gồm39case cũ. AC1-4 có bằng chứng kỹ thuật phù hợp phạm vi đã chốt; docs0004 và phần review sạch của AC5 đã được đối chiếu. Đã xem trang2 PDF NĐ374 tải sẵn và Điều34 toàn văn Luật74 trên cổng Chính phủ; chưa rà soát đầy đủ mọi văn bản gốc/sửa đổi và tính phù hợp pháp lý, không nâng Unverified thành Verified hoặc xác nhận S13 done. Không sửa mã, không commit/approve/status/verify.",
+      "findings": []
+    }
+  ]
+}

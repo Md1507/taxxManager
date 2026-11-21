@@ -1,0 +1,49 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7Y733A040Z7XRKCHT815N61
+goal: 'S13: Bảo hiểm bắt buộc và policy làm tròn theo kỳ (Bước1.3)'
+request: |-
+  Người dùng yêu cầu sang bước tiếp sau S12 (693a1dc,39test xanh). Chỉ thực hiện Bước1.3/BL-21 trong PLAN.md và .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T/plan.md,tasks.md: tự tính phần người lao động đóng BHXH/BHYT/BHTN từ lương đóng bảo hiểm, thêm tỷ lệ/sàn/trần vào bộ quy tắc, chốt quy tắc làm tròn bằng test và comment, kết quả gross ra thuế. Đọc Core/tests/docs0002/0003. Giữ Codex planner/reviewer gpt-6.1-sol, implementer gpt-6.1-terra, không sửa config. Root chỉ điều phối, child không commit.
+
+  THIẾU DỮ LIỆU ĐÃ HỎI NGƯỜI DÙNG: theo quy tắc5 và Bước1.3 PLAN, người dùng phải cung cấp nguồn/số liệu bảo hiểm. Root đã gửi câu hỏi yêu cầu chọn đối tượng (đề xuất người lao động Việt Nam HĐLĐ thông thường), hỗ trợ2026trước hay2025-2026, tỷ lệ employee BHXH/BHYT/BHTN, sàn/trần từng loại và vùng, mốc ngày thay đổi, quy tắc làm tròn mỗi khoảnBH/thuế cuối (có thể trả lời chưa rõ). Không tự trả lời câu hỏi thay người dùng, không coi thời gian chờ là đồng ý. PLAN chỉ có tỷ lệ8%/1.5%/1% dạng tham khảo chưa xác minh; không tự điền số sàn/trần/cách làm tròn từ trí nhớ hoặc seed thật khi thiếu. Nguồn user gửi các lượt trước là về thuế, không đủ cho bảo hiểm.
+
+  Lượt b-req cần xác định API tối thiểu, contracts và các câu hỏi nghiệp vụ thực sự cản triển khai; viết Q có thể gom vào câu hỏi đã gửi, không lặp hỏi công cụ/model. Bint có gate câu hỏi mở thì giữ trung thực; không báo hoàn thành S13 bằng fixture giả. Có thể thiết kế/test engine độc lập với luật bằng rule giả nhưng chưa seed như luật VN/chưa hoàn tất gross->tax thực tế nếu dữ liệu còn thiếu.
+
+  Hướng kỹ thuật cần đánh giá: dữ liệu BH và cách làm tròn là cấu hình bất biến thuộc/liên kết TaxRuleSet và snapshot/citation theo từng thành phần, không hardcode số luật trong thuật toán. Giữ API tính tiềnBH nhập tay S11 và39test S11/S12 nguyên trạng, PitCalculator vẫn không round. Tách kết quả thuế thô và thuế sau policy làm tròn để không mất giải thích. Chỉ áp rounding khi policy đã chọn có nguồn hoặc quyết định tham khảo người dùng chốt, không mặc định banker/away-from-zero như luật. Theo dõi riêng BHXH/BHYT/BHTN, base/rate/cap/floor/raw/rounded/total và căn cứ đúng phiên bản kỳ; ghi Missing/Unverified trung thực không tựVerified.
+
+  Lương gross không mặc nhiên bằng lương đóng BH. API phải cho truyền lương đóng BH theo đầu vào đã chốt; nếu có chế độ giả định đóng full gross, phải tường minh và ghi giả định. Không tự tính miễn/giảm hay điều kiện đối tượng chưa chốt. Khi input thấp hơn sàn, cần chốt từ chối/chặn nâng sàn theo nghiệp vụ nguồn, không âm thầm sửa; vượt trần áp quy tắc đúng từng loại; không dùng trầnBHXH cho BHTN nếu nguồn khác. Không tự suy vùng, tuổi, quốc tịch hay tham gia bảo hiểm từ gross.
+
+  Phân biệt kỳ thuế2026 với ngày hiệu lực bảo hiểm2026: TaxRuleProvider S12 chọn tường minh, giữa năm bảo hiểm có thể đổi, không tự lấy ngàyhiệulực chung của Luật109 cho mọi rule. Đối tượng/vùng được chọn tường minh, kỳ thiếu/overlap/gap/mismatch phải báo lỗi rõ không fallback. Kế thừa thiết kếtrọntháng củaprovider nếu phù hợp; không framework/tổng quát hóa thái quá, khôngDB/UI/tổnghợpnăm/bước1.4. Phần39test và semantics39case giữ nguyên, không thêmpackage.
+
+  Nguồn primary root tìm để tham khảo chờ user xác nhận/cung cấp, KHÔNG tự coi là userđãcungcấp: https://baohiemxahoi.gov.vn/tintuc/pages/hoat-dong-bhxh-viet-nam.aspx?CateID=52&ItemID=26780 ; https://baohiemxahoi.gov.vn/tintuc/Pages/hoat-dong-he-thong-bao-hiem-xa-hoi.aspx?CateID=52&itemID=26004 . Có dấu hiệu thay đổi giữa năm2026 và khác biệt đối tượng, sànBHXH so lươngtốithiểuvùng; chỉ đối chiếu nguồn cho nhóm cụ thể, không suy diễn bài báo thành luật đầy đủ hoặc dựngURLvbpl.
+
+  Kiểm thử cần expected tính riêng/decimal: dưới/đúng/trên sàn,trần của từng loại,basekhácgross,thamgia/đốitượngtheodữliệuđãchốt,rounding điểm giữa và sốlẻ tại từng bước,rawkhôngbịđổi,rules giả rates khác,validation/null/âm/overflow,snapshot/mappingmetadata và biênkỳđổiBH/gap/overlap; ví dụ gross->BH->TNTT->tax đốichứng người dùng. Không viết test vô nghĩa/mirror implementation. Chạy project và solution thật .dotnet/dotnet.exe test --no-restore --disable-build-servers -m:1, cache .dotnet/nuget-packages, DOTNET_CLI_HOME/APPDATA temp nếu cần. SDK10.0.404 có sẵn, không quét toàn.dotnet/khôngcàithêm. verify.command giữ trống, không approve; ghi AC bằng chứng đúng, không lấy lint thaytest.
+
+  Docs mới docs/decisions/0004-insurance-rounding.md: phạm vi/đốitượng/kỳ/vùng đã chốt, contracts/API, nguồn và status, raw/rounded phânbiệt, thiếu dữliệu ghi rõ, ví dụ độc lập và lệnh/kết quả test thật. Root commit code+ledger riêng S13 sau review sạch, không sửaPLAN/setup/config hay docs cũ.
+verify:
+  command: ""
+  criteria:
+    - 'AC-1: Đối tượng,kỳ,vùng,base,rates/sàn/trần từngBH và policyrounding được chốt bằng câu trả lời/nguồn; không tự điền luật, trạng thái căn cứ trung thực.'
+    - 'AC-2: Tự tính employee BHXH/BHYT/BHTN bằng decimal theo rule bất biến trong TaxRuleSet, validation rõ, snapshot/citation đúng từng bước và phiên bản/kỳ.'
+    - 'AC-3: API gross->BH->TNTT->thuế theo phạm vi đã chốt, baseBH tường minh, policyrounding có raw/rounded và không đổi PitCalculator/S11/S12.'
+    - 'AC-4: Test ý nghĩa sàn/trần,từng khoảnBH,làmtròn,biênkỳ,validation,snapshot và cađốichứng; giữ39case cũ; project và solution test thật xanh.'
+    - 'AC-5: Docs0004 đủAPI/quyếtđịnh/nguồn/giớihạn và kết quảtest thật,scope đúng,review không còn lỗi nghiêm trọng; thiếu dữliệu không báo S13done.'
+scope:
+  allow:
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/0004-insurance-rounding.md
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - TaxManager.sln
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+constraints:
+  - Chỉ S13, dữ liệu BH và policy rounding đang chờ user theo PLAN; không tự điền luật hay đoán phạm vi,không tựVerified, giữ39case cũ,không sửasetup/model,childkhôngcommit.
+  - Dependency artifacts root tải ngoài repo ở C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s13-sources/ gồm 73-cp.signed.pdf, 161-ndcp.signed.pdf, 293-cp.signed.pdf, 374-1.signed.pdf, 188-ndcp.signed.pdf, tt-111.pdf và ảnh trang tương ứng. Python pymupdf ở C:/Users/LENOVO/AppData/Local/Temp/taxxManager-pdf-deps (PYTHONPATH). Dùng bản đã tải khi child không có mạng; không cài package mới, không thêm PDF toàn văn vào repo. Bản73 từ https://datafiles.chinhphu.vn/cpp/files/vbpq/2024/7/73-cp.signed.pdf; root đã xem trang2–3 xác nhận Điều3 khoản2 mức2.340.000 từ01/07/2024. Đây là artifact hỗ trợ đối chiếu, không tựVerified.
+  - 'Sửa hai finding review vòng 1 trước review cuối: (1) InsuranceRuleSet hiện nhận unemployment.Floor nhưng calculator bỏ qua. Chọn validation phù hợp phạm vi không nâng sàn: từ chối floor riêng chưa hỗ trợ hoặc bảo đảm floor <= scope guard và input luôn đáp ứng. Thêm regression cấu hình floor > guard theo repro trong review, không sửa yếu test. (2) Tách RateBasis BHTN sang NĐ374/2025/NĐ-CP Điều4 khoản1, URL PDF chính thức https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/01/374-1.signed.pdf; CapFormulaBasis Luật74/2025/QH15 Điều34 khoản2; CapValueBasis NĐ293 mức vùng. Giữ Unverified, test DocumentNumber/Article/Clause/URL trong cả hai snapshots. Chạy test hẹp rồi project và solution; cập nhật docs0004 kết quả và bằng chứng AC1-4, chưa tự đánh dấu AC5 met trước review cuối; không commit, không sửa PLAN/config. Chỉ còn một vòng review theo cấu hình, sửa đầy đủ hai finding trong lượt này.'
+autonomy: ask_on_protected
