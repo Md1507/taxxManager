@@ -69,11 +69,12 @@ public sealed class TaxRuleSet
     public InsuranceRuleSet? InsuranceRules { get; }
     public SalaryRoundingPolicy? RoundingPolicy { get; }
     public AnnualSalaryRuleSet? AnnualSalaryRules { get; }
+    public CashBonusRuleSet? CashBonusRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -96,7 +97,7 @@ public sealed class TaxRuleSet
         PersonalDeductionBasis = personalDeductionBasis ?? LegalBasis.Missing;
         DependentDeductionBasis = dependentDeductionBasis ?? LegalBasis.Missing;
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
-        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules;
+        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -141,6 +142,21 @@ public sealed class TaxRuleSet
             return new TaxRuleSet("vn-salary-monthly-2026", "1", "2026 monthly", 2026, 15_500_000m, 6_200_000m,
                 [new(10_000_000m, .05m, monthlyTax), new(30_000_000m, .10m, monthlyTax), new(60_000_000m, .20m, monthlyTax), new(100_000_000m, .30m, monthlyTax), new(null, .35m, monthlyTax)],
                 personal, dependent, income, monthlyTax, s.InsuranceRules, s.RoundingPolicy, annual);
+        }
+        return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
+    public static TaxRuleProvider CreateVietnam2026CashBonusProvider(InsuranceRegion region)
+    {
+        const string url = "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf";
+        var taxable = new LegalBasis(VerificationStatus.Unverified, "cash-bonus-taxable-2026", "1", point: "i", clause: "2", article: "8", documentNumber: "253/2026/ND-CP", sourceUrl: url, period: "2026");
+        var timing = new LegalBasis(VerificationStatus.Unverified, "cash-bonus-timing-2026", "1", clause: "3", article: "46", documentNumber: "253/2026/ND-CP", sourceUrl: url, period: "2026");
+        var bonus = new CashBonusRuleSet("vn-cash-bonus-2026", "1", 2026, new(2026, 1, 1), new(2026, 12, 31), CashBonusTreatment.TaxableCashFromCurrentEmployer, CashBonusTiming.ReceivedOrPaidDate, taxable, timing);
+        var source = CreateVietnam2026AnnualSalaryProvider(region);
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = source.GetForMonth(2026, month);
+            return new TaxRuleSet(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets,
+                s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, bonus);
         }
         return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
     }

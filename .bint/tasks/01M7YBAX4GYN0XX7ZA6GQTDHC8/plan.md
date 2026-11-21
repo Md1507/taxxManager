@@ -1,0 +1,62 @@
+# Kế hoạch
+
+## Hướng triển khai
+S15a là một năng lực giao được sau S14, không cần tách thêm phiếu hay làm phần S15 khác. Thêm mô hình thưởng và bộ ghép tháng nhỏ; mở rộng annual hiện có để cộng thưởng trước khi gọi công thức S14. Không nhân bản thuật toán PIT/quyết toán. Lượt b-req chỉ ghi artifact qua Bint, không sửa mã, không chạy test hay tạo phiếu con.
+
+## Giả định và mâu thuẫn
+Caller xác nhận đúng diện cư trú, cùng đơn vị và thưởng tiền taxable; engine không xét hồ sơ miễn thuế. Gross S14 vốn là tổng lương chịu thuế caller nhập, nên đường có thưởng phải định nghĩa lại rõ đó là base CHƯA GỒM các dòng bổ sung. Không thể suy trùng kinh tế chỉ từ hai số tiền bằng nhau; chỉ reject trùng ID và quy định caller tách gross. Một dòng zero vẫn cần ID/date/treatment/rule hợp lệ vì vẫn là một dòng khai báo.
+
+RuleTests và AnnualSalaryTests ràng buộc seed/metadata S11–S14; không sửa seed để thêm citation. GetForYear vẫn giữ semantics ReferenceEquals và từ chối năm có hai snapshot BH; resolve GetForMonth cho mọi tháng. AnnualSalaryCalculator hiện tự gọi InsuranceCalculator rồi MonthlySalaryCalculator; giữ cách gọi thực tế này, không bắt chạy thêm InsuredMonthlySalaryCalculator. 82 test là baseline từ S14, chưa phải kết quả chạy trong lượt này. PLAN ghi commit nhưng yêu cầu hiện tại user tự commit được ưu tiên. Không còn giả định đổi cách làm cần hỏi.
+
+## Lựa chọn và lý do
+Hai hướng khả thi: (A) wrapper tháng/năm mới đổi toàn bộ input thành tổng rồi gọi S14; (B) tham số bonuses trailing tùy chọn trong SalaryMonthInput, mở rộng annual hiện có và wrapper tháng gọi API cũ. Chọn B: tránh luồng năm thứ hai, lưu được từng dòng/snapshot và phát hiện ID trùng xuyên tháng trước khi tính. Monthly wrapper chỉ làm validation/tổng hợp và gọi calculator cũ; không tự viết lại PIT. Hướng A giữ API cũ dễ nhưng adapter năm phải dựng lại chi tiết/đối chiếu kết quả nên dễ mất provenance.
+
+Về luật: có thể dùng bool taxable do caller đưa và hardcode các căn cứ trong calculator, hoặc một CashBonusRuleSet nhỏ liên kết TaxRuleSet với treatment/timing enums và LegalBasis. Chọn rule nhỏ: xử lý phạm vi tường minh, test được thiếu/mismatch và truy đúng version. Chỉ một treatment được hỗ trợ; unknown/default/unsupported bị reject. Không tạo engine phân loại bằng chuỗi hay kho luật.
+
+## API, tệp và trình tự dự kiến
+Tên mới dưới đây là thiết kế đề xuất; b-feat có thể đổi tên cho nhất quán nhưng giữ hợp đồng.
+
+1. Thêm src/TaxManager.Core/CashBonuses.cs: CashBonus bất biến gồm BonusId, Amount, ReceivedOn, Treatment bắt buộc và nhãn tùy chọn; Trim ID, so Ordinal. Treatment hợp lệ chỉ TaxableCashFromCurrentEmployer, giá trị 0 không mặc định chấp nhận. Rule nhỏ CashBonusRuleSet có ID/version, Year/kỳ áp dụng, SupportedTreatment, Timing=ReceivedOrPaidDate và TaxableBasis/TimingBasis; căn cứ loại trừ có thể nằm cùng rule hoặc liên kết docs. Validation tập trung copy collection, kiểm null/ID trùng, khớp tháng/năm, treatment và rule. Không dùng năm thưởng/nhãn để routing.
+2. Sửa src/TaxManager.Core/TaxRuleSet.cs: nối CashBonusRuleSet? cashBonusRules = null cuối constructor, property get-only. Thêm CreateVietnam2026CashBonusProvider(region), lấy snapshot tháng 1 và 7 từ CreateVietnam2026AnnualSalaryProvider rồi tạo registration cùng khoảng với bonus rules mới. Giữ các giá trị/căn cứ thuế, annual, BH và policy S14; snapshot S15a có định danh riêng, không ghi đè seed/factory cũ. Không đổi TaxRuleProvider/GetForYear.
+3. Thêm src/TaxManager.Core/BonusMonthlySalaryCalculator.cs: entry Calculate nhận year/month, baseGrossIncome, danh sách thưởng, số NPT, provider và đúng một insurance mode tay/InsuranceInput. Có thể dùng SalaryMonthInput làm input chung để không lặp validation; ActualWithheldTax trong input nếu dùng phải giữ nguyên và không tham gia công thức PIT. Resolve snapshot, kiểm kỳ; dùng helper thưởng, tính total=base+bonus. Manual gọi MonthlySalaryCalculator.Calculate(total, amount, dependents, rule); auto dùng InsuranceCalculator.Calculate một lần rồi gọi MonthlySalaryCalculator với DeductibleTotal, giữ InsuranceResult. Trả breakdown bất biến và Salary/PIT hiện có. Không có nhánh thuế suất bonus.
+4. Sửa src/TaxManager.Core/AnnualSalaryCalculator.cs: SalaryMonthInput thêm IEnumerable<CashBonus>? bonuses = null cuối constructor rồi copy sang IReadOnlyList read-only. GrossIncome giữ ý nghĩa base khi dùng danh sách; không cộng thưởng ngay vào property này. SalaryMonthResult/AnnualSalaryResult bổ sung breakdown bằng property/constructor tương thích (ưu tiên property bổ sung để giữ positional constructor/deconstruction cũ), không tạo tham số mới bắt buộc. Đường không có dòng thưởng không bắt bonus rule và giữ toàn bộ số học cũ.
+5. Annual preflight kiểm ID toàn năm sau Trim/Ordinal, ReceivedOn khớp input.Year/Month và bonus rule đúng snapshot. Tiếp tục kiểm đủ 12 tháng và toàn bộ hợp đồng S14 trước khi tính; khi có bonus chỉ kiểm rule tại các tháng có dòng, không dùng rule tháng 1 cho mọi dòng. Các tháng hợp lệ được sort như cũ. Trong vòng tháng, helper tạo breakdown rồi gọi MonthlySalaryCalculator với total; annual gross cộng total đúng một lần, cộng riêng base và bonus để hiển thị. BH, dependent-month, tạm nộp, annual PitCalculator/delta giữ công thức hiện có. Không chạy một annual calculator khác hoặc tự cộng PIT tháng thành thuế năm.
+6. Thêm tests/TaxManager.Core.Tests/CashBonusTests.cs, CashBonusMonthlyTests.cs, CashBonusAnnualTests.cs (có thể gom theo độ dài); không sửa test cũ để nới expected. Tạo docs/decisions/0006-cash-bonuses.md. Chỉ ledger 01M7YBAX4GYN0XX7ZA6GQTDHC8 được ghi qua Bint; không ghi ledger cũ.
+
+## Rule, provenance và kỳ áp dụng
+Rule taxable gắn [NĐ253](https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf) Điều 8(2)i cùng loại trừ Điều 8(4)a; timing Điều 46(3); áp biểu tháng Điều 50(1), đối tượng ngoài phạm vi Điều 50(2); kỳ 2026 Điều 69(1)a và chuyển tiếp Điều 70(2). Đã xem ảnh scan trang 4/5/7/30/35/36/57 có sẵn ngoài repo. [VBHN112 Điều 8–10 qua cổng Chính phủ](https://xaydungchinhsach.chinhphu.vn/cach-tinh-thue-thu-nhap-ca-nhan-tu-tien-luong-tien-cong-119260623094516526.htm) giữ căn cứ công thức S14; [hướng dẫn trả sau nghỉ việc](https://baochinhphu.vn/tra-luong-sau-khi-nghi-viec-tru-thue-tncn-ra-sao-102260910093753041.htm) chỉ hỗ trợ ranh giới ngoài phạm vi. Không áp dụng TT111 cũ để thay nhánh S15a.
+
+Tách kỳ thuế áp dụng 01–12/2026 khỏi ngày văn bản có hiệu lực; không bịa ngày hiệu lực 01/01 chỉ để qua guard. Rule có Year/Period/coverage áp dụng và kiểm từng ReceivedOn; LegalBasis giữ đúng nguồn/điều/kỳ/version, khai ngày hiệu lực khi đã có bằng chứng phù hợp. Guard reject basis Missing/thiếu ID/version/URL/article/kỳ hoặc sai coverage; không nâng trạng thái và không kiểm mạng trong Core. Rule/timing enum không biết hoặc không được hỗ trợ phải lỗi rõ. Test đổi ID/version/basis tại hai snapshot hợp lệ phải thấy đúng metadata tại đúng tháng; nếu mismatch nội tại thì reject, không âm thầm lấy tháng đầu. Thay đổi quy tắc thuế thật giữa năm vẫn theo giới hạn S14.
+
+Mỗi BonusLineResult giữ dòng đã snapshot, Year/Month nhận, Amount input Basis=Missing, TaxRuleSet và CashBonusRuleSet/căn cứ taxable/timing thực dùng. Base/bonus sum/total truy được các số tự khai và dòng nguồn; không gắn căn cứ pháp lý thay cho bằng chứng số tiền. Tổng năm giữ breakdown 12 tháng; không cần giả tạo một bonus rule duy nhất cho cả năm. Output và collection read-only, không lộ List/array caller có thể sửa; không rounding decimal.
+
+## Vùng ảnh hưởng
+Core consumer gọi API tháng mới hoặc SalaryMonthInput/AnnualSalaryCalculator sẽ có thêm khả năng ghi thưởng. Callers cũ của MonthlySalaryCalculator, InsuredMonthlySalaryCalculator, AnnualSalaryCalculator, constructors và factory cũ tiếp tục chạy; đường không thưởng không cần cấu hình mới. TaxRuleSet thêm optional liên kết, seed cũ không đổi. BH6/7, dependent periods, tạm nộp và biểu năm vẫn do S13/S14 kiểm soát. Chưa có UI/DB/data migration hoặc người dùng vận hành thật trong phạm vi này.
+
+## Rủi ro và rollback
+Rủi ro chính: double count gross/bonus, trừ BH/GTBT/NPT hai lần, chọn năm theo tên và lấy nhầm snapshot. Phát hiện bằng independent expected, invariant base+bonus=total, ID trùng xuyên tháng và timing biên năm. Rủi ro API/metadata cũ được kiểm bằng 82 test giữ nguyên và ca omitted/null/empty/zero; provenance bị mất được kiểm per-line/per-period/version, mutation input/output và rule giả. Metadata hợp lệ không chứng minh eligibility hay rà soát pháp luật đầy đủ; docs phải giữ Unverified.
+
+Rollback chỉ hoàn tác diff S15a theo từng tệp và ngừng dùng factory/API mới; giữ seed/caller cũ, ledger lịch sử và thay đổi người khác trong shared tree. Không reset/clean diện rộng, không git add/commit/push. Không có schema hoặc dữ liệu persisted cần chuyển đổi. Review chỉ bắt đầu sau khi AC mã/test/docs đã đủ bằng chứng, không bàn giao phần chính còn dở.
+
+## Chiến lược kiểm thử
+Expected là literal hoặc phép tính tay độc lập; không gọi production sinh expected. Các fixture đổi brackets/rates/giảm trừ và metadata rule giúp bắt hardcode, vẫn thỏa hợp đồng annual S14. Bao phủ riêng từng treatment/timing enum không hỗ trợ, thiếu bonus rule, basis/kỳ/year/coverage mismatch, gap provider và no-bonus không đòi rule.
+
+- Tháng BH0/NPT0: base30.000.000 + bonus20.000.000 = total50.000.000; GTBT15.500.000; TNTT34.500.000; PIT500.000 +2.000.000 +900.000 =3.400.000. Baseline không thưởng PIT950.000. Hai dòng12.000.000 và8.000.000 cho cùng total nhưng giữ hai ID; dòng0 không đổi tiền.
+- Năm: 12 base30.000.000, chỉ tháng12 bonus20.000.000, BH0/NPT0: base360.000.000, bonus20.000.000, total380.000.000, GTBT186.000.000, TNTT194.000.000, tax6.000.000+7.400.000=13.400.000. Tổng PIT tháng13.850.000 phải khác annual; baseline annual11.400.000. Nếu ActualWithheldTax950.000 mỗi tháng vẫn tổng11.400.000, Delta2.000.000, AdditionalPayable2.000.000, EstimatedOverpaid0.
+- Timing: tên cho2025 nhận01/01/2026 thuộc tháng1; nhận31/12/2026 thuộc12; tên cho2026 nhận01/01/2027 bị từ chối trong2026, ngày khác tháng input cũng lỗi. Hai dòng cùng ID sau Trim trong cùng/tháng khác lỗi; A/a khác ID hợp lệ. Thứ tự months đảo không đổi thứ tự kết quả; thiếu/trùng month lỗi.
+- Decimal: base30.000.000, bonus20.000.000,5, BH0/NPT0 -> TNTT34.500.000,5, PIT3.400.000,1 không rounding. Âm/null collection item/ID trắng/invalid enum; overflow tổng bonus/base+bonus/tổng năm được báo, không clamp tiền hoặc bỏ dòng.
+- Insurance/manual/auto: cùng InsuranceInput S13 trước/sau tăng bonus phải giữ base và DeductibleTotal, snapshot tháng6/7 vẫn khác đúng; tiền BH chỉ trừ một lần, dependent deductions không lặp, ActualWithheldTax không tăng. Input danh sách bị Clear/replace sau constructor và các attempt mutate output không đổi snapshot/kết quả.
+- Provenance: từng amount self-report Missing, taxable/timing Unverified và VerifiedOn null, per-line đúng kỳ/version; rule giả đổi metadata/rate cho expected tay; constructor/caller cũ/empty không bonus giữ số học, lỗi và provenance cũ.
+
+Chỉ b-feat thực chạy tuần tự hai lệnh dưới đây, giữ verify.command trống như yêu cầu:
+```powershell
+$env:NUGET_PACKAGES = Join-Path (Get-Location).Path '.dotnet/nuget-packages'
+& ./.dotnet/dotnet.exe test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore --disable-build-servers -m:1
+& ./.dotnet/dotnet.exe test TaxManager.sln --no-restore --disable-build-servers -m:1
+```
+SDK10.0.404/cache đã có; DOTNET_CLI_HOME/APPDATA nếu cần chỉ đặt vào temp được phép. Không restore/install/new package. Ghi exit code, passed/failed/skipped thật cho cả hai lệnh; không sửa 82 ca cũ để chạy xanh, không coi lint là test ứng dụng. Chưa kiểm ở b-req: build/test, hiệu lực pháp lý đầy đủ, eligibility/chứng từ, UI/DB và khấu trừ ngoài phạm vi.
+
+## Checklist nhất quán và bàn giao
+AC-1→TSK-1; AC-2→TSK-2; AC-3→TSK-3; AC-4→TSK-4; AC-5→TSK-5; AC-6→TSK-6; AC-7→TSK-7; AC-8→TSK-8; AC-9→TSK-9; AC-10→TSK-10. Mỗi TSK có đúng một [AC-N] và điều kiện xong đo được. Thứ tự: model/rule, tháng/năm, kiểm validation/provenance/BH, test thực, hoàn thiện docs rồi review. Mọi tệp dự kiến nằm trong allow Core/tests/docs0006/ledger hiện tại; không chạm protected_paths hay cần thay config. Chỉ ghi ledger hiện tại dù glob .bint/tasks/** rộng.
+
+b-feat phải xong mã/test/docs AC-1–AC-9 và ghi bằng chứng thật trước review; AC-10 và xác nhận review do root chốt sau. b-req để toàn bộ checkbox chưa xong, chạy bint task lint --strict, không approve/verify/status. Root/Bint Core điều phối bước tiếp bint run b-feat --task 01M7YBAX4GYN0XX7ZA6GQTDHC8, giữ models/config hiện tại và user tự commit.

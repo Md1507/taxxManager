@@ -1,0 +1,15 @@
+# Công việc
+
+Các checkbox dưới đây thuộc triển khai S15a, chưa được thực hiện ở b-req. Mỗi dòng ánh xạ đúng một tiêu chí. Thực hiện TSK-1/2 trước TSK-3/4, hoàn tất TSK-5/6/7 trước test toàn bộ; TSK-8/9 phải đủ trước TSK-10. Chỉ ghi bằng chứng thật; root chốt review.
+
+- [x] TSK-1 [AC-1]: Tạo dòng thưởng bất biến, treatment bắt buộc và ID Trim/Ordinal; giữ nhiều dòng, reject loại unsupported và không phân loại bằng tên — xong khi: ca ID trắng, A/a, dòng zero, nhiều dòng và invalid/default treatment kiểm chứng đúng hợp đồng.
+- [x] TSK-2 [AC-2]: Liên kết CashBonusRuleSet vào TaxRuleSet bằng optional trailing field và factory S15a riêng, gắn căn cứ taxable/timing/kỳ 2026 — xong khi: seed S11/S13/S14 giữ nguyên, thiếu/sai rule/kỳ/coverage bị reject và snapshot mới giữ nguồn Unverified đúng version.
+- [x] TSK-3 [AC-3]: Tạo API tháng ghép base gross chưa gồm thưởng với tổng thưởng rồi gọi MonthlySalaryCalculator hiện có — xong khi: BH0/NPT0 base30 triệu cộng thưởng20 triệu ra total50 triệu, TNTT34,5 triệu, PIT3,4 triệu và hai dòng12/8 triệu không mất ID.
+- [x] TSK-4 [AC-4]: Mở rộng SalaryMonthInput tương thích và tích hợp thưởng vào AnnualSalaryCalculator, giữ breakdown tháng/năm — xong khi: 12 tháng base30 triệu cộng thưởng20 triệu tháng12 ra gross380 triệu, TNTT194 triệu, tax13,4 triệu khác tổng PIT tháng13,85 triệu.
+- [x] TSK-5 [AC-5]: Giữ insurance mode S13, deductions và ActualWithheldTax độc lập khi thêm thưởng — xong khi: đổi bonus không đổi base/DeductibleTotal BH auto, manual/auto chỉ trừ một lần và tạm nộp950 nghìn mỗi tháng vẫn tổng11,4 triệu với Delta2 triệu ở ca năm chuẩn.
+- [x] TSK-6 [AC-6]: Validation tập trung trên dòng/tháng/năm và ID toàn năm, không fallback hoặc che overflow — xong khi: test reject null item, âm, ID trùng sau Trim trong/tháng khác, sai ReceivedOn, thiếu/trùng tháng, gap/năm chưa hỗ trợ/mismatch và overflow tổng.
+- [x] TSK-7 [AC-7]: Lưu breakdown và provenance từng dòng/kỳ/snapshot, copy và khóa collections — xong khi: assert input Missing, taxable/timing Unverified đúng version, rule giả được truyền đúng kỳ, mutation không đổi output và ca thưởng20.000.000,5 giữ PIT3.400.000,1.
+- [x] TSK-8 [AC-8]: Hoàn thiện bộ test mới expected độc lập, kiểm omitted/null-default/empty và giữ nguyên 82 ca cũ; chạy Core rồi solution với SDK/cache sẵn và no-restore — xong khi: cả hai lệnh test exit0 có passed/failed/skipped thật, bao phủ timing biên năm/tháng, no-bonus/zero, rule giả, lỗi và bất biến mà không sửa semantics test cũ.
+- [x] TSK-9 [AC-9]: Viết docs/decisions/0006-cash-bonuses.md và rà phạm vi diff, ghi bằng chứng mã/test/docs vào ledger phiếu này — xong khi: docs có API/gross loại thưởng/ngoại lệ/nguồn/điều khoản/chuyển tiếp/ví dụ/giới hạn/test thật/user tự commit, diff không chạm tệp cấm, package hay ledger cũ và không stage/commit/push.
+- [x] TSK-10 [AC-10]: Root điều phối review độc lập sau khi TSK-1 đến TSK-9 đã có bằng chứng, xử lý phát hiện rồi xác nhận bàn giao — xong khi: review đối chiếu đủ AC không còn lỗi nghiêm trọng chưa xử lý và root ghi kết luận thực sau khi mã, test, docs đã hoàn chỉnh.
+

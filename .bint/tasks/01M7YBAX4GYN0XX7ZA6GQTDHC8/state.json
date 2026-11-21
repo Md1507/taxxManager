@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "id": "01M7YBAX4GYN0XX7ZA6GQTDHC8",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T06:05:12Z",
+  "updated_at": "2026-11-21T06:22:26Z",
+  "base": "363cdafdf9ce77a6808fec4cddd43dc096bcb8be",
+  "reason": "S15a hoàn tất kỹ thuật: 89 test đạt, review 0 finding; user tự commit, nguồn pháp lý Unverified.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T06:05:12Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T06:10:36Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T06:10:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T06:16:52Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T06:22:26Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S15a hoàn tất kỹ thuật: 89 test đạt, review 0 finding; user tự commit, nguồn pháp lý Unverified."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "CashBonuses.cs CashBonus validation; CashBonusTests InputsAreExplicitAndImmutable, RejectsDuplicatePeriodsMissingRulesAndOverflow; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:40Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.CreateVietnam2026CashBonusProvider và CashBonusRuleSet; CustomSnapshotsAndCoverageAreRespected; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:40Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "CashBonusTests MonthlyAndAnnualUseIndependentExamples: 50 triệu gross, 34,5 triệu TNTT, 3,4 triệu PIT; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:41Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "CashBonusTests MonthlyAndAnnualUseIndependentExamples: gross 380 triệu, TNTT 194 triệu, PIT năm 13,4 triệu; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:41Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "CashBonusTests InsuranceAndWithheldAreIndependentOfBonus và MonthlyAndAnnualUseIndependentExamples; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:41Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "CashBonusTests RejectsDuplicatePeriodsMissingRulesAndOverflow, CustomSnapshotsAndCoverageAreRespected; AnnualSalaryTests kiểm trùng thiếu tháng; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:41Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "CashBonusTests InputsAreExplicitAndImmutable, CustomSnapshotsAndCoverageAreRespected, MonthlyAndAnnualUseIndependentExamples; Core 89 passed.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:41Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "Core và solution dotnet test --no-restore --disable-build-servers -m:1: mỗi lệnh 89 passed, 0 failed, 0 skipped; 82 test cũ giữ nguyên.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:42Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "docs/decisions/0006-cash-bonuses.md; git status chỉ Core, test mới, docs0006, ledger phiếu; Core và solution 89 passed; không stage/commit/push.",
+      "by": "agent",
+      "at": "2026-11-21T06:16:42Z"
+    },
+    {
+      "index": 10,
+      "met": true,
+      "evidence": "Review độc lập 01M7YC14SY961RQRCX36CNS2D7: 0 findings; reviewer chạy Core và solution mỗi lượt 89 passed, 0 failed, 0 skipped. Root đã chạy solution độc lập 89/89 và git diff --check đạt. Diff 5 tệp đúng phạm vi, cached diff rỗng, HEAD giữ 363cdaf; nguồn pháp lý vẫn Unverified. Hoàn tất mã, test, docs; bàn giao user tự commit.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T06:22:26Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Test null item thất bại do params nhận null là toàn bộ mảng null, không phải item null; sửa fixture truyền mảng chứa null.",
+      "at": "2026-11-21T06:13:46Z",
+      "by": "agent",
+      "run_id": "01M7YBNCDFH0GX5JGQ2GBFX1A2"
+    }
+  ],
+  "runs": [
+    "01M7YBB6BQTS6G7HFFBQVGQGE5",
+    "01M7YBB6P1K9Z0P42XKGGHPK0V",
+    "01M7YBNBZDNDP35GTANPFYFQBK",
+    "01M7YBNCDFH0GX5JGQ2GBFX1A2",
+    "01M7YC14HYC9SMM77WRY6PGS5G",
+    "01M7YC14SY961RQRCX36CNS2D7"
+  ],
+  "review_rounds": 1,
+  "depends_on": [
+    "01M7Y9GFD47ESD7PZ8Z8RBCP92"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-21T06:09:35Z",
+    "requirement": "2026-11-21T06:08:15Z",
+    "tasks": "2026-11-21T06:22:25Z"
+  }
+}

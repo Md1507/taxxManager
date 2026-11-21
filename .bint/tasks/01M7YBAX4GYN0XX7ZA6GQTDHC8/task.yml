@@ -1,0 +1,49 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7YBAX4GYN0XX7ZA6GQTDHC8
+goal: 'S15a: Thưởng bằng tiền chịu thuế theo tháng nhận và quyết toán năm 2026'
+request: |-
+  Người dùng nói "giờ sang bước tiếp theo" sau S14 đãdone và tựcommit363cdaf; gitclean,82test baseline. Thực hiện CHỈ S15a/BL-23a (mục đầu Bước1.5 PLAN.md và roadmap .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T): thưởng bằng tiền thông thường/khoản thưởng không định kỳ từ cùng đơn vị trả lương. Không triển khai phần tiếp S15b/c/d/e/f hoặc UI/DB. User tiếp tục TỰ COMMIT: không git add/commit/push. Root chỉ điều phối, b-req/b-feat/b-review qua bint run, Codex models theo config hiện tại sol/terra/sol,khôngsửa config. Shared tree.
+
+  Phạm vi: một hồ sơ NLĐ Việt Nam cư trú, năm2026, nguồn lương hiện tại; hỗ trợ ghi riêng các khoản thưởng bằng tiền THUỘC thu nhập chịu thuế (Tet/KPI/tháng13 là ví dụ nghiệp vụ khi caller xác nhận taxable), có ID ổn định, số tiền decimal, ngày thực nhận/chi trả. Kỳ tính theo ngày nhận,tránh lấy năm ghi tên thưởng hay ngày quyết định. Các khoản thưởng được miễn theo Điều8(4)a, thưởng chứng khoán/hiện vật, trả sau nghỉ việc/khấu trừ10%,khác nguồn,khoảntrợcấp/miễnthuế,chuyểnđổingoạitệ,nghiệpvụngoàiphạmvi phải loại trừ rõ hoặc reject loại input unsupported; không mặc định tất cả thu nhập bất thường chịu thuế,không phân loại qua tên/string. Chọn mô hình nhỏ gọn,tax treatment explicit có nguồn trong/liênkếtTaxRuleSet, khôngframeworkkholuật. Chưa cần tự hỗtrợmọithu nhập không định kỳ; nhánh thưởng tiền thông thường là giao được trong chặng này. Nếu planner nhận thấy thiếu thực sự cản triển khai thì ghi Q; không hỏi lại dữ liệu đã có từnguồnchínhthức hoặc quyền tựtra đã đượcusercho.
+
+  Yêu cầu: nối thưởng vào thuếtháng và tổnghợpnămS14 với phânrã lương gốc/thưởng/total chịu thuế, giữ từng dòng/kỳ/căn cứsnapshot. Không đếm đôi giữa gross và bổ sung: nghĩa gross phần mới phải rõ (gross chưa gồm các khoản thưởng liệt kê), caller không được nhập cùng khoản vào cả hai; chặnIDtrùng/dup cùngnăm giữa các dòng, copy/read-onlycollections. Nếu optional extension vào SalaryMonthInput và records thì giữconstructor/caller cũ bằng default trailing fields hoặc dùng đườngwrapper mới tương thích; không đổi output khi không cóthưởng/empty. ID các dòng đượcnormalize/so sánh rõ. Kỳthiếu/gap/unsupportedyear/bonusngoàitháng hoặc năm input phải báo lỗi, không âmthầm bỏ hay gán năm gần nhất. Không suy baseBH tăng khi cóthưởng: insurance input riêngS13,manual/auto mode chỉtrừ1lần, không auto cộng bonus vàobase. ActualWithheldTax làinputthực chungtháng,khôngtựtăng/mặcđịnhbonuswithheld. Khôngtựchiaratekhấu trừbonus haytrừGTBT/NPT lần2: lương+bonus gộp rồi dùng biểu lũy tiến1lần, annualgross cộngbonuschỉ1lần,annualrecompute theoS14,NoRoundinggiữnguyêndecimal. PITmonth mới nếu wrapper thì gọi APIcũ; luồngnăm dùngAnnualSalaryCalculator để không duplicate côngthức. Provenance phải truyđượcsốnhập Missing và phânloạitaxable/timing nguồnUnverified đúngkỳ; khôngđổiVerifiedhaydựngvbplIDs/URL.
+
+  Nguồnprimary root vừa browse và xem scan: https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf trang4 Điều8(1),trang5 Điều8(2)điểmi khoảnthưởngtiền/khôngtiền, trang7 Điều8(4)a danh sáchthưởng khôngtính vàoincome;trang30 Điều46(3) thờiđiểmnhận/trả;trang35-36 Điều50(1)biểulũytiến/đốitượng,khoản2trảsauHĐLĐ phạmvi ngoàiS15a. Trang57 Điều69(1)a áp lương cá nhâncưtrú từkỳ2026 và70(2)chuyểntiếpđiềuchỉnhquyếttoán. Primarysourcelinks còn https://xaydungchinhsach.chinhphu.vn/cach-tinh-thue-thu-nhap-ca-nhan-tu-tien-luong-tien-cong-119260623094516526.htm (Điều8–10 Luật109hợpnhất112) và https://baochinhphu.vn/tra-luong-sau-khi-nghi-viec-tru-thue-tncn-ra-sao-102260910093753041.htm xácnhận phạmvi trảsauHĐLĐ. Không coi nameTet tự chứngminh eligibility. Nguồnđãtra do user cho phépchọnnguồncơquanchínhthứcmới nhất;khôngtựnạpsốtừtrínhớ. Dữliệu thamkhảoUnverified nhưS14,khôngcầnngườidùngtựtìmnguồnđãcó.
+
+  Artifactđãtảingoàirepo: C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s14-sources/253m-ndcp.signed.pdf scan61trang và112-vbhn-vpqh.pdf scan16trang,ảnh253-page-30.png,33/34/35/36/56/57.png và112-page-8.png. Ảnhbổsungđãrender rootxem tại C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s15a-sources/253-page-4.png,5.png,6.png,7.png,8.png. Pymupdf ở C:/Users/LENOVO/AppData/Local/Temp/taxxManager-pdf-deps nếu cầnrender,khôngcàithêm/tải lại. GiữPDFtoànvănngoàirepo,docs chỉlink/tómtắtngắncóđiềukhoản.
+
+  Testexpectedđộclập,khônggọiproduction sinhexpected. Case BH0/NPT0 lươnggốc30triệu,bonus20triệu cùngtháng: total50triệu,TNTT34.5triệu,tax3.4triệu=0.5+2+0.9; baseline30triệutax0.95triệu. Cả12thánglương30triệu+bonus20triệu chỉtháng12: annualgross380triệu,GTBT186triệu,TNTT194triệu,annualtax13.4triệu=6+7.4,khôngphải cộngtaxtháng; baselineannual11.4triệu. Ghi rõgrossbase chưa gồmthưởng. Thưởngcho2025nhận2026 tính2026; cho2026nhận2027 khôngđượcép2026 (tuỳAPIreject năm/targetmonth). Kiểm nhiều dòng cùngtháng,IDtrùng trong/thángkhác,timingbiênnăm/tháng,decimalfraction,zero/empty tươngthích,âm/null/invalidtype/mismatch/gap/missingrule/overflow/mutation. BHautoS13khôngđổi khi bonusđổi,khôngtrừdeductions2lần,thuếthựctạmnộpkhôngđổi. Phânloại/căn cứđúngtừngdòng/kỳ/version,rulegiảbắt hardcode;82test cũgiữ semantics,khôngsửa tests cũ đểchoqua.
+
+  ScopeCore/tests/docs/decisions/0006-cash-bonuses.md vàledgerphiếunày. DenyPLAN/config/global/solution/Web/Data/csproj/docsold/ledgerold. Cóthểmởrộng TaxRuleSet optional cuối/factoryS15a nếucần giữseedsS11/S13/S14 metadata cũ; đừngthay đổi seedđãtest. Khôngnewpackage/networkCore. Tests chạytrựctiếp project và solution .dotnet/dotnet.exe test --no-restore --disable-build-servers -m:1;NUGET_PACKAGES=.dotnet/nuget-packages,DOTNET_CLI_HOME/APPDATAtempnếucần,SDK10.0.404sẵn,khôngrestore/càithêm. verify.commandgiữtrống nhưS14,khôngapprove. Child triểnkhai phảihoànthànhACmã/test/docs trướcreview thayvìđểdởvàbáophầnchínhxong. GhiACbằngchứngthật,ACreviewđểrootchốtsau. Docs0006cóAPI/phạmvi/nguồn/điềukhoản/chuyểntiếp/vídụđộclập/giớihạn/testthật/usertựcommit. B-req chỉ ghiartifactquaBint, TSKmỗi dòng1[AC-N] tươngthíchBint lint. Root sẽfinalize trướcbàngiao nhưngkhôngstage/commit/push.
+verify:
+  command: ""
+  criteria:
+    - Khoản thưởng tiền chịu thuế được khai riêng bằng ID Trim/Ordinal, số tiền decimal không âm, ngày nhận và phân loại tường minh; nhiều dòng hợp lệ được giữ riêng, loại ngoài phạm vi hoặc enum không hỗ trợ bị từ chối và không suy phân loại từ tên.
+    - Quy tắc thưởng và thời điểm nhận liên kết TaxRuleSet theo kỳ năm 2026, có ID/version/căn cứ nguồn chính thức Unverified; factory S15a riêng giữ nguyên seed S11/S13/S14 và báo lỗi khi thiếu hoặc sai rule/kỳ.
+    - Thuế tháng cộng lương gốc chưa gồm thưởng với tổng thưởng đúng một lần rồi gọi bộ tính tháng hiện có, giảm trừ một lần; ca BH0/NPT0 lương 30 triệu và thưởng 20 triệu cho TNTT 34,5 triệu và thuế 3,4 triệu.
+    - AnnualSalaryCalculator tích hợp thưởng đúng tháng nhận vào đủ 12 tháng, giữ phân rã lương gốc/thưởng/tổng năm và tính lại bằng biểu năm S14; lương 30 triệu mỗi tháng và thưởng 20 triệu tháng 12 cho gross 380 triệu, TNTT 194 triệu và thuế năm 13,4 triệu.
+    - Bảo hiểm tay hoặc tự tính S13 chỉ trừ một lần, bonus không tự đổi base bảo hiểm; ActualWithheldTax và tổng tạm nộp giữ đúng input thực, không sinh thuế khấu trừ thưởng hay giảm trừ riêng lần hai.
+    - Validation từ chối null item, ID rỗng/trùng cùng năm kể cả khác tháng, tiền âm, sai tháng/năm nhận, thiếu/trùng tháng, gap, unsupported year và cấu hình mismatch; giữ lỗi decimal overflow và quy tắc ID phân biệt hoa/thường.
+    - Kết quả bất biến giữ từng dòng thưởng, ngày nhận, tháng/năm, lương gốc/tổng thưởng/total và snapshot thực dùng; số tự khai Missing, phân loại/timing Unverified đúng kỳ/version, copy/read-only collections chống mutation và không rounding.
+    - Giữ constructor/caller và semantics của 82 ca cũ, không đổi kết quả số học khi không có thưởng hoặc danh sách rỗng; test mới có expected độc lập bao phủ số học, timing, bảo hiểm, lỗi, provenance, rule giả và bất biến; test Core rồi solution thực chạy xanh.
+    - Docs0006 ghi API, gross chưa gồm thưởng, phạm vi và ngoại lệ, nguồn/điều khoản/chuyển tiếp 2026, ví dụ độc lập, giới hạn và kết quả test thật; diff chỉ Core/tests/docs0006/ledger phiếu này, không package/network Core hay sửa PLAN/config/setup/solution/csproj/ledger cũ và không git add/commit/push.
+    - Review độc lập đối chiếu toàn bộ tiêu chí và diff S15a không còn lỗi nghiêm trọng chưa xử lý; root xác nhận bằng chứng và hoàn tất bàn giao sau khi mã, test và docs đã đủ.
+scope:
+  allow:
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/0006-cash-bonuses.md
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - TaxManager.sln
+    - '**/*.csproj'
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+constraints:
+  - 'User tự commit: không git add/commit/push. Chỉ S15a; giữ API và 82test cũ. Root điều phối qua bint run,khôngsửaPLAN/config/setup/model hoặcledgercũ.'
+autonomy: ask_on_protected

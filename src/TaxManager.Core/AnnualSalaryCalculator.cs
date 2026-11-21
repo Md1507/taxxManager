@@ -10,12 +10,14 @@ public sealed record SalaryMonthInput
     public decimal ActualWithheldTax { get; }
     public decimal? InsuranceAmount { get; }
     public InsuranceInput? InsuranceInput { get; }
-    public SalaryMonthInput(int year, int month, decimal grossIncome, decimal actualWithheldTax, decimal? insuranceAmount = null, InsuranceInput? insuranceInput = null)
+    public IReadOnlyList<CashBonus> Bonuses { get; }
+    public SalaryMonthInput(int year, int month, decimal grossIncome, decimal actualWithheldTax, decimal? insuranceAmount = null, InsuranceInput? insuranceInput = null, IEnumerable<CashBonus>? bonuses = null)
     {
         if (year is < 1 or > 9999) throw new ArgumentOutOfRangeException(nameof(year));
         if (month is < 1 or > 12) throw new ArgumentOutOfRangeException(nameof(month));
         if (grossIncome < 0 || actualWithheldTax < 0 || insuranceAmount < 0) throw new ArgumentOutOfRangeException(nameof(grossIncome), "Amounts cannot be negative.");
         if (insuranceAmount.HasValue == (insuranceInput is not null)) throw new ArgumentException("Specify exactly one insurance mode.");
+        Bonuses = Array.AsReadOnly((bonuses ?? []).ToArray());
         Year = year; Month = month; GrossIncome = grossIncome; ActualWithheldTax = actualWithheldTax; InsuranceAmount = insuranceAmount; InsuranceInput = insuranceInput;
     }
 }
@@ -23,6 +25,10 @@ public sealed record SalaryMonthInput
 public sealed record SalaryMonthResult(int Year, int Month, TaxRuleSet RuleSet, IReadOnlyList<DependentMonth> Dependents,
     MonthlySalaryResult Salary, decimal ActualWithheldTax, InsuranceResult? InsuranceDetails)
 {
+    public decimal BaseGrossIncome { get; init; }
+    public decimal BonusTotal { get; init; }
+    public decimal TotalGrossIncome => Salary.GrossIncome.Value;
+    public IReadOnlyList<CashBonusLineResult> Bonuses { get; init; } = Array.Empty<CashBonusLineResult>();
     public int DependentCount => Dependents.Count;
     public LegalBasis WithheldTaxBasis => LegalBasis.Missing;
 }
@@ -32,6 +38,8 @@ public sealed record AnnualSalaryResult(int Year, IReadOnlyList<SalaryMonthResul
     decimal TaxableIncomeBeforeClamp, decimal TaxableIncome, PitResult Pit, decimal TotalWithheldTax, decimal Delta,
     decimal AdditionalPayable, decimal EstimatedOverpaid, SalaryRoundingPolicy Policy)
 {
+    public decimal BaseGrossIncome => Months.Sum(m => m.BaseGrossIncome);
+    public decimal BonusTotal => Months.Sum(m => m.BonusTotal);
     public decimal TotalDeductions => Insurance + PersonalDeduction + DependentDeduction;
     public decimal RawTax => Pit.TotalTax.Value;
     public decimal AppliedTax => RawTax;
@@ -82,6 +90,13 @@ public static class AnnualSalaryCalculator
                 pair.First.Rate != pair.Second.Rate || pair.First.UpperBound * 12m != pair.Second.UpperBound))
                 throw new ArgumentException("Monthly and annual tax brackets mismatch.");
         }
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var input in inputs)
+            foreach (var bonus in input.Bonuses)
+            {
+                if (bonus is null) throw new ArgumentNullException("bonus item");
+                if (!ids.Add(bonus.Id)) throw new ArgumentException("Duplicate bonus ID in year.");
+            }
         var results = new List<SalaryMonthResult>(); decimal gross = 0, insurance = 0, withheld = 0; int dependentMonths = 0;
         var first = new DateOnly(year, 1, 1); var last = new DateOnly(year, 12, 1);
         foreach (var input in inputs)
@@ -93,9 +108,11 @@ public static class AnnualSalaryCalculator
             InsuranceResult? detail = null; decimal amount;
             if (input.InsuranceInput is not null) { detail = InsuranceCalculator.Calculate(input.InsuranceInput, rule, year, input.Month); amount = detail.DeductibleTotal; }
             else amount = input.InsuranceAmount!.Value;
-            var salary = MonthlySalaryCalculator.Calculate(input.GrossIncome, amount, active.Length, rule);
-            results.Add(new(year, input.Month, rule, new ReadOnlyCollection<DependentMonth>(active), salary, input.ActualWithheldTax, detail));
-            gross += input.GrossIncome; insurance += amount; withheld += input.ActualWithheldTax; dependentMonths = checked(dependentMonths + active.Length);
+            var bonusResult = CashBonusCalculation.Prepare(input, rule);
+            var salary = MonthlySalaryCalculator.Calculate(bonusResult.TotalGross, amount, active.Length, rule);
+            results.Add(new SalaryMonthResult(year, input.Month, rule, new ReadOnlyCollection<DependentMonth>(active), salary, input.ActualWithheldTax, detail)
+                { BaseGrossIncome = input.GrossIncome, BonusTotal = bonusResult.BonusTotal, Bonuses = bonusResult.Lines });
+            gross += bonusResult.TotalGross; insurance += amount; withheld += input.ActualWithheldTax; dependentMonths = checked(dependentMonths + active.Length);
         }
         decimal dependentDeduction = dependentMonths * annual.DependentMonthDeduction;
         decimal before = gross - insurance - annual.AnnualPersonalDeduction - dependentDeduction;
