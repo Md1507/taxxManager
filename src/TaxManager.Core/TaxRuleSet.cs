@@ -68,11 +68,12 @@ public sealed class TaxRuleSet
     public LegalBasis TaxBasis { get; }
     public InsuranceRuleSet? InsuranceRules { get; }
     public SalaryRoundingPolicy? RoundingPolicy { get; }
+    public AnnualSalaryRuleSet? AnnualSalaryRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -95,7 +96,7 @@ public sealed class TaxRuleSet
         PersonalDeductionBasis = personalDeductionBasis ?? LegalBasis.Missing;
         DependentDeductionBasis = dependentDeductionBasis ?? LegalBasis.Missing;
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
-        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy;
+        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -117,6 +118,32 @@ public sealed class TaxRuleSet
 
     // PLAN data only; FromYear is a label, not a legal effective date.
     public static TaxRuleSet Vietnam2026 { get; } = CreateVietnam2026();
+    public static TaxRuleProvider CreateVietnam2026AnnualSalaryProvider(InsuranceRegion region)
+    {
+        const string law = "https://xaydungchinhsach.chinhphu.vn/luat-thue-thu-nhap-ca-nhan-119260623093630882.htm";
+        const string decree = "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf";
+        LegalBasis Basis(string id, string article, string url, string period) => new(VerificationStatus.Unverified,
+            id, "2026-1", article: article, sourceUrl: url, period: period);
+        var personal = Basis("personal-2026", "10", law, "2026 annual");
+        var dependent = Basis("dependent-2026", "10", law, "2026 dependent-month");
+        var income = Basis("income-2026", "8", law, "2026");
+        var tax = Basis("tax-2026", "9", law, "2026 annual");
+        var annualTax = new TaxRuleSet("vn-salary-annual-2026", "1", "2026 annual", 2026, 186_000_000m, 6_200_000m,
+            [new(120_000_000m, .05m, tax), new(360_000_000m, .10m, tax), new(720_000_000m, .20m, tax), new(1_200_000_000m, .30m, tax), new(null, .35m, tax)], personal, dependent, income, tax);
+        var annual = new AnnualSalaryRuleSet(2026, annualTax, Basis("dependent-period-2026", "48(2)", decree, "2026"),
+            Basis("settlement-2026", "48(1)(b); 51; 68", decree, "2026"), Basis("period-2026", "66; 69", decree, "2026"),
+            Basis("transition-2026", "70", decree, "2026"));
+        var old = CreateVietnam2026SalaryProvider(region);
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = old.GetForMonth(2026, month);
+            var monthlyTax = Basis("monthly-tax-2026", "9", law, "2026 monthly");
+            return new TaxRuleSet("vn-salary-monthly-2026", "1", "2026 monthly", 2026, 15_500_000m, 6_200_000m,
+                [new(10_000_000m, .05m, monthlyTax), new(30_000_000m, .10m, monthlyTax), new(60_000_000m, .20m, monthlyTax), new(100_000_000m, .30m, monthlyTax), new(null, .35m, monthlyTax)],
+                personal, dependent, income, monthlyTax, s.InsuranceRules, s.RoundingPolicy, annual);
+        }
+        return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
     public static TaxRuleProvider CreateVietnam2026SalaryProvider(InsuranceRegion region)
     {
         if (!Enum.IsDefined(region)) throw new ArgumentOutOfRangeException(nameof(region));

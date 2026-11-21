@@ -1,0 +1,12 @@
+# Đầu việc S14
+- [x] TSK-1 [AC-4]: Thêm AnnualSalaryRuleSet và factory S14 có biểu năm, căn cứ 2026, BH/policy kế thừa từng kỳ, constructor tùy chọn tương thích — xong khi: cấu hình annual đúng ngưỡng/rate/đơn vị/kỳ và citation Unverified, seed/API cũ không đổi, test thiếu/mismatch rule được định nghĩa.
+- [x] TSK-2 [AC-1]: Thêm lịch dependent bất biến, validation ID/range/overlap, clip năm và kết quả theo tháng — xong khi: test inclusive, gián đoạn, qua năm, trùng/chồng/ID rỗng, mutation và ID/khoảng/basis theo tháng có expected độc lập.
+- [x] TSK-3 [AC-2]: Thêm input/kết quả 12 tháng, sort/validation và hai mode BH loại trừ nhau, tích hợp API tháng S11/S13 — xong khi: thiếu/trùng/sai năm bị từ chối, tháng zero manual0 hợp lệ, input đảo ra thứ tự1–12, actualWithheld bắt buộc, autoBH giữ chi tiết và trừ đúng một lần.
+- [x] TSK-4 [AC-3]: Tổng hợp năm bằng số thô, kiểm tương thích phần thuế của 12 snapshot, áp annual rule rồi tính Delta/hai chiều — xong khi: fixture A ra PIT2.700.000/overpaid9.000.000, fixture B ra PIT7.680.000, ba chiều Delta đúng, BH6/7 đúng snapshot và genuine tax change/gap/annual mismatch báo lỗi.
+- [x] TSK-5 [AC-6]: Hoàn thiện bộ kiểm thử độc lập cho biên annual, tháng âm/zero, lỗi, overflow, decimal lẻ và bất biến/provenance — xong khi: mỗi nhóm test trong plan có assert kết quả hoặc lỗi cụ thể, expected không sinh từ production và sáu tệp/55 ca cũ được giữ.
+- [x] TSK-6 [AC-7]: Chạy test Core rồi solution theo hai lệnh trong plan, sửa lỗi S14 trong scope — xong khi: cả hai lệnh exit0 với failed0/skipped0, có số passed thực tế và bằng chứng 55 ca cũ vẫn chạy, không restore/cài package.
+- [x] TSK-7 [AC-8]: Viết docs0005 về API/đơn vị/căn cứ/kỳ, ví dụ độc lập, decimal/giới hạn và user tự commit — xong khi: tài liệu có bảng nguồn 8/9/10, 48/68/69/70 và kết quả hai lệnh test thật, không gọi dữ liệu Unverified là đã xác minh hay dự báo hoàn là hoàn thực tế.
+- [x] TSK-8 [AC-8]: Bàn giao diff và bằng chứng cho review độc lập, chỉ cập nhật ledger phiếu này — xong khi: reviewer không còn lỗi nghiêm trọng và root xác nhận AC-8 sau review, diff chỉ có Core/tests/docs0005/ledger hiện tại, không git add/commit/push và không sửa PLAN/config/setup/ledger cũ.
+- [x] TSK-9 [AC-5]: Kiểm đầy đủ dữ liệu truy nguồn và tính bất biến của kết quả tháng/năm — xong khi: từng amount/bracket có rule và basis thực dùng, dependent có ID/khoảng/tháng, tổng năm truy được contributions tháng, nguồn Unverified/input Missing và mutation collection không đổi kết quả, decimal lẻ không bị làm tròn.
+
+

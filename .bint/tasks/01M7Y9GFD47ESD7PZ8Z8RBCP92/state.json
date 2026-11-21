@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "id": "01M7Y9GFD47ESD7PZ8Z8RBCP92",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T05:33:18Z",
+  "updated_at": "2026-11-21T05:57:50Z",
+  "base": "00bb4502ac6becc5cdc712f6f7aea16236b4d68d",
+  "reason": "S14 hoàn tất kỹ thuật: 82test đạt, review độc lập0finding. GiữUnverified; đểngườidùng tựcommit, khôngstage/commit/push.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T05:33:18Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T05:41:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T05:41:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T05:48:42Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T05:49:11Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn thiện AC4/5/6/7 còn thiếu trước review độc lập"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T05:53:24Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-21T05:57:50Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S14 hoàn tất kỹ thuật: 82test đạt, review độc lập0finding. GiữUnverified; đểngườidùng tựcommit, khôngstage/commit/push."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Chưa kiểm tra đầy đủ metadata kỳ/căn cứ của cấu hình annual do caller cung cấp; cần hoàn thiện và test mismatch.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:11Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "AnnualSalaryTests.PeriodsClipAreInclusiveAndRejectOverlap: giao hai đầu, gián đoạn, cắt năm, từ chối chồng và ID rỗng; Core 70 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:11Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "AnnualSalaryTests: fixture 2.700.000 và 7.680.000, tháng âm, ba chiều chênh lệch; Core 70 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:11Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "AnnualSalaryTests: thiếu/trùng/sai năm, thứ tự đảo, zero, hai chế độ BH và bảo hiểm 6/7; Core 70 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:11Z"
+    },
+    {
+      "index": 6,
+      "met": false,
+      "evidence": "Chưa kiểm tra đầy đủ mismatch metadata kỳ/căn cứ của cấu hình annual do caller cung cấp.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:11Z"
+    },
+    {
+      "index": 7,
+      "met": false,
+      "evidence": "Hai bộ test 70 passed, 0 failed/skipped; còn thiếu một số case kế hoạch yêu cầu, gồm ±1 tại mọi biên và annual mismatch metadata.",
+      "by": "agent",
+      "at": "2026-11-21T05:48:12Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "AnnualSalaryTests.PeriodsClipAreInclusiveAndRejectOverlap: bao gồm hai đầu, gián đoạn, cắt năm, chồng khoảng và ID rỗng; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:13Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "AnnualSalaryTests kiểm tra thiếu/trùng/sai năm, thứ tự đảo, zero, hai mode BH và snapshot 6/7; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:13Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "AnnualTaxClampsOnceAndUsesActualWithheld và DependentMonthsAndThreeDirections: PIT 2700000 và 7680000, ba chiều chênh lệch; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "AnnualSalaryRuleSet kiểm metadata kỳ, ID/version/nguồn/điều khoản và effective dates; AnnualSalaryTests kiểm sai đồng loạt, mismatch giữa snapshot, gap, policy, tax change và BH 6/7; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "AnnualSalaryTests kiểm 12 tháng, Missing/Unverified, cap basis NĐ73/161 tháng 6/7, collection copy, snapshot và decimal lẻ; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "AnnualSalaryTests kiểm null, âm, tháng/năm, ID/range, mode BH, gap, policy và metadata sai, overflow và mutation; Core 82 passed.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Core và TaxManager.sln với --no-restore --disable-build-servers -m:1 đều exit 0: 82 passed, 0 failed/skipped; có expected độc lập tại các ngưỡng năm ±1, lịch NPT, ba chiều và BH 6/7; 55 ca cũ giữ nguyên.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 8,
+      "met": false,
+      "evidence": "Docs0005 đã cập nhật API, nguồn, ví dụ, giới hạn và hai suite 82 passed; review độc lập chưa diễn ra nên chưa chứng minh không còn lỗi nghiêm trọng; root xác nhận sau review.",
+      "by": "agent",
+      "at": "2026-11-21T05:53:14Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "Docs0005 có API, nguồn Điều8/9/10 và NĐ253 Điều48/68/69/70, ví dụ độc lập, giới hạn Unverified/decimal và user tựcommit. Reviewrun01M7YAP16QFS0FGVASC2C9JZ42 vòng1 không có finding, đốichiếuAC1-7/scope. Reviewer Core và solution mỗi lệnh82passed/0failed/skipped; root tựchạy lại solution82passed exit0. git diff --check exit0, diffcached rỗng, HEAD vẫn00bb450, không chạm55testcũ/PLAN/config/setup/ledgercũ. Chốt kỹthuật thamkhảoS14, khôngxácnhậnpháplý.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T05:57:48Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Lệnh test ban đầu bị từ chối tạo C:\\Users\\LENOVO\\.dotnet; chạy lại với DOTNET_CLI_HOME và APPDATA trong thư mục tạm được phép.",
+      "at": "2026-11-21T05:44:13Z",
+      "by": "agent",
+      "run_id": "01M7YA08KW1RHMDYYP5SHCXCHQ"
+    },
+    {
+      "step": "b-feat",
+      "message": "Test S14 không biên dịch: target-typed new trong đối số params không suy ra DependentPeriod; sửa kiểu tường minh.",
+      "at": "2026-11-21T05:45:20Z",
+      "by": "agent",
+      "run_id": "01M7YA08KW1RHMDYYP5SHCXCHQ"
+    },
+    {
+      "step": "b-feat",
+      "message": "Chưa hoàn tất: validation metadata kỳ/căn cứ annual do caller cung cấp và bộ test toàn bộ biên ±1, mismatch theo kế hoạch còn thiếu; cần tiếp tục trước review độc lập. Hai suite 70 passed, 0 failed, 0 skipped.",
+      "at": "2026-11-21T05:48:31Z",
+      "by": "agent",
+      "run_id": "01M7YA08KW1RHMDYYP5SHCXCHQ"
+    }
+  ],
+  "runs": [
+    "01M7Y9GYQG1BZ3T28FE7SJVBYG",
+    "01M7Y9GYZ805AQ21R7F660F7F9",
+    "01M7YA0893P8XQH6YXRKBFKYE2",
+    "01M7YA08KW1RHMDYYP5SHCXCHQ",
+    "01M7YADMABZJEMDC137RGVWFT0",
+    "01M7YADMHCAF68YFQFXCH8Y72V",
+    "01M7YAP0X345011ZTRZ7NXK2AY",
+    "01M7YAP16QFS0FGVASC2C9JZ42"
+  ],
+  "review_rounds": 1,
+  "depends_on": [
+    "01M7Y733A040Z7XRKCHT815N61"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-21T05:40:52Z",
+    "requirement": "2026-11-21T05:40:09Z",
+    "tasks": "2026-11-21T05:57:48Z"
+  }
+}

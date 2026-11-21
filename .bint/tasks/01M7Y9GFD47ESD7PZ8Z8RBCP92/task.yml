@@ -1,0 +1,53 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M7Y9GFD47ESD7PZ8Z8RBCP92
+goal: 'S14: Người phụ thuộc theo tháng và ước tính quyết toán lương năm2026'
+request: |-
+  Thực hiện Bước1.4 / BL-22 / S14 của PLAN.md và roadmap .bint/tasks/01M7WZSJJDNS1D97A7J19YN37T: dependent theo tháng bắt đầu/kết thúc; tổng hợp đủ12tháng và ước tính quyết toán thuế lương cá nhân cư trú, so thuế năm với thực tế tạm nộp để ra nộp thêm/nộp thừa dự kiến. User vừa yêu cầu làm và từ giờ USER TỰ COMMIT: tuyệt đối không git add/commit/push. Shared working tree,HEAD00bb450,S13done,55test xanh. Giữ model/config:planner và reviewer Codex gpt-6.1-sol,implementer gpt-6.1-terra;root chỉ điều phối qua bint run.
+
+  Chỉ Core/tests/docs0005/ledger của phiếu này. Không UI/DB/laterstep/newpackage, không sửa PLAN/config/setup/ledger cũ. Giữ55case/API cũ; mở rộng constructor tương thích nếu cần. Tiền/rate decimal, luật trong TaxRuleSet, không hardcode trong engine hay network trongCore. User chọn giữ nguyên decimalS13 tiếp tục áp dụng; không tự rounding. Nguồn Unverified, không dựngvbpl/Verified. User cho phép tự tra nguồn chính thức mới nhất, không lặp yêu cầu user tự tìm số liệu đã đủ từ nguồn; chỉ hỏi khi có thiếu dữ liệu thật sự cản trở.
+
+  Phạm vi hợp lý: ước tính lương thông thường năm dương lịch2026 của NLĐViệtNam cư trú, một hồ sơ/một nguồn lương. Tháng không thu nhập là bản ghi zero tường minh, thiếu tháng báo lỗi. Không tự đánh giá cư trú/đủ điều kiện phụ thuộc/chứng từ/hồ sơ hợp lệ/thu nhập miễn. Caller cung cấp khoảng THÁNG ĐƯỢC GIẢM TRỪ đã đủ điều kiện và thực tạm nộp. Tháng đăng ký khác tháng bắt đầu nghĩa vụ nuôi dưỡng khi quyết toán; không đồng nhất hai khái niệm. Range active bao hàm hai đầu, IDdependent ổn định, có gián đoạn và cắt theo năm khi qua năm; reject duplicate/overlap cùngID để tránh đếm trùng. Tháng/ID/căn cứ theo kết quả. Chưa đánh giá hồ sơ hay hoàn tiền thực tế, miễn ngưỡng thủ tục; chỉ ước tính chênh lệch số học.
+
+  Nguồn primary root đã browse và xem scan: NĐ253/2026/NĐ-CP https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf (61trang,tải sẵn ngoài repo C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s14-sources/253m-ndcp.signed.pdf,ảnh trang30-38,51-54 cùng thư mục). Trang33 Điều48(1)b giảm trừ bản thân chưa đủ12tháng được đủ12khi quyết toán;48(2)a đã đăng ký thuế/dependent,hồ sơ trước31/12, chưa tính trong năm thì từ tháng phát sinh nghĩa vụ nuôi dưỡng;48(2)b tạm giảm trong năm từ khi đăng ký,đủ tháng. Trang34 Điều48(2)b,c mộtdependent chỉ cho mộtngườinộpthuế trongnăm. Trang30 Điều46(2)BH nămnào trừnămđó,46(3)thu nhập theo thời điểm trả/nhận. Trang38 Điều51(1)quyết toán năm;trang54 Điều66(1)a kỳnămdươnglịch. Cần xem thêm Điều68/69 cuốiPDF để rõ hoàn/chuyển tiếp. Trang giới thiệu nguồn có ảnh/PDF https://xaydungchinhsach.chinhphu.vn/nghi-dinh-253-2026-nd-cp-huong-dan-thi-hanh-luat-thue-thu-nhap-ca-nhan-119260713171348107.htm . Python pymupdf đã có ngoài repo tại C:/Users/LENOVO/AppData/Local/Temp/taxxManager-pdf-deps;PDF có thể scan,chỉ render trang cần,không cài thêm.
+
+  Nguồn Chính phủ biểu năm2026 120/360/720/1200triệu,rate5/10/20/30/35%,tương ứng12lần tháng: https://xaydungchinhsach.chinhphu.vn/chi-tiet-bieu-thue-thu-nhap-ca-nhan-luy-tien-tung-phan-119260327091407544.htm . VBHN112(hợp nhất109/2025+09/2026) mới hơn tại https://xaydungchinhsach.chinhphu.vn/luat-thue-thu-nhap-ca-nhan-119260623093630882.htm ;trang tính lương https://xaydungchinhsach.chinhphu.vn/cach-tinh-thue-thu-nhap-ca-nhan-tu-tien-luong-tien-cong-119260623094516526.htm . Planner đối chiếu Điều8/9/10,citation và kỳ chuyển tiếp trước nạp rule năm, không dùng TT111 cũ làm căn cứ chính2026. User từng gửi scan6trang C:/Users/LENOVO/Downloads/87_03072026_182404.pdf (hồ sơ/điều kiệndependent,không tự thêm đánh giá hồ sơ vàoS14). NĐ398 giảmthuếcánhânkinhdoanh ngoài phạmvi lương này.
+
+  Kết quả12tháng thứ tự,sốdependent+ID/period/căn cứ,gross/BH/giảmtrừ/thuếtháng và thực tạm nộp riêng; tổnggross/BH/giảmtrừ năm,TNTT năm trước/sauclamp,PIT lũy tiếnNĂM,tạmnộp,chênhlệchcódấu,hai sốhoàn-dự-kiến/nộpthêm khôngâm khôngcùngdương. Thuếnăm tính lại từ tổngincome trừ tổngdeductions rồi clamp MỘT LẦN,KHÔNG=sumtaxtháng hay sumTNTTtháng đãclamp. Tạmnộp inputthực,không mặcđịnh taxtháng. GTBT12tháng,NPTtheoactivemonths. Provenance đúngtừngtháng kểcảBHđổitháng7. GetForYearS12từchốinhiềusnapshot thì không bypasschọntháng1. Annualrule tườngminh theo kỳ; phầnthuế nếu thậtđổi giữa năm chưacócontract thì báo lỗiunsupported,thiếu/gap/mismatch báo rõ. Cóthểsotínhtươngthích phầnthuế thay referenceequality doBHđổi2026. Planner chọnAPInhỏnhất, nhậpBHthủcôngchothángzero và tíchhợpkếtquảtựtínhS13chothángcóđóng khôngđếm2lần.
+
+  Testexpectedtínhđộclập khônggọiproduction sinh: NPTgiữanăm,kếtthúc,giánđoạn,quănăm,duplicate/overlapID;missing/duplicate/wrongyear/outofordermonth;null/âm/overflow/mutationsnapshot. Đủ12thángthu nhậpbiếnđộng cho taxnămkhácsumtaxtháng,âmvàithángkhôngmấtGTnăm,hoàn/nộpthêm/cânbằng;BH6/7đúngsnapshot+citation. Caseđộclậprootgợiý:1-6gross0/BH0;7-12gross40triệu/BH0,0NPT:annualgross240triệu,trừ186triệu,TNTT54triệu,annualtax2.7triệu;monthly6x1.95triệu=11.7triệu,với tạmnộp11.7triệu raoverpaid9triệu. Casegross30triệucả12,BH0,1NPT7-12:gross360triệu,GTBT186triệu,GTNPT37.2triệu,TNTT136.8triệu,annualtax7.68triệu. Chỉfixturekiểmsốhọcthamkhảo khôngchứngminhpháplý.
+
+  verify.commandgiữtrốngnhưS13;khôngapprove. Child chạy testtrựctiếp .dotnet/dotnet.exe test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore --disable-build-servers -m:1 rồisolutionTaxManager.slncùngflags;NUGET_PACKAGES=.dotnet/nuget-packages,DOTNET_CLI_HOME/APPDATAtempnếucần,SDK10.0.404sẵn. GhiAC/tasksbằngchứngthật,ACreviewđểrootchốtsauindependentreview. Khôngadd/commit/push. Docsdocs/decisions/0005-dependents-annual-settlement.mdghiAPInguồn/phạmvi/vídụđộclập/giớihạn/lựa chọnusertựcommit vàtestthật. Hoànthànhkỹthuậtkhôngxácminhluật.
+verify:
+  command: ""
+  criteria:
+    - Khoảng giảm trừ người phụ thuộc có ID ổn định, bao hàm tháng đầu/cuối, hỗ trợ gián đoạn và cắt theo năm; từ chối khoảng sai, trùng hoặc chồng cùng ID và trả ID/khoảng/căn cứ theo từng tháng.
+    - Đầu vào quyết toán có đúng 12 tháng duy nhất của năm 2026, tháng zero tường minh và tạm nộp thực tế bắt buộc; chuẩn hóa thứ tự, chọn đúng một cách nhập bảo hiểm tay hoặc tự tính S13 và không khấu trừ hai lần.
+    - Thuế năm dùng tổng gross trừ tổng bảo hiểm và giảm trừ, giữ TNTT trước clamp, clamp một lần rồi áp biểu năm; trả tổng tạm nộp, chênh lệch thuế năm trừ tạm nộp, nộp thêm/nộp thừa dự kiến không âm và không cùng dương.
+    - Rule năm 2026 tường minh nằm trong/liên kết TaxRuleSet, có biểu năm và căn cứ đúng kỳ; giữ GetForYear S12, chọn snapshot từng tháng, chấp nhận khác biệt bảo hiểm tháng 6/7 và từ chối thiếu/gap/mismatch hoặc thay đổi thuế giữa năm chưa hỗ trợ.
+    - Kết quả bất biến giữ đủ 12 tháng, gross/bảo hiểm/giảm trừ/thuế tháng/tạm nộp, ID người phụ thuộc và provenance thực dùng; tổng năm truy được các snapshot tháng và rule năm, nguồn Unverified và số tự khai Missing, không tự rounding.
+    - Validation từ chối null, ID rỗng, tiền âm, tháng/năm sai, đầu vào bảo hiểm mơ hồ và cấu hình thiếu/không khớp bằng lỗi rõ; decimal overflow không bị che và sửa collection đầu vào không đổi snapshot/kết quả.
+    - Kiểm thử có expected độc lập bao phủ lịch phụ thuộc, đủ tháng, số học năm khác tổng tháng, tháng TNTT âm, ba chiều chênh lệch, biên thuế năm, bảo hiểm 6/7, lỗi và bất biến; giữ 55 ca cũ, test Core rồi solution thực chạy xanh.
+    - Docs0005 ghi API, nguồn/điều khoản/kỳ, ví dụ độc lập, giới hạn ước tính và decimal, lựa chọn user tự commit cùng kết quả test thật; diff chỉ thuộc S14, không thêm package hay sửa API cũ/PLAN/config/setup/ledger cũ, review độc lập không còn lỗi nghiêm trọng.
+scope:
+  allow:
+    - src/TaxManager.Core/**
+    - tests/TaxManager.Core.Tests/**
+    - docs/decisions/0005-dependents-annual-settlement.md
+    - .bint/tasks/**
+  deny:
+    - PLAN.md
+    - .bint/config.yml
+    - global.json
+    - TaxManager.sln
+    - src/TaxManager.Web/**
+    - src/TaxManager.Data/**
+references:
+  - PLAN.md
+constraints:
+  - 'User tự commit từ lượt này: không git add/commit/push. Root điều phối qua bint run; chỉ S14, giữ55test cũ và API tương thích, không sửaPLAN/config.'
+  - 'Đối chiếu bổ sung root đã xem scan253 trang56: Điều68(2)a,b nộp lớn hơn nghĩa vụ/chưa đến mức phải nộp thì được hoàn; thủ tục khoản4 ngoài phạmvi. Trang57 Điều69(1)a quy định lươngcánhâncưtrú áp dụng từkỳ2026;Điều70(1) hạn đăngký/hồsơ2025trởvềtrước theo luật cũ;Điều70(2) đã kêkhai/nộp lương2026 trướcNĐ hiệu lực khôngphảinộplạitháng/quý mà chỉnh hồsơquyếttoán2026. Ảnh253-page-56.png,57.png ngoài repo cùng thưmục sources. Root tải thêm luat109-2025.pdf/ảnh109-page-8.png,15.png từ https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/01/luat109-2025.pdf; tham khảoVBHN112mớihơn để ghi nguồnhợpnhất đúng. Khôngneed hỏiuserlại. Xin dùng văn bản có khoảng trắng bình thường trong docs/API.'
+  - 'Artifact bổ sung đã tải ngoài repo: C:/Users/LENOVO/AppData/Local/Temp/taxxManager-s14-sources/112-vbhn-vpqh.pdf từ https://xdcs.cdnchinhphu.vn/446259493575335936/2026/6/23/112-vbhn-vpqh-1782181883642194244110.pdf (link12 trang Chínhphủ); ảnh112-page-1.png,8.png,9.png. Root đã xemtrang1 Luật109 sửađổi09/2026;trang8 Điều8(2)(3),9(2),10(1)(3) xácnhận bảngnăm120/360/720/1200 vàGTBT186triệu,NPT6.2triệu/tháng,mỗiNPTmộtngườinộpthuế. Dùng artifact cósẵn,không tải lại nếu không cần. Thuếtháng khi lịchNPTđãđiềuchỉnhquyếttoán nên gọi là ước tính tính lại,không gọi là số đã khấu trừthực; tạmnộpthực là đầu vào riêng.'
+  - 'Tiếp tục b-feat để HOÀN TẤT phần còn thiếu đã tự báo ở lượt trước, không dừng ở bản chính70test: AC4/6/7 đangunmet,AC5 chưa đốichiếu. Hoàn thiện hợpđồng metadata kỳ/căn cứ của annual rule caller cấp một cách nhỏgọn và test mismatch thật; không bịa Verified/không tự kiểm URL live. Thực hiện phần còn thiếu của kế hoạch: mọi biên annual ±1đ expectedđộclập, gaps/missing policy/annualyear/mismatch, taxchange, null/âm/modeBH/overflow/decimal/bấtbiến/provenance. Nếu cả12snapshot chia sẻ cấuhình sai kỳ/căn cứ phải cócontract và lỗi/test rõ; không chỉ so12bản với chínhnó. ĐốichiếuAC1-7 theo yêu cầu đã có, sửa code khi test cho thấy lỗi, không yếutest/không đổiAC. TSKchỉcheckkhiđúngbằngchứng. Docs0005cậpnhậttestthật/APIgiớihạn;AC8reviewđểroot. Các phần này đã đượcuserủyquyền,khôngchờapprovalvàkhôngđểdởchỉvìcầnthêmwork. Giữconfig/model/scope,khônggitadd/commit/push. ArtifactVBHN112đãtảisẵngtrongtemp theo constraint trước,khôngcầndownloadlại.'
+autonomy: ask_on_protected

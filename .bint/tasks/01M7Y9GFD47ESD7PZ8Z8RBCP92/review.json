@@ -1,0 +1,14 @@
+{
+  "task_id": "01M7Y9GFD47ESD7PZ8Z8RBCP92",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-21T05:56:51Z",
+      "by": "agent",
+      "run_id": "01M7YAP16QFS0FGVASC2C9JZ42",
+      "base": "00bb4502ac6becc5cdc712f6f7aea16236b4d68d",
+      "summary": "Không phát hiện bug/risk cần ghi nhận trong diff riêng S14 gồm 6 tệp, đúng scope, không đổi test cũ/package/PLAN/config/setup/ledger cũ. Đối chiếu AC1–7: lịch NPT inclusive/clip/overlap và snapshot bất biến; đúng 12 tháng, tạm nộp bắt buộc, hai mode BH loại trừ nhau; tổng năm từ số thô, clamp một lần và tính chênh lệch hai chiều; cấu hình năm/metadata/basis và snapshot BH 6/7; provenance tháng/năm, Missing/Unverified, decimal và overflow. Docs0005 nêu API, nguồn, giới hạn và user tự commit. Reviewer chạy độc lập SDK 10.0.404: Core rồi TaxManager.sln, cùng --no-restore --disable-build-servers -m:1; mỗi lệnh exit 0, 82 passed, 0 failed, 0 skipped (55 ca cũ không nằm trong diff). Đã đối chiếu cấu hình số với Điều 8–10 được Cổng Chính phủ trích tại https://xaydungchinhsach.chinhphu.vn/cach-tinh-thue-thu-nhap-ca-nhan-tu-tien-luong-tien-cong-119260623094516526.htm và ảnh scan có sẵn VBHN112 trang 8, NĐ253 trang 33/57. Giới hạn: không rà soát pháp lý toàn bộ hay xác minh URL/căn cứ tùy ý do caller cấp; không đánh giá hồ sơ/cư trú/điều kiện NPT/thủ tục hoàn ngoài phạm vi. Danh sách rỗng không chứng minh thay đổi an toàn tuyệt đối và không đổi trạng thái Unverified. Không sửa mã, không approve/status/verify hoặc commit/push. Bint diff được chạy với GIT_OBJECT_DIRECTORY tạm vì sandbox chặn tạo object ở .git/objects; vẫn dùng phạm vi Bint, không dùng git diff toàn cây.",
+      "findings": []
+    }
+  ]
+}
