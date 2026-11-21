@@ -9,7 +9,11 @@ public sealed record TaxPortion(decimal LowerBound, decimal? UpperBound, decimal
 public sealed record PitResult(CalculationAmount TaxableIncome, IReadOnlyList<TaxPortion> Portions, CalculationAmount TotalTax);
 public sealed record MonthlySalaryResult(CalculationAmount GrossIncome, CalculationAmount Insurance, int Dependents,
     CalculationAmount PersonalDeduction, CalculationAmount DependentDeduction, CalculationAmount TaxableIncomeBeforeClamp,
-    CalculationAmount TaxableIncome, PitResult Pit);
+    CalculationAmount TaxableIncome, PitResult Pit)
+{
+    public decimal ExemptIncome { get; init; }
+    public decimal TaxableGrossIncome => GrossIncome.Value - ExemptIncome;
+}
 
 public static class PitCalculator
 {
@@ -34,19 +38,20 @@ public static class PitCalculator
 
 public static class MonthlySalaryCalculator
 {
-    public static MonthlySalaryResult Calculate(decimal grossIncome, decimal insurance, int dependents, TaxRuleSet ruleSet)
+    public static MonthlySalaryResult Calculate(decimal grossIncome, decimal insurance, int dependents, TaxRuleSet ruleSet, decimal exemptIncome = 0m)
     {
         ArgumentNullException.ThrowIfNull(ruleSet);
         if (grossIncome < 0) throw new ArgumentOutOfRangeException(nameof(grossIncome));
+        if (exemptIncome < 0 || exemptIncome > grossIncome) throw new ArgumentOutOfRangeException(nameof(exemptIncome));
         if (insurance < 0) throw new ArgumentOutOfRangeException(nameof(insurance));
         if (dependents < 0) throw new ArgumentOutOfRangeException(nameof(dependents));
         decimal dependentDeduction = dependents * ruleSet.DependentDeduction;
-        decimal before = grossIncome - insurance - ruleSet.PersonalDeduction - dependentDeduction;
+        decimal before = grossIncome - exemptIncome - insurance - ruleSet.PersonalDeduction - dependentDeduction;
         decimal taxable = Math.Max(0, before);
         return new(new(grossIncome, ruleSet, LegalBasis.Missing), new(insurance, ruleSet, LegalBasis.Missing), dependents,
             new(ruleSet.PersonalDeduction, ruleSet, ruleSet.PersonalDeductionBasis),
             new(dependentDeduction, ruleSet, ruleSet.DependentDeductionBasis),
             new(before, ruleSet, ruleSet.TaxableIncomeBasis), new(taxable, ruleSet, ruleSet.TaxableIncomeBasis),
-            PitCalculator.Calculate(taxable, ruleSet));
+            PitCalculator.Calculate(taxable, ruleSet)) { ExemptIncome = exemptIncome };
     }
 }

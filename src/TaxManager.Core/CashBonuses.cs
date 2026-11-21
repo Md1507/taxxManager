@@ -83,6 +83,11 @@ public sealed record BonusMonthlySalaryResult(int Year, int Month, TaxRuleSet Ru
     decimal BonusTotal, IReadOnlyList<CashBonusLineResult> Bonuses, MonthlySalaryResult Salary, InsuranceResult? InsuranceDetails, decimal ActualWithheldTax)
 {
     public decimal TotalGrossIncome => Salary.GrossIncome.Value;
+    public IReadOnlyList<SalaryExtraLineResult> Extras { get; init; } = Array.Empty<SalaryExtraLineResult>();
+    public decimal ExtraPaid => Extras.Sum(x => x.Paid);
+    public decimal ExtraTaxable => ExtraPaid - ExemptIncome;
+    public decimal ExemptIncome => Salary.ExemptIncome;
+    public decimal TaxableGrossIncome => Salary.TaxableGrossIncome;
 }
 public static class BonusMonthlySalaryCalculator
 {
@@ -91,12 +96,13 @@ public static class BonusMonthlySalaryCalculator
         ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(provider);
         var rule = provider.GetForMonth(input.Year, input.Month);
         if (rule.FromYear != input.Year) throw new ArgumentException("Tax rule year mismatch.");
-        var breakdown = CashBonusCalculation.Prepare(input, rule);
+        var income = SalaryIncomePreparation.Prepare(input, rule);
+        var breakdown = income.Bonus;
         InsuranceResult? detail = null;
         decimal amount;
         if (input.InsuranceInput is not null) { detail = InsuranceCalculator.Calculate(input.InsuranceInput, rule, input.Year, input.Month); amount = detail.DeductibleTotal; }
         else amount = input.InsuranceAmount!.Value;
-        var salary = MonthlySalaryCalculator.Calculate(breakdown.TotalGross, amount, dependents, rule);
-        return new(input.Year, input.Month, rule, input.GrossIncome, breakdown.BonusTotal, breakdown.Lines, salary, detail, input.ActualWithheldTax);
+        var salary = MonthlySalaryCalculator.Calculate(income.Gross, amount, dependents, rule, income.Exempt);
+        return new(input.Year, input.Month, rule, input.GrossIncome, breakdown.BonusTotal, breakdown.Lines, salary, detail, input.ActualWithheldTax) { Extras = income.Lines };
     }
 }

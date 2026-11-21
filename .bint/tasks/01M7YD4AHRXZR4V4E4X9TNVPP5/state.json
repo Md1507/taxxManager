@@ -1,0 +1,427 @@
+{
+  "schema": 1,
+  "id": "01M7YD4AHRXZR4V4E4X9TNVPP5",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T06:36:34Z",
+  "updated_at": "2026-11-21T10:29:59Z",
+  "base": "363cdafdf9ce77a6808fec4cddd43dc096bcb8be",
+  "reason": "S15b hoàn tất kỹ thuật:103test đạt, review3 không phát hiện mới và xác nhận finding.1 đã sửa; nhãnfixed chờ commit thật của user. User tựstage/commit, index giữnguyên; configreview3 đã được userduyệt.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T06:36:34Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T06:44:05Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T06:44:11Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T06:50:51Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T06:51:39Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Hoàn thiện TSK9/AC9 và tài liệu bàn giao trước review độc lập"
+    },
+    {
+      "from": "in_progress",
+      "to": "interrupted",
+      "at": "2026-11-21T06:53:00Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Người dùng yêu cầu dừng để giữ quota; đã kết thúc tiến trình Bint và các tiến trình con. Core và solution đã đạt100/100, review chưa chạy. Tiếp tục từ TSK9/AC9 nếu còn thiếu rồi review; giữ nguyên index/user tự commit."
+    },
+    {
+      "from": "interrupted",
+      "to": "in_review",
+      "at": "2026-11-21T10:08:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "User yêu cầu tiếp tục; AC1–9 đủ bằng chứng, chuyển review độc lập sau lần dừng giữ quota"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-21T10:13:30Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Bổ sung negative tests còn thiếu theo risk medium round1; review lại sau khi AC8 đủ bằng chứng"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T10:16:41Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-21T10:20:52Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Đã đạt workflow.max_review_rounds=2; còn finding.1 riskmedium về fixture unsupported-year chưa độc lập.103test xanh, chưa phát hiện lỗi tínhthuế. Cần user cho phép nâng giới hạn để sửa test và review lại; không tự thay config, không stage/commit."
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "at": "2026-11-21T10:22:59Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "User cho phép tăng review2→3; sửa fixture năm ngoài phạm vi độc lập rồi review vòng3"
+    },
+    {
+      "from": "in_progress",
+      "to": "blocked",
+      "at": "2026-11-21T10:24:38Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "thay đổi cần người duyệt: .bint/config.yml (xem diff, rồi bint task approve 01M7YD4AHRXZR4V4E4X9TNVPP5 \u0026\u0026 bint run resume 01M7YD4AHRXZR4V4E4X9TNVPP5)"
+    },
+    {
+      "from": "blocked",
+      "to": "in_progress",
+      "at": "2026-11-21T10:26:35Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T10:26:35Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-21T10:28:48Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 10 chưa được đối chiếu; xử lý xong thì `bint run resume 01M7YD4AHRXZR4V4E4X9TNVPP5`"
+    },
+    {
+      "from": "blocked",
+      "to": "done",
+      "at": "2026-11-21T10:29:59Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S15b hoàn tất kỹ thuật:103test đạt, review3 không phát hiện mới và xác nhận finding.1 đã sửa; nhãnfixed chờ commit thật của user. User tựstage/commit, index giữnguyên; configreview3 đã được userduyệt."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "SalaryExtras.cs: model xác nhận explicit; SalaryExtrasTests ValidationAndImmutability, ExtraGuardsAndCopies; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:16Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet.CreateVietnam2026SalaryExtraProvider và SalaryExtraRuleSet; SalaryExtrasTests MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:18Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "SalaryIncomePreparation dispatch theo mode, phân bổ theo ngày và ID; SalaryExtrasTests QualifiedAmounts, MealCap, MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:20Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "SalaryExtrasTests MonthlyAndAnnualExamples: gross 55,8 triệu, miễn 5,5 triệu, TNTT 34,8 triệu, PIT 3,46 triệu; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:21Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "SalaryExtrasTests MonthlyAndAnnualExamples và CustomCapCoverageAndInsurance: năm 385,8 triệu gross, 13,43 triệu PIT, 11,4 triệu withheld, clamp một lần và BH độc lập; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:23Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "AnnualSalaryCalculator preflight ID toàn năm; SalaryExtrasTests ValidationAndImmutability, ExtraGuardsAndCopies, MealAllocationTimingAndFractions và custom rule; Core 100/100.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:25Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Baseline Core 89/89, sau thay đổi 100/100; ExtraGuardsAndCopies kiểm tra empty dùng provider S15a; constructor và kết quả cũ được giữ.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:27Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "SalaryExtrasTests expected độc lập; baseline Core 89/89, Core và solution no-restore SDK 10.0.404 mỗi lệnh 100 passed, 0 failed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-21T06:50:29Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "Tiếp tục sau khi user yêu cầu dừng: docs0007 đã hoàn thiện API/gross split/overlap/qualified/chứng từ/nguồn/chuyển tiếp/giới hạn, hai lệnh test100 passed/0 failed/0 skipped và user tự stage/commit; TSK9 đã checked trước khi dừng. Root đọc tài liệu và bint task diff --stat:7 tệp đúng phạm vi, không lẫn S15a; SHA256 index vẫn635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10, HEAD363cdaf. Chưa có review, AC10 để sau.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:08:54Z"
+    },
+    {
+      "index": 8,
+      "met": false,
+      "evidence": "Review round1 finding01M7YD4AHRXZR4V4E4X9TNVPP5.1:100/100 chưa chứng minh negative tests cho rule sai coverage/timing/metadata. Cần bổ sung fixtures mỗi ca sai một điều kiện và valid control rồi chạy Core/solution.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:13:30Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "SalaryExtras.cs model explicit; SalaryExtrasTests ValidationAndImmutability và ExtraGuardsAndCopies; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:30Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet factory S15b và SalaryExtraRuleSet; SalaryExtrasTests MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance, SalaryExtraRuleValidationTests; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:30Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "SalaryIncomePreparation dispatch mode và phân bổ ngày/ID; SalaryExtrasTests QualifiedAmounts, MealCap, MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "SalaryExtrasTests MonthlyAndAnnualExamples xác nhận gross 55,8 triệu, miễn 5,5 triệu, TNTT 34,8 triệu, PIT 3,46 triệu; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "SalaryExtrasTests MonthlyAndAnnualExamples và CustomCapCoverageAndInsurance xác nhận năm gross 385,8 triệu, PIT 13,43 triệu, withheld 11,4 triệu, clamp và bảo hiểm; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "SalaryExtrasTests ValidationAndImmutability, ExtraGuardsAndCopies và SalaryExtraRuleValidationTests; preflight AnnualSalaryCalculator; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Baseline Core 89/89; Core và solution sau thay đổi 103/103; ExtraGuardsAndCopies kiểm empty với provider S15a.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "SalaryExtrasTests và SalaryExtraRuleValidationTests dòng 90–151 bao phủ metadata Missing, period, version, HTTPS, effective coverage, year, timing, coverage cả tháng cùng valid controls; Core và solution no-restore mỗi lệnh 103 passed, 0 failed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "Docs0007 cập nhật test 103/103 và giới hạn; bint task diff --stat với object tạm gồm 7 tệp đúng phạm vi; SHA256 index 635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10 không đổi; user tự stage/commit.",
+      "by": "agent",
+      "at": "2026-11-21T10:16:31Z"
+    },
+    {
+      "index": 8,
+      "met": false,
+      "evidence": "Review round2 01M7YSQTWJ0EZJSC4YPNC5Z3YX:103test đạt nhưng fixture Rules(year:2027) vẫn giữ dates/basis2026, chưa cô lập unsupported-year guard. Cần fixture cùngyear2027 dates/basisperiod2027 để chỉ sai nămhỗtrợ. Finding.1 riskmedium cònopen; không có bug tínhthuế mới. Đã đủ2review theo config, dừng chờ user quyết định giới hạn.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:20:51Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "SalaryExtras.cs model explicit; SalaryExtrasTests ValidationAndImmutability, ExtraGuardsAndCopies; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:27Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleSet factory S15b and SalaryExtraRuleSet; MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance, SalaryExtraRuleValidationTests; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "SalaryIncomePreparation dispatch mode and allocation by date/ID; QualifiedAmounts, MealCap, MealAllocationTimingAndFractions, CustomCapCoverageAndInsurance; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "MonthlyAndAnnualExamples: gross 55.8m, exempt 5.5m, TNTT 34.8m, PIT 3.46m; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "MonthlyAndAnnualExamples and CustomCapCoverageAndInsurance: annual gross 385.8m, PIT 13.43m, withheld 11.4m, clamp and insurance; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "ValidationAndImmutability, ExtraGuardsAndCopies, SalaryExtraRuleValidationTests; AnnualSalaryCalculator preflight; Core 103/103.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "Prior baseline Core 89/89; current Core and solution 103/103; ExtraGuardsAndCopies checks empty with S15a provider.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "SalaryExtrasTests.cs:100-151: 2027 fixture dates and all four basis periods are 2027, valid 2026 control retained; timing, coverage and metadata negatives remain. Filtered 3/3, Core and solution no-restore each 103 passed, 0 failed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "docs/decisions/0007-overtime-night-meal.md documents API, limits, legal basis, transition, 103 tests and user staging; bint task diff --stat lists 7 allowed files, excludes pre-existing config change; index SHA256 635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10 unchanged.",
+      "by": "agent",
+      "at": "2026-11-21T10:24:28Z"
+    },
+    {
+      "index": 9,
+      "met": true,
+      "evidence": "Docs0007 đã đủ API/phạm vi/nguồn/chuyển tiếp/ví dụ/103test thật/user tựcommit. Diff riêngS15b7tệp; ngoại lệ duy nhất là root đổi max_review_rounds2→3 theo user “cứ sửa tiếp”, scope cập nhật và user đã chạy task approve10:26:10Z. Config chỉ1dòng, không package/PLAN/ledgerold; indexSHA vẫn635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10, HEAD363cdaf. Không stage/commit/push.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:29:58Z"
+    },
+    {
+      "index": 10,
+      "met": true,
+      "evidence": "Review3 độc lập01M7YT9GF6AN1F7PEXR9YBKAVQ: không phát hiện mới; kiểm tra toàn diff7tệp và AC1–9, fixture2027 có ngày và toàn bộbasis cùng2027 nên chỉ sai unsupportedyear. Core và solution mỗi lệnh103 passed/0 failed/0 skipped/exit0. Finding.1 đã được reviewer xác nhận sửa về nội dung; disposition Bint vẫnopen vì fixed bắt buộc --commit thật, user tựcommit nên chưa có SHA và không gán giả. Đây là tồn đọng ghi nhận saucommit, không phải lỗi kiểm thử còn tồn tại. Root xác nhận tài liệu/criteria/scope/index và bàn giao; pháp lý vẫnUnverified.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-21T10:29:58Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Ghi TaxRuleSet bằng Python mặc định cp1252 thất bại với ký tự tiếng Việt; tệp bị cắt, sẽ khôi phục nội dung staged và ghi UTF-8.",
+      "at": "2026-11-21T06:45:21Z",
+      "by": "agent",
+      "run_id": "01M7YDJ9GKWD4XPVACCA4C05V4"
+    },
+    {
+      "step": "b-feat",
+      "message": "Test qualified bằng 0 ghi nhầm expected taxable 0; thực tế đúng là 3 triệu, sửa oracle độc lập và chạy lại.",
+      "at": "2026-11-21T06:47:57Z",
+      "by": "agent",
+      "run_id": "01M7YDJ9GKWD4XPVACCA4C05V4"
+    },
+    {
+      "step": "b-feat",
+      "message": "bint task diff --stat thất bại: Git không có quyền ghi .git/objects trong sandbox; không thay index, cần Bint/root chạy diff ngoài sandbox để review.",
+      "at": "2026-11-21T06:50:00Z",
+      "by": "agent",
+      "run_id": "01M7YDJ9GKWD4XPVACCA4C05V4"
+    },
+    {
+      "step": "b-review",
+      "message": "Đính chính summary review vòng 2: câu Đã ghi disposition open với bằng chứng qua CLI là sai. Lệnh bint findings set open ... --reason đã bị CLI từ chối: thao tác chỉ dành cho người dùng, phát hiện BINT_AGENT. Không có disposition nào được ghi thêm; finding .1 vốn vẫn open. Phần đánh giá còn thiếu fixture năm độc lập, kết quả hai lệnh test 103/103 và hash index trong summary vẫn đúng. Không lách giới hạn hoặc tạo thêm vòng review.",
+      "at": "2026-11-21T10:19:43Z",
+      "by": "agent",
+      "run_id": "01M7YSQTWJ0EZJSC4YPNC5Z3YX"
+    }
+  ],
+  "runs": [
+    "01M7YD4X5V0NG0A9RKN1K06MD7",
+    "01M7YD4XCTESD6TCZGHVCVEMX3",
+    "01M7YDJ96GCN6K3RMKFBMJ8F4D",
+    "01M7YDJ9GKWD4XPVACCA4C05V4",
+    "01M7YDZYBM9EJYQPSRJC59F9AK",
+    "01M7YDZYJ7QT6ZG1J061880959",
+    "01M7YS9510C5ZMRWTXBDAJ17D4",
+    "01M7YS958X3EBSKKA1DHTHG8TY",
+    "01M7YSHJB26J2515D302NNCEZ8",
+    "01M7YSHJJ52SP1B6MHWM139S2R",
+    "01M7YSQTN94YVHD6Z59VXDK9ZN",
+    "01M7YSQTWJ0EZJSC4YPNC5Z3YX",
+    "01M7YT2XXRDJ16FNP7S9CTHAP4",
+    "01M7YT2Y3ZKJSP2P7HHBRZDXQ4",
+    "01M7YT9G2CPZ2SJN0XBJ6ZDPQJ",
+    "01M7YT9GF6AN1F7PEXR9YBKAVQ"
+  ],
+  "review_rounds": 3,
+  "depends_on": [
+    "01M7YBAX4GYN0XX7ZA6GQTDHC8"
+  ],
+  "next_finding": 1,
+  "artifacts": {
+    "plan": "2026-11-21T06:42:49Z",
+    "requirement": "2026-11-21T06:39:47Z",
+    "tasks": "2026-11-21T10:29:58Z"
+  },
+  "review_decided": 3
+}

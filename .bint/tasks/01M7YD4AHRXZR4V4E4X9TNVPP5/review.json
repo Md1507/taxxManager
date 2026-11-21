@@ -1,0 +1,44 @@
+{
+  "task_id": "01M7YD4AHRXZR4V4E4X9TNVPP5",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-21T10:12:20Z",
+      "by": "agent",
+      "run_id": "01M7YS958X3EBSKKA1DHTHG8TY",
+      "base": "363cdafdf9ce77a6808fec4cddd43dc096bcb8be",
+      "summary": "Đã review toàn bộ diff riêng S15b gồm 7 tệp qua bint task diff với object tạm; không thấy bug tính toán đã chứng minh, còn 1 risk medium về thiếu kiểm thử rule không hợp lệ theo AC8. Core và solution đều chạy no-restore: 100 passed, 0 failed, 0 skipped; index SHA256 giữ nguyên 635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10. Đã đối chiếu các trang scan nguồn chính thức 5/18/30/56/57; chưa xác thực chứng từ lao động thực tế, chưa thẩm định pháp lý đầy đủ hay cấp trạng thái Verified. Không sửa mã, không approve/status/verify hoặc chốt AC10.",
+      "findings": [
+        {
+          "id": "01M7YD4AHRXZR4V4E4X9TNVPP5.1",
+          "kind": "risk",
+          "severity": "medium",
+          "title": "AC8 chưa có kiểm thử từ chối rule S15b sai coverage, timing và metadata căn cứ",
+          "path": "tests/TaxManager.Core.Tests/SalaryExtrasTests.cs",
+          "lines": "55-64",
+          "evidence": "Toàn bộ test chỉ khởi tạo SalaryExtraRuleSet tùy chỉnh một lần ở dòng 59, sao chép nguyên Year/PeriodFrom/PeriodTo/Timing/Version và các basis hợp lệ từ seed. Ca này kiểm cap 900000 và thiếu kind, không kiểm rule sai. Các ca cuối tệp chỉ kiểm sai ReceivedOn của input và thiếu đăng ký tháng của provider (dòng 76,85-86). Không có test mới nào đưa year/timing không hỗ trợ, coverage không phủ cả tháng, basis Missing/sai period/version/HTTPS/effective coverage vào rule S15b. Vì vậy các guard mới tại SalaryExtras.cs:60,65-66,95 chưa được bảo vệ bằng negative tests theo yêu cầu AC6/AC8; test gap provider không thực thi guard coverage của extras.",
+          "body": "Bổ sung các test expected độc lập cho constructor rule/ruleset và calculator: year/timing sai; coverage kết thúc giữa tháng hoặc bắt đầu sau ngày đầu tháng; basis Missing, sai period/version và effective coverage. Mỗi fixture nên chỉ sai một điều kiện để chứng minh đúng guard từ chối, đồng thời giữ một fixture hợp lệ làm đối chứng. Đây là khoảng trống kiểm thử có thể để lọt hồi quy áp dụng sai kỳ/căn cứ; chưa chứng minh implementation hiện tại cho kết quả sai. Không coi AC8 đã được bao phủ đầy đủ chỉ từ kết quả 100/100.",
+          "criterion": 8
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-21T10:19:26Z",
+      "by": "agent",
+      "run_id": "01M7YSQTWJ0EZJSC4YPNC5Z3YX",
+      "base": "363cdafdf9ce77a6808fec4cddd43dc096bcb8be",
+      "summary": "Review vòng 2 toàn bộ diff riêng S15b qua bint task diff với Git object tạm: thực tế 7 tệp, lớp SalaryExtraRuleValidationTests nằm trong SalaryExtrasTests.cs, không có tệp thứ 8. Đối chiếu AC1–AC9 và mã tích hợp tháng/năm, không phát hiện bug tính toán mới; các expected tháng/năm, cap tùy chỉnh, BH, withheld và regression đều đạt. Core rồi solution no-restore: mỗi lệnh 103 passed, 0 failed, 0 skipped. Không có phát hiện mới để tránh nhân đôi finding .1. Finding 01M7YD4AHRXZR4V4E4X9TNVPP5.1 vẫn open/risk/medium do còn một khoảng trống AC8: tại tests/TaxManager.Core.Tests/SalaryExtrasTests.cs:100-114, Rules(year: 2027) giữ ngày và basis năm 2026, nên vi phạm đồng thời giới hạn năm hỗ trợ và tính nhất quán year/coverage/basis; bỏ guard year != 2026 ở SalaryExtras.cs:60 vẫn không làm test này thất bại vì hai guard periodFrom.Year != year và periodTo.Year != year còn từ chối. Cần ca rule năm 2027 có ngày cùng năm và toàn bộ Basis.Period=2027 để chỉ sai một điều kiện; valid control 2026 giữ nguyên. Timing, Missing/period/version/HTTPS/effective coverage và coverage đầu/cuối tháng đã có fixture hợp lệ cùng negative tests tại dòng 112–149. Đã ghi disposition open với bằng chứng qua CLI, không để finding mở chỉ vì findings vòng này rỗng. SHA256 index trước/sau giữ 635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10. Không sửa mã, không stage/commit/approve/status/verify hoặc chốt AC10. Đối chiếu nghiệp vụ theo nguồn và các trang scan đã được xác lập ở vòng 1; không nghiên cứu lại pháp luật, không xác thực chứng từ thực tế hay thẩm định pháp lý đầy đủ; basis giữ Unverified.",
+      "findings": []
+    },
+    {
+      "round": 3,
+      "at": "2026-11-21T10:28:37Z",
+      "by": "agent",
+      "run_id": "01M7YT9GF6AN1F7PEXR9YBKAVQ",
+      "base": "363cdafdf9ce77a6808fec4cddd43dc096bcb8be",
+      "summary": "Review vòng 3: đã đọc toàn bộ diff riêng S15b bằng bint task diff với GIT_OBJECT_DIRECTORY tạm và alternate chỉ đọc .git/objects; 7 tệp, 351 insertions/16 deletions, không lẫn S15a. Bint tự loại thay đổi .bint/config.yml đã được user cho phép. Đối chiếu AC1–AC9: không phát hiện vấn đề mới (critical/high/medium/low đều 0). Finding 01M7YD4AHRXZR4V4E4X9TNVPP5.1 đã được khắc phục về nội dung: SalaryExtrasTests.cs:100–106 tạo basis Period theo year cho entry, timing, applicability và transition; dòng 113 dùng cả ngày bắt đầu/kết thúc năm 2027; do đó chỉ vi phạm guard year != 2026 tại SalaryExtras.cs:60, các guard coverage/year consistency và metadata còn lại đều hợp lệ. Valid control 2026 tại dòng 112 vẫn giữ. Các negative timing, Missing/period/version/HTTPS/effective coverage và đầu/cuối tháng có valid controls tại dòng 114–149. Expected tháng/năm, cap, BH, withheld, clamp và regression đã đối chiếu trong toàn diff. Tự chạy Core rồi solution bằng SDK/cache sẵn, no-restore --disable-build-servers -m:1: mỗi lệnh 103 passed, 0 failed, 0 skipped, exit 0. Lệnh bint findings set fixed 01M7YD4AHRXZR4V4E4X9TNVPP5.1 bị CLI từ chối với thông báo fixed cần --commit trỏ tới commit đã sửa. Chưa có commit sửa vì user tự stage/commit; không dùng SHA giả hoặc commit cũ để đóng. Vì vậy disposition lưu trong Bint vẫn open, dù bằng chứng review xác nhận nội dung đã sửa; cần cập nhật fixed sau khi có commit thực. SHA256 Git index trước/sau vẫn 635E04807B85092D382DE12CF35B3558545A044F0360F4E506C145F4CC257B10. Không sửa mã/config/index, không approve/status/verify hoặc chốt AC10; root chốt AC10 sau review. Giới hạn: không nghiên cứu lại pháp luật, không xác thực hồ sơ/chứng từ thực tế hoặc thẩm định pháp lý đầy đủ; căn cứ vẫn Unverified theo hợp đồng.",
+      "findings": []
+    }
+  ]
+}

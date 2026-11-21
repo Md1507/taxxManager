@@ -70,11 +70,12 @@ public sealed class TaxRuleSet
     public SalaryRoundingPolicy? RoundingPolicy { get; }
     public AnnualSalaryRuleSet? AnnualSalaryRules { get; }
     public CashBonusRuleSet? CashBonusRules { get; }
+    public SalaryExtraRuleSet? SalaryExtraRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -97,7 +98,7 @@ public sealed class TaxRuleSet
         PersonalDeductionBasis = personalDeductionBasis ?? LegalBasis.Missing;
         DependentDeductionBasis = dependentDeductionBasis ?? LegalBasis.Missing;
         TaxableIncomeBasis = taxableIncomeBasis ?? LegalBasis.Missing; TaxBasis = taxBasis ?? LegalBasis.Missing;
-        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules;
+        InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules; SalaryExtraRules = salaryExtraRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -157,6 +158,26 @@ public sealed class TaxRuleSet
             var s = source.GetForMonth(2026, month);
             return new TaxRuleSet(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets,
                 s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, bonus);
+        }
+        return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
+    public static TaxRuleProvider CreateVietnam2026SalaryExtraProvider(InsuranceRegion region)
+    {
+        const string url = "https://datafiles.chinhphu.vn/cpp/files/vbpq/2026/7/253m-ndcp.signed.pdf";
+        LegalBasis Basis(string id, string article, string clause, string? point, string summary) => new(VerificationStatus.Unverified, id, "1", point: point, clause: clause, article: article, documentNumber: "253/2026/ND-CP", summary: summary, sourceUrl: url, period: "2026");
+        var work = Basis("extra-work-2026", "26", "1,3", null, "Miễn tiền làm thêm, làm đêm đáp ứng điều kiện và thời gian theo luật lao động. Phần vượt mức quy định chịu thuế.");
+        var meal = Basis("extra-meal-2026", "8", "2", "g", "Tiền ăn giữa ca bằng tiền vượt mức tháng tính vào thu nhập. Quy định này áp dụng từ tháng 7 năm 2026.");
+        var timing = Basis("extra-timing-2026", "46", "3", null, "Thu nhập tính theo thời điểm thực nhận. Ngày chi trả xác định kỳ tính thuế.");
+        var period = Basis("extra-period-2026", "69", "1", "a,b", "Thu nhập tiền lương áp dụng cho kỳ thuế năm 2026. Quy định tiền ăn áp dụng từ ngày 1 tháng 7 năm 2026.");
+        var transition = Basis("extra-transition-2026", "70", "2", null, "Khoản đã khai nộp theo quy định cũ trước hiệu lực không phải khai lại tháng hoặc quý. Điều chỉnh thực hiện khi quyết toán năm 2026.");
+        var source = CreateVietnam2026CashBonusProvider(region);
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = source.GetForMonth(2026, month);
+            var entries = new List<SalaryExtraRule> { new(SalaryExtraKind.Overtime, SalaryExtraMode.ConfirmedQualifiedAmount, null, work), new(SalaryExtraKind.NightWork, SalaryExtraMode.ConfirmedQualifiedAmount, null, work) };
+            if (month >= 7) entries.Add(new(SalaryExtraKind.CashMeal, SalaryExtraMode.MonthlyCap, 1_200_000m, meal));
+            var extra = new SalaryExtraRuleSet("vn-salary-extra-2026", "1", 2026, new(2026, month, 1), new(2026, month == 1 ? 6 : 12, month == 1 ? 30 : 31), CashBonusTiming.ReceivedOrPaidDate, entries, timing, period, transition);
+            return new TaxRuleSet(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets, s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, s.CashBonusRules, extra);
         }
         return new TaxRuleProvider([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
     }
