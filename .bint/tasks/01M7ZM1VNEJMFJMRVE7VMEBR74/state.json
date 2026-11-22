@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "id": "01M7ZM1VNEJMFJMRVE7VMEBR74",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-21T17:56:47Z",
+  "updated_at": "2026-11-22T03:25:36Z",
+  "base": "5b8b6407c94e64fbc7ee9feb1b970b4c60458351",
+  "reason": "S15f and legal-source inventory complete; all eight criteria met; independent review has no findings; Core and solution each 197 passed; HEAD/index unchanged; user retains staging and commits.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-21T17:56:47Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-21T18:04:04Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-21T18:05:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-21T18:14:01Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "failed",
+      "at": "2026-11-21T18:17:33Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-review: codex báo lỗi: Reconnecting... 2/5 (unexpected status 502 Bad Gateway: Previous response owner account is unavailable; retry later.)"
+    },
+    {
+      "from": "failed",
+      "to": "in_review",
+      "at": "2026-11-22T03:21:14Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "in_review",
+      "to": "blocked",
+      "at": "2026-11-22T03:24:34Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "chưa đủ bằng chứng hoàn thành: tiêu chí 8 chưa được đối chiếu; xử lý xong thì `bint run resume 01M7ZM1VNEJMFJMRVE7VMEBR74`"
+    },
+    {
+      "from": "blocked",
+      "to": "done",
+      "at": "2026-11-22T03:25:36Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "S15f and legal-source inventory complete; all eight criteria met; independent review has no findings; Core and solution each 197 passed; HEAD/index unchanged; user retains staging and commits."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "VoluntaryRetirement.cs:4-89; VoluntaryRetirementTests input, date, enum, duplicate, immutable tests; Core 197 passed.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "VoluntaryRetirement.cs:99-137; boundary, pooling, proof and 12-month tests pass in Core 197/197.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "AnnualSalaryCalculator.cs:158 and MultipleSalaryPayers.cs:147; literal single, multiple and charity tests pass; 197/197.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "VoluntaryRetirementRules.cs:12-63; custom cap and PIT, H1/H2, basis, coverage, decimal and overflow tests pass.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 5,
+      "met": true,
+      "evidence": "Baseline 169 passed; final 197 passed. HEAD 5b8b6407c94e64fbc7ee9feb1b970b4c60458351; index SHA256 E829EE85236B3DBC5004FAEBC5A2927B876261D16922C52A19116FD580C337CA; --all task diff nine allowed files.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 6,
+      "met": true,
+      "evidence": "Core then TaxManager.sln tests --no-restore --disable-build-servers -m:1 each exit 0, passed 197 failed 0 skipped 0; VoluntaryRetirementTests.cs and VoluntaryRetirementRuleTests.cs.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 7,
+      "met": true,
+      "evidence": "docs/decisions/0011-voluntary-retirement.md and docs/legal-source-status.md document API, source IDs/status and 197 tests; --all task diff restricted to nine allowed files.",
+      "by": "agent",
+      "at": "2026-11-21T18:13:42Z"
+    },
+    {
+      "index": 8,
+      "met": true,
+      "evidence": "Independent review round 1 run 01M80MBCYEJG5PFJ8BAEPJSCHS: full/stat/name-only task diff, nine allowed files, AC1-7 reviewed, no findings. Reviewer reran Core then solution: each 197 passed, 0 failed/skipped, exit 0. Root final git diff --check clean; HEAD 5b8b6407c94e64fbc7ee9feb1b970b4c60458351 and index SHA256 E829EE85236B3DBC5004FAEBC5A2927B876261D16922C52A19116FD580C337CA unchanged. S15f and source inventory delivered; no stage/commit/push.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-22T03:25:24Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-review",
+      "message": "b-review: codex báo lỗi: Reconnecting... 2/5 (unexpected status 502 Bad Gateway: Previous response owner account is unavailable; retry later.)",
+      "at": "2026-11-21T18:17:32Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M7ZN1RVBHSK8GS1T217QE8TH"
+    }
+  ],
+  "runs": [
+    "01M7ZM22TXEBP3HTNGDB7NFMXA",
+    "01M7ZM235RDS2XD7SXAZH43PWN",
+    "01M7ZMHJR5FP018E8PST6YF5G6",
+    "01M7ZMHK1SZ4DK65K3WN6KBR0K",
+    "01M7ZN1RVBHSK8GS1T217QE8TH",
+    "01M7ZN1S2KY1PNTTQMQ8D3PJ6J",
+    "01M80MBCKJPZ5A92YHFV8XCA71",
+    "01M80MBCYEJG5PFJ8BAEPJSCHS"
+  ],
+  "review_rounds": 1,
+  "depends_on": [
+    "01M7ZJ7KF54WJ5SM3EGMTPXVWV"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-21T18:02:49Z",
+    "requirement": "2026-11-21T18:00:02Z",
+    "tasks": "2026-11-22T03:25:22Z"
+  },
+  "review_decided": 1
+}

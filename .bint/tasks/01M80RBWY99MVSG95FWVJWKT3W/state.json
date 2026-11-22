@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "id": "01M80RBWY99MVSG95FWVJWKT3W",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-22T04:31:25Z",
+  "updated_at": "2026-11-22T04:44:55Z",
+  "base": "5b8b6407c94e64fbc7ee9feb1b970b4c60458351",
+  "reason": "2025 legal source metadata and TT40/VBHN02/TT87 evidence complete; all four criteria met; independent review clear and197 tests passed in Core/solution; HEAD/index preserved.",
+  "classification": {
+    "plan": false,
+    "reason": "người dùng chỉ định",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-22T04:31:25Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "in_progress",
+      "at": "2026-11-22T04:31:33Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T04:34:41Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T04:38:53Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Bổ sung kiểm chứng TT40, TT87, VBHN02 theo thông tin người dùng; hoàn tất AC2-3 trước review"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T04:41:26Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-22T04:44:55Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "2025 legal source metadata and TT40/VBHN02/TT87 evidence complete; all four criteria met; independent review clear and197 tests passed in Core/solution; HEAD/index preserved."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "TaxRuleSet.cs:117-124: NQ 954 Điều 1 khoản 1,2 và TT 111 Điều 7 khoản 1,2, Unverified; Vietnam2025Tests.cs:18-31 kiểm tra nguồn, kỳ, ngày, trạng thái; test Vietnam2025 10/10, exit 0.",
+      "by": "agent",
+      "at": "2026-11-22T04:34:30Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Core: dotnet test tests/TaxManager.Core.Tests/TaxManager.Core.Tests.csproj --no-restore --disable-build-servers -m:1: 197 passed, 0 failed, exit 0; solution: dotnet test TaxManager.sln cùng flags: 197 passed, 0 failed, exit 0. bint task diff full/stat/name-only và --all đối chiếu snapshot chỉ đổi metadata 2025, test metadata, 2 docs; số học và numeric cases không đổi. HEAD 5b8b6407c94e64fbc7ee9feb1b970b4c60458351, index SHA256 E829EE85236B3DBC5004FAEBC5A2927B876261D16922C52A19116FD580C337CA; 6 hash ledger S15f khớp baseline.",
+      "by": "agent",
+      "at": "2026-11-22T04:41:15Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "docs/decisions/0012-2025-legal-sources.md:5-19 ghi NQ954 user gửi, TT111 hash/trang/403, VBHN02, TT40, TT87 và bài CV1296 hỗ trợ cùng giới hạn; docs/legal-source-status.md:10-11 cập nhật 2025. bint task diff --all --name-only so snapshot liệt kê đúng 4 tệp được phép; 6 hash ledger S15f khớp baseline; HEAD/index nguyên.",
+      "by": "agent",
+      "at": "2026-11-22T04:41:15Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Independent review round1 run01M80RYNAFV4W95Y09DH5V10DE has no findings. Reviewer checked task diff full/stat/name-only and actual PDF pages/hashes plus official source pages; Core and solution each197 passed,0failed,0skipped,exit0. Root verified four allowed files only, git diff --check clean, unchanged HEAD5b8b6407c94e64fbc7ee9feb1b970b4c60458351 and indexSHA256E829EE85236B3DBC5004FAEBC5A2927B876261D16922C52A19116FD580C337CA; S15f ledger hashes unchanged. No-plan is intentional for narrow source metadata correction. No stage/commit/push; user retains Git actions.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-22T04:44:53Z"
+    }
+  ],
+  "runs": [
+    "01M80RC4Q6J1EWNQ863X2SS84R",
+    "01M80RC52P7HFMMPD6BS2JYHEC",
+    "01M80RSKEXBG12SQ1R1WM9YN75",
+    "01M80RSKP7S4QD90QBSRE64PP4",
+    "01M80RYN0WPA5TH3ENV73F032X",
+    "01M80RYNAFV4W95Y09DH5V10DE"
+  ],
+  "review_rounds": 1,
+  "next_finding": 0
+}

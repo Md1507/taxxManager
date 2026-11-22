@@ -103,15 +103,21 @@ public sealed record MultipleSalaryResult(MultipleSalaryYearInput Input, AnnualS
 public static class MultipleSalaryCalculator
 {
     public static MultipleSalaryResult Calculate(MultipleSalaryYearInput input, TaxRuleProvider provider)
-        => CalculateCore(input, provider, null);
+        => CalculateCore(input, provider, null, null);
 
     public static MultipleSalaryResult Calculate(MultipleSalaryYearInput input, TaxRuleProvider provider, CharitableContributionYearInput contributions)
     {
         ArgumentNullException.ThrowIfNull(contributions);
-        return CalculateCore(input, provider, contributions);
+        return CalculateCore(input, provider, contributions, null);
     }
 
-    private static MultipleSalaryResult CalculateCore(MultipleSalaryYearInput input, TaxRuleProvider provider, CharitableContributionYearInput? contributions)
+    public static MultipleSalaryResult CalculateWithRetirement(MultipleSalaryYearInput input, TaxRuleProvider provider, RetirementYearInput retirement, CharitableContributionYearInput? contributions = null)
+    {
+        ArgumentNullException.ThrowIfNull(retirement);
+        return CalculateCore(input, provider, contributions, retirement);
+    }
+
+    private static MultipleSalaryResult CalculateCore(MultipleSalaryYearInput input, TaxRuleProvider provider, CharitableContributionYearInput? contributions, RetirementYearInput? retirement)
     {
         ArgumentNullException.ThrowIfNull(input); ArgumentNullException.ThrowIfNull(provider);
         if (!input.CompleteNonOverlappingIncomeConfirmed || !input.DeductibleInsuranceConfirmed) throw new ArgumentException("Income completeness and deductible insurance must be confirmed.");
@@ -138,7 +144,7 @@ public static class MultipleSalaryCalculator
             normalized.Add(new(input.Year, month.Month, gross, actual, insuranceAmount: month.DeductibleInsurance));
             details.Add((month, snapshot, rules, payers.AsReadOnly(), gross, actual));
         }
-        var annual = contributions is null ? AnnualSalaryCalculator.Calculate(input.Year, normalized, input.Dependents, provider) : AnnualSalaryCalculator.Calculate(input.Year, normalized, input.Dependents, provider, contributions);
+        var annual = retirement is not null ? AnnualSalaryCalculator.CalculateWithRetirement(input.Year, normalized, input.Dependents, provider, retirement, contributions) : contributions is null ? AnnualSalaryCalculator.Calculate(input.Year, normalized, input.Dependents, provider) : AnnualSalaryCalculator.Calculate(input.Year, normalized, input.Dependents, provider, contributions);
         var result = details.Select((x, i) => new MultipleSalaryMonthResult(x.Input, x.Snapshot, x.Rules, x.Payers, x.Gross, x.Actual, annual.Months[i])).ToArray();
         return new(input, annual, Array.AsReadOnly(result));
     }

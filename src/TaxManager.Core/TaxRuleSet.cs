@@ -74,11 +74,12 @@ public sealed class TaxRuleSet
     public CasualWithholdingRuleSet? CasualWithholdingRules { get; }
     public MultipleSalaryRuleSet? MultipleSalaryRules { get; }
     public CharitableContributionRuleSet? CharitableContributionRules { get; }
+    public RetirementRuleSet? RetirementRules { get; }
 
     public TaxRuleSet(string id, string version, string period, int fromYear, decimal personalDeduction,
         decimal dependentDeduction, IEnumerable<Bracket> brackets, LegalBasis? personalDeductionBasis = null,
         LegalBasis? dependentDeductionBasis = null, LegalBasis? taxableIncomeBasis = null, LegalBasis? taxBasis = null,
-        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null, CasualWithholdingRuleSet? casualWithholdingRules = null, MultipleSalaryRuleSet? multipleSalaryRules = null, CharitableContributionRuleSet? charitableContributionRules = null)
+        InsuranceRuleSet? insuranceRules = null, SalaryRoundingPolicy? roundingPolicy = null, AnnualSalaryRuleSet? annualSalaryRules = null, CashBonusRuleSet? cashBonusRules = null, SalaryExtraRuleSet? salaryExtraRules = null, CasualWithholdingRuleSet? casualWithholdingRules = null, MultipleSalaryRuleSet? multipleSalaryRules = null, CharitableContributionRuleSet? charitableContributionRules = null, RetirementRuleSet? retirementRules = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id); ArgumentException.ThrowIfNullOrWhiteSpace(version);
         ArgumentException.ThrowIfNullOrWhiteSpace(period); ArgumentNullException.ThrowIfNull(brackets);
@@ -104,6 +105,7 @@ public sealed class TaxRuleSet
         InsuranceRules = insuranceRules; RoundingPolicy = roundingPolicy; AnnualSalaryRules = annualSalaryRules; CashBonusRules = cashBonusRules; SalaryExtraRules = salaryExtraRules; CasualWithholdingRules = casualWithholdingRules;
         MultipleSalaryRules = multipleSalaryRules;
         CharitableContributionRules = charitableContributionRules;
+        RetirementRules = retirementRules;
     }
 
     // User-supplied 2025 figures; not yet fully verified against original legislation.
@@ -111,22 +113,38 @@ public sealed class TaxRuleSet
     private static TaxRuleSet CreateVietnam2025()
     {
         const string period = "2025 monthly tax period";
-        var deduction = new LegalBasis(VerificationStatus.Unverified, id: "2025-deductions", version: "user-reference-1",
-            summary: "Former personal and dependent deductions reported by Bao Chinh phu; not fully legally verified.",
-            sourceUrl: "https://baochinhphu.vn/cai-cach-thue-thu-nhap-ca-nhan-nguoi-lao-dong-co-the-co-them-hang-chuc-trieu-dong-moi-nam-102261113121825969.htm", period: period);
-        var brackets = new LegalBasis(VerificationStatus.Unverified, id: "2025-brackets", version: "user-reference-1",
-            documentNumber: "111/2013/TT-BTC", summary: "Monthly brackets supplied by user citing TT111; original text not fully checked.", period: period);
-        return new TaxRuleSet("vietnam-2025-reference", "1", period, 2025, 11_000_000m, 4_400_000m,
+        const string tt111 = "https://vbpl.vn/botaichinh/Pages/vbpq-toanvan.aspx?ItemID=37590";
+        var deduction = new LegalBasis(VerificationStatus.Unverified, id: "2025-deductions", version: "source-reference-2",
+            clause: "1, 2", article: "1", documentNumber: "954/2020/UBTVQH14",
+            summary: "User-provided text: personal deduction 11 million and dependent deduction 4.4 million VND per month.", period: period,
+            effectiveFrom: new DateOnly(2020, 7, 1));
+        var brackets = new LegalBasis(VerificationStatus.Unverified, id: "2025-brackets", version: "source-reference-2",
+            clause: "2", article: "7", documentNumber: "111/2013/TT-BTC", summary: "Monthly progressive brackets in the user-supplied original scan; amendments require review.", sourceUrl: tt111, period: period);
+        var income = new LegalBasis(VerificationStatus.Unverified, id: "2025-income", version: "source-reference-2",
+            clause: "1", article: "7", documentNumber: "111/2013/TT-BTC", summary: "Taxable income is income subject to tax less applicable deductions; original scan, amendments require review.", sourceUrl: tt111, period: period);
+        return new TaxRuleSet("vietnam-2025-reference", "2", period, 2025, 11_000_000m, 4_400_000m,
             [new(5_000_000m, .05m, brackets), new(10_000_000m, .10m, brackets),
              new(18_000_000m, .15m, brackets), new(32_000_000m, .20m, brackets),
              new(52_000_000m, .25m, brackets), new(80_000_000m, .30m, brackets), new(null, .35m, brackets)],
-            deduction, deduction, LegalBasis.Missing, brackets);
+            deduction, deduction, income, brackets);
     }
 
     // PLAN data only; FromYear is a label, not a legal effective date.
     public static TaxRuleSet Vietnam2026 { get; } = CreateVietnam2026();
     public static TaxRuleProvider CreateVietnam2026CharitableContributionProvider(InsuranceRegion region) => WithCharitableContributions(CreateVietnam2026AnnualSalaryProvider(region));
     public static TaxRuleProvider CreateVietnam2026MultipleSalaryCharitableContributionProvider(InsuranceRegion region) => WithCharitableContributions(CreateVietnam2026MultipleSalaryProvider(region));
+    public static TaxRuleProvider CreateVietnam2026RetirementProvider(InsuranceRegion region) => WithRetirement(CreateVietnam2026CharitableContributionProvider(region));
+    public static TaxRuleProvider CreateVietnam2026MultipleSalaryRetirementProvider(InsuranceRegion region) => WithRetirement(CreateVietnam2026MultipleSalaryCharitableContributionProvider(region));
+    private static TaxRuleProvider WithRetirement(TaxRuleProvider source)
+    {
+        var rules = RetirementRuleSet.Vietnam2026();
+        TaxRuleSet Snapshot(int month)
+        {
+            var s = source.GetForMonth(2026, month);
+            return new(s.Id, s.Version, s.Period, s.FromYear, s.PersonalDeduction, s.DependentDeduction, s.Brackets, s.PersonalDeductionBasis, s.DependentDeductionBasis, s.TaxableIncomeBasis, s.TaxBasis, s.InsuranceRules, s.RoundingPolicy, s.AnnualSalaryRules, s.CashBonusRules, s.SalaryExtraRules, s.CasualWithholdingRules, s.MultipleSalaryRules, s.CharitableContributionRules, rules);
+        }
+        return new([new(Snapshot(1), new(2026, 1, 1), new(2026, 6, 30)), new(Snapshot(7), new(2026, 7, 1), new(2026, 12, 31))]);
+    }
     private static TaxRuleProvider WithCharitableContributions(TaxRuleProvider source)
     {
         var rules = CharitableContributionRuleSet.Vietnam2026();

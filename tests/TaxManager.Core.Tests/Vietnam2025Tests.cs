@@ -13,12 +13,20 @@ public class Vietnam2025Tests
         Assert.Equal(new decimal?[] { 5_000_000m, 10_000_000m, 18_000_000m, 32_000_000m, 52_000_000m, 80_000_000m, null }, rule.Brackets.Select(b => b.UpperBound));
         Assert.Equal(new[] { .05m, .10m, .15m, .20m, .25m, .30m, .35m }, rule.Brackets.Select(b => b.Rate));
         Assert.Equal(2025, rule.FromYear); Assert.Contains("2025", rule.Period);
-        Assert.Contains("baochinhphu.vn", rule.PersonalDeductionBasis.SourceUrl);
+        Assert.Equal("vietnam-2025-reference", rule.Id); Assert.Equal("2", rule.Version);
+        var deduction = rule.PersonalDeductionBasis;
+        Assert.Equal("2025-deductions", deduction.Id); Assert.Equal("source-reference-2", deduction.Version);
+        Assert.Equal("954/2020/UBTVQH14", deduction.DocumentNumber); Assert.Equal("1", deduction.Article); Assert.Equal("1, 2", deduction.Clause);
+        Assert.Contains("11 million", deduction.Summary); Assert.Contains("4.4 million", deduction.Summary);
+        Assert.Null(deduction.SourceUrl); Assert.Equal(new DateOnly(2020, 7, 1), deduction.EffectiveFrom); Assert.Null(deduction.EffectiveTo);
         Assert.Same(rule.PersonalDeductionBasis, rule.DependentDeductionBasis);
-        Assert.Null(rule.TaxBasis.SourceUrl); Assert.Equal("111/2013/TT-BTC", rule.TaxBasis.DocumentNumber);
-        Assert.Null(rule.TaxBasis.Article); Assert.Null(rule.TaxBasis.EffectiveFrom);
-        Assert.Same(LegalBasis.Missing, rule.TaxableIncomeBasis);
-        Assert.All(rule.Brackets.Select(b => b.Basis).Append(rule.TaxBasis).Append(rule.PersonalDeductionBasis), b =>
+        const string tt111 = "https://vbpl.vn/botaichinh/Pages/vbpq-toanvan.aspx?ItemID=37590";
+        Assert.Equal("2025-brackets", rule.TaxBasis.Id); Assert.Equal("2", rule.TaxBasis.Clause);
+        Assert.Equal("2025-income", rule.TaxableIncomeBasis.Id); Assert.Equal("1", rule.TaxableIncomeBasis.Clause);
+        Assert.All(new[] { rule.TaxBasis, rule.TaxableIncomeBasis }, b =>
+        { Assert.Equal("source-reference-2", b.Version); Assert.Equal("111/2013/TT-BTC", b.DocumentNumber); Assert.Equal("7", b.Article); Assert.Equal(tt111, b.SourceUrl); Assert.Null(b.EffectiveFrom); Assert.Null(b.EffectiveTo); });
+        Assert.All(rule.Brackets, b => Assert.Same(rule.TaxBasis, b.Basis));
+        Assert.All(rule.Brackets.Select(b => b.Basis).Append(rule.TaxBasis).Append(deduction).Append(rule.TaxableIncomeBasis), b =>
         { Assert.Equal(VerificationStatus.Unverified, b.Status); Assert.Null(b.VerifiedOn); Assert.Equal(rule.Period, b.Period); });
     }
 

@@ -1,0 +1,14 @@
+{
+  "task_id": "01M7ZM1VNEJMFJMRVE7VMEBR74",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-22T03:24:25Z",
+      "by": "agent",
+      "run_id": "01M80MBCYEJG5PFJ8BAEPJSCHS",
+      "base": "5b8b6407c94e64fbc7ee9feb1b970b4c60458351",
+      "summary": "Không phát hiện bug/risk/suggestion cần xử lý trong phạm vi 9 tệp của tác vụ. Đã đọc task diff đầy đủ, stat và name-only (758 insertions, 11 deletions), đối chiếu AC1–7, input/copy/guard, pool ba loại và mọi payer theo cá nhân/tháng, cap theo rule, chứng từ/reasons, tích hợp annual/multiple từ input gốc và thứ tự retirement trước charity, snapshot H1/H2, decimal/overflow, API/seed cũ và inventory nguồn. Đối chiếu docs/legal-source-status.md ngược với TaxRuleSet, InsuranceRules/Calculator, AnnualSalaryRules, MultipleSalaryRules, CharitableContributionRules, RetirementRules và quyết định 0002–0010: có các basis production, URL/metadata, Missing/Unverified/policy và giới hạn cổng Verified; không đổi seed hay tự xác minh nguồn. Kiểm thử độc lập ngày 22/11/2026: Core rồi TaxManager.sln, cả hai --no-restore --disable-build-servers -m:1, exit 0; mỗi lệnh 197 passed, 0 failed, 0 skipped, gồm 169 test nền không sửa. HEAD trước/sau 5b8b6407c94e64fbc7ee9feb1b970b4c60458351; index SHA256 trước/sau E829EE85236B3DBC5004FAEBC5A2927B876261D16922C52A19116FD580C337CA. Diff chỉ nằm trong allow, không stage/commit hoặc sửa mã. MCP context_for_paths không có tri thức liên quan. Giới hạn: review số học, contract và báo cáo nguồn theo mã/hồ sơ đã cung cấp; chưa thẩm định toàn diện hiệu lực/sửa đổi pháp luật, sản phẩm, chứng từ thật, cư trú hoặc tính đầy đủ/trùng ẩn do caller xác nhận. Kết quả không có finding không chứng minh an toàn pháp lý toàn diện; AC8 dành root chốt và Bint Core điều phối.",
+      "findings": []
+    }
+  ]
+}
