@@ -1,0 +1,30 @@
+# Phiếu tác vụ Bint (mục 6.7). Sửa được bằng tay hoặc `bint task set`.
+# verify.command chỉ được Bint chạy sau khi người xác nhận (`bint task approve`),
+# trừ khi trùng eval.test_command đã xác nhận trong cấu hình.
+id: 01M836AAX9R6EPSHC16WVB85R1
+goal: 'Thực hiện bước2.4 bổ sung theo đánh giá database mà người dùng đã chấp nhận: lưu lịch sử tính thuế có thể đối chiếu, SAU task2.3 01M836910PQRDBHEP832K8K2CP done. Đọc PLAN/ADR0013-0015/docs database c…'
+request: |-
+  Thực hiện bước2.4 bổ sung theo đánh giá database mà người dùng đã chấp nhận: lưu lịch sử tính thuế có thể đối chiếu, SAU task2.3 01M836910PQRDBHEP832K8K2CP done. Đọc PLAN/ADR0013-0015/docs database cùng Core/Data hiện trạng rồi lập kế hoạch deep. Chưa Web/Identity; phạm vi base monthly salary/manual insurance hiện persistence hỗ trợ, không silently drop optional graphs hoặc nhận nhiều nguồn ngoài scope.
+  Lưu calculation snapshot immutable gồm input thực sự dùng (gross/manual insurance/actual withheld/dependents tháng), kết quả và chi tiết tính của Core, RuleId+Version và snapshot tham số/căn cứ pháp lý đã dùng, engine/schema version và thời điểm UTC. Không chỉ lưu FK trỏ dữ liệu nguồn có thể đổi; sau thay đổi income/dependent/rule nguồn, lịch sử cũ đọc lại phải giữ nguyên và có thể đối chiếu. Thực hiện phép tính trong service qua Core từ input/rules đọc nhất quán, không nhận kết quả do caller bịa rồi gắn là đã tính. Ngày áp dụng/kỳ và legal verification statuses nguyên trạng, không nâng Verified/hardcoded fallback. Bảo toàn decimal, optional/nếu không hỗ trợ thì từ chối rõ. Chọn contract minimal đủ dùng và dễ mở rộng.
+  Dùng protection/audit/external-key primitives của2.3, ciphertext có context binding, khóa không vào repository/DB; history không làm rò names/số tiền trong payload, SQL/logs hay audit. Migration mới, giữ hai migrations cũ và migration2.3 byte-identical. Test SQLite synthetic fresh/upgrade từ2.3 giữ dữ liệu và decrypt được. Entity immutable được enforce ở đường persistence hỗ trợ; document không chống raw SQLite admin; deletion/purge của hồ sơ xử lý history/audit rõ theo2.3 và không để orphan. Không thu thông tin mới CCCD/MST.
+  Tests: tạo calculation thật đúng với Core từ persisted data; fresh-context history roundtrip; thay income/dependent và rule sau đó lịch sử vẫn nguyên; reject update/tamper/wrong-context/wrong-key; không plaintext số tiền hay provenance nhạy cảm trong persisted payload; transaction thất bại không có partial history/audit; profile ownership/lookup tường minh, không tự tuyên bố đã auth. Full Core+Data regression/model consistency. Mọi DB/key test tạiTEMP; không chạy migration trên user DB. File gọn theo feature CalculationHistory và tests hành vi tương ứng, mỗi primary type file riêng. docs ADR0016/development/database-schema/PLAN cập nhật đủ scope/test/review/giới hạn.
+  Bint roles/models/config giữ nguyên, verify.command trống; chạy development checks trực tiếp. Preserve toàn bộ dirty baseline trước task gồm2.1/2.2/2.3, dùng task diff cho review. Không stage/commit/unstage/reset/stash/push/approve/--force, không sửa Core hoặc nguồn pháp lý, không đổi dependency version. Hoàn thành implementation/tests rồi independent review; người dùng tự commit và manual-review bảo mật trước dữ liệu thật.
+verify:
+  command: ""
+  criteria:
+    - A persisted monthly calculation records actual Core input/result, precise rules/provenance/engine versions and UTC timestamp; fresh history remains unchanged after source data/rule edits.
+    - History is protected with step2.3 mechanisms, supported updates rejected, ownership/deletion/purge/audit atomicity and error semantics explicit and tested; no silent graph loss or legal status promotion.
+    - Next migration preserves previous migrations and existing data, tests use isolated synthetic DB/keys, full Core/Data regression and model consistency pass without user DB or Git index/HEAD mutations.
+    - Code and tests organized, docs/schema/PLAN accurate; independent review complete with actionable findings repaired.
+scope:
+  allow:
+    - src/TaxManager.Data/**
+    - tests/TaxManager.Data.Tests/**
+    - docs/decisions/0016-calculation-history.md
+    - docs/development.md
+    - docs/database-schema.md
+    - PLAN.md
+  deny: []
+constraints:
+  - User explicitly approved temporary gpt-6.1-sol for all remaining implementation runs of2.3 and2.4 on23/11/2026. Use bint run b-feat --model gpt-6.1-sol for this task; config/model defaults stay unchanged, reviewer/planner configured as before. This supersedes older no-model-override statement only for implementation. Wait for2.3 done, then implement full feature+tests/docs before review. User self-commits, no real DB operations.
+autonomy: ask_on_protected

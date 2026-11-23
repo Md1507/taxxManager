@@ -1,0 +1,79 @@
+{
+  "task_id": "01M81AG6WG0EKADKAV4HSQEV96",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-22T10:12:27Z",
+      "by": "agent",
+      "run_id": "01M81BM76GM1H2VVV9ST46JMGP",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review độc lập đúng diff của tác vụ: 28 tệp/759 dòng thêm, kể cả tệp mới qua bint task diff --all; không có thay đổi ngoài scope, Core không thêm EF dependency. Sandbox chặn snapshot vào .git/objects; chạy lại Bint với GIT_OBJECT_DIRECTORY ở TEMP và alternate objects chỉ đọc đã lấy được diff, không đổi index/HEAD. context_for_paths không có knowledge liên quan. Chạy dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1: Core 197 passed, Data 8 passed, 0 failed/skipped. Packages EF trực tiếp/transitive và tool đều 10.0.15; CLI has-pending-model-changes báo không thay đổi model. CLI database update -\u003e update 0 -\u003e update trên DB giả riêng ở TEMP đều thành công. AC-2 có bằng chứng migration/file mới/fresh context/relations. Đã kiểm CHECK đầu tháng, năm 1..9999/tháng 1..12, range inclusive và trigger overlap INSERT/UPDATE; tests hiện có chặn ngày 02, tháng 00/13, năm 0000, đảo khoảng, NULL và orphan/composite FK. Decimal từng cột đọc chính xác từ 0 tới MaxValue/1e-28 dưới en-US và vi-VN; không thấy double/làm tròn. AC-1 còn vấn đề readability; AC-3 chưa đủ bằng chứng update/ownership/validation như kế hoạch và có lỗi thiếu trường tiền. Docs nêu đúng subset manual-insurance và giới hạn SQL validation/auth/trigger; lệnh test/tool/migrate đã đối chiếu, chưa thử clone sạch không có package cache. Đã đối chiếu hai tài liệu EF chính thức được yêu cầu. Các khoảng trống test được ghi là risk, không suy diễn thành lỗi sản phẩm. Chưa đủ căn cứ coi toàn bộ tiêu chí đã đạt; không sửa mã, approve hoặc chuyển trạng thái.",
+      "findings": [
+        {
+          "id": "01M81AG6WG0EKADKAV4HSQEV96.1",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Bỏ trống số tiền vẫn lưu thành 0 thay vì buộc cung cấp",
+          "path": "src/TaxManager.Data/Income/MonthlyIncome.cs",
+          "lines": "7-9",
+          "evidence": "requirement.md mục 2 yêu cầu GrossIncome/InsuranceAmount/ActualWithheldTax bắt buộc cung cấp, chấp nhận 0; mục 4 không coi dữ liệu thiếu là 0. Cả ba là decimal auto-property không constructor/required nên giá trị bị bỏ qua mặc định bằng 0, còn ValidateEntities chỉ kiểm \u003c 0. PersistenceTests.cs:18 đã tạo income B chỉ có khóa rồi SaveChangesAsync thành công. Kiểm chứng thêm bằng PowerShell nạp assembly hiện tại, fixture SQLite file mới + Migrate, Add MonthlyIncome chỉ gán ProfileId/Year/Month: đầu ra 'Omitted money values: rows=1, gross=0, insurance=0, withheld=0'.",
+          "body": "Buộc caller cung cấp rõ cả ba giá trị qua contract khởi tạo thích hợp; giữ 0 là giá trị hợp lệ khi được cung cấp. Bổ sung ca thiếu từng trường và cập nhật các fixture muốn dùng 0 để gán tường minh, tránh biến dữ liệu chưa biết thành thu nhập/khấu trừ bằng 0.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81AG6WG0EKADKAV4HSQEV96.2",
+          "kind": "bug",
+          "severity": "low",
+          "title": "Guid.Empty của hồ sơ không bị từ chối như đặc tả",
+          "path": "src/TaxManager.Data/Profiles/UserProfileConfiguration.cs",
+          "lines": "6",
+          "evidence": "Schema/requirement của tác vụ yêu cầu từ chối Guid.Empty. Khóa Guid đơn dùng convention ValueGeneratedOnAdd (snapshot:93-95); validation tại TaxManagerDbContext.cs:19 chỉ chạy khi SaveChanges. Kiểm chứng trên DB file mới: new UserProfile { Id = Guid.Empty }; context.Add(profile); lúc này Id đã thành '4f8eeca8-c379-4d88-9dcf-2e2f7a9afa23', SaveChanges trả 1, không ném ArgumentException. Vì EF thay khóa ngay khi tracking, nhánh validation không thể thấy giá trị đầu vào rỗng.",
+          "body": "Đồng bộ chính sách sinh ID với đặc tả: từ chối giá trị rỗng trước khi EF thay nó, hoặc tắt EF key generation để validation hiện tại kiểm được giá trị caller cung cấp. Test riêng ID mặc định hợp lệ và ID rỗng tường minh.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81AG6WG0EKADKAV4HSQEV96.3",
+          "kind": "risk",
+          "severity": "medium",
+          "title": "Bằng chứng cascade và isolation thiếu dữ liệu phụ thuộc ở hồ sơ đối chứng",
+          "path": "tests/TaxManager.Data.Tests/Migrations/PersistenceTests.cs",
+          "lines": "17-33",
+          "evidence": "Test chỉ tạo dependent/period của A; B có profile và income nhưng không có dependent/period. Sau xóa A, Assert.Empty toàn bộ dependents/periods vì vậy không chứng minh dữ liệu phụ thuộc B được giữ. Không có ca xóa riêng dependent, cùng dependent ID cục bộ ở A/B, query dependents/periods với dữ liệu của cả hai chủ sở hữu, hay overlap cùng thời gian được phép cho dependent/profile khác. ConstraintTests.cs:26 chỉ thử cặp FK sai; đây không thay thế các ca dương và deletion đã liệt kê ở TSK-6. Việc 8 tests đều xanh chưa xác minh đầy đủ ownership/deletion được yêu cầu; chưa chứng minh có lỗi trong FK/trigger hiện tại.",
+          "body": "Thêm các test hành vi độc lập với dữ liệu ở cả A và B, gồm trùng ID cục bộ/trùng kỳ hợp lệ theo owner, xóa dependent chỉ cascade periods của nó và xóa profile giữ nguyên graph hồ sơ khác. Đọc kết quả từ context mới và kiểm giá trị/khóa cụ thể.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81AG6WG0EKADKAV4HSQEV96.4",
+          "kind": "risk",
+          "severity": "medium",
+          "title": "Chưa kiểm đủ update decimal và validation trên bản ghi đã lưu",
+          "path": "tests/TaxManager.Data.Tests/Income/DecimalPersistenceTests.cs",
+          "lines": "19-32",
+          "evidence": "Các giá trị biên được INSERT/READ cho cả ba cột trong hai culture, nhưng UPDATE chỉ đổi GrossIncome của tháng 1 thành decimal.MaxValue (dòng 21-22); không cập nhật InsuranceAmount/ActualWithheldTax hay các phần lẻ sau khi đã lưu. Test âm dùng duy nhất entity Added với ProfileId không tồn tại: GrossIncome chỉ sync, InsuranceAmount chỉ async, ActualWithheldTax chỉ sync; không có ca Modified/fresh context, mỗi trường qua cả hai API, SaveChanges(false)/SaveChangesAsync(false), hay Guid.Empty. Đây là thiếu bằng chứng so với TSK-7 và yêu cầu validation Added/Modified sync+async, không phải bằng chứng tiền đang mất chính xác.",
+          "body": "Tách test validation khỏi decimal roundtrip; tạo dữ liệu hợp lệ đã lưu rồi kiểm số âm từng trường qua sync/async trên context mới. Parameterize UPDATE/READ cho cả ba cột với phần lẻ nhỏ/lớn và các culture, gồm ghi một culture đọc culture khác nếu muốn chứng minh độc lập culture.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81AG6WG0EKADKAV4HSQEV96.5",
+          "kind": "suggestion",
+          "severity": "medium",
+          "title": "Định dạng mã và phân nhóm test chưa đạt yêu cầu dễ đọc",
+          "path": "tests/TaxManager.Data.Tests/Dependents/ConstraintTests.cs",
+          "lines": "11-31",
+          "evidence": "Người dùng yêu cầu file gọn, dễ điều hướng/đọc và constraint bổ sung yêu cầu C#/csproj/tool manifest viết tay dùng định dạng nhiều dòng thông thường. ConstraintTests gộp cả FK/periods/monthly income/year/month vào một Fact trong thư mục Dependents; PersistenceTests trong Migrations gộp migration, profiles, income, mapping, isolation và cascade. Nhiều thao tác/khẳng định bị nén trên một dòng (ConstraintTests:14,19,25,27; DecimalPersistenceTests:20-23). Hiện tượng tương tự ở các Configure, SaveChanges overrides, fixture, hai csproj PropertyGroup và toàn bộ dotnet-tools.json một dòng. Vì thế cây thư mục đã chia feature nhưng nội dung vẫn chưa đáp ứng yêu cầu readability cụ thể.",
+          "body": "Định dạng thủ công theo multi-line thông thường, mỗi thao tác/assert dễ đọc. Đặt tên test/class theo hành vi, tách migration smoke, profile/dependent ownership/cascade, monthly-income constraints và dependent-period constraints vào các file/nhóm đúng trách nhiệm; giữ fixture và generated migrations riêng như hiện tại. Đây là sửa chất lượng mã theo yêu cầu, không cần refactor Core.",
+          "criterion": 1
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-22T10:28:45Z",
+      "by": "agent",
+      "run_id": "01M81CM5REHVFN18JTBVW13RNE",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review độc lập vòng 2: không có phát hiện mới cần sửa. Phạm vi được xác nhận bằng bint task diff (stat/name-only/full --all): 32 tệp, 1339 dòng thêm, tất cả thuộc scope; không sửa Core, Git index/HEAD, cấu hình workflow hoặc model. Snapshot Bint dùng GIT_OBJECT_DIRECTORY tại TEMP và alternate objects chỉ đọc vì sandbox chặn .git/objects; không coi lỗi quyền đó là lỗi sản phẩm. context_for_paths không có tri thức liên quan. AC-1 đạt: PLAN mục 3 có quy ước; handwritten C#/csproj/tool manifest hiện có cấu trúc nhiều dòng dễ đọc, entity/configuration/mapper tách file, fixture và generated migrations riêng; PersistenceTests/ConstraintTests chung đã được thay bằng MigrationTests, ProfilePersistenceTests, ProfileDeletionTests, MonthlyIncomeConstraintTests và DependentPeriodConstraintTests. AC-2 đạt: fixture dùng SQLite file riêng, Foreign Keys=True, Pooling=False; tests migrate thật, kiểm history/pending và đọc quan hệ bằng context mới, migrate lại sau khi lưu không mất dữ liệu. CLI database update -\u003e update 0 -\u003e update thành công trên file giả riêng tại TEMP. AC-3 đạt trong phạm vi persistence đã công bố: dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1 exit 0, Core 197 passed và Data 15 passed, 0 failed/skipped. Kiểm mã model/migration/snapshot và has-pending-model-changes: không có model change. EF packages trực tiếp/transitive và local dotnet-ef đều 10.0.15, net10.0, Core không có EF dependency. Đã kiểm CHECK đầu tháng, calendar năm 1..9999/tháng 1..12, NOT NULL, range inclusive, composite ownership FK, unique kỳ thu nhập và overlap INSERT/UPDATE. Tests chặn ngày 02, tháng 00/13, năm 0000, đảo khoảng, NULL, orphan/cross-owner pair; chấp nhận năm 1/9999, khoảng kế tiếp, cùng dependent local ID giữa hai profile và cùng thời gian giữa các dependent/profile khác nhau. AC-4 đạt trong môi trường hiện tại: docs ghi đúng manual-insurance subset, các input không hỗ trợ, decimal TEXT, SQL validation bypass, logical isolation không phải authorization, trigger khi rebuild và chỉ dữ liệu giả; không lấn 2.2/2.3/Web/Identity. Đã chạy activation script, restore solution, tool restore/version, test và CLI migration đúng project/context. Đã đối chiếu hai nguồn chính thức https://learn.microsoft.com/en-us/ef/core/providers/sqlite/limitations và https://learn.microsoft.com/en-us/ef/core/testing/choosing-a-testing-strategy. Xác nhận sửa các finding vòng 1: 01M81AG6WG0EKADKAV4HSQEV96.1 — MonthlyIncome theo dõi nullable backing fields và AmountsInitialized, thiếu tiền bị từ chối trước save, explicit zero được lưu; IncomeValidationTests chứng minh. .2 — setter UserProfile.Id từ chối Guid.Empty trước tracking, có regression test, không cần đổi model/key generation. .3 — ProfileDeletionTests tạo đủ graph A/B cùng income/dependent/period, xóa riêng dependent A rồi profile A và đọc bằng context mới: B nguyên vẹn, children A bị xóa. .4 — DecimalPersistenceTests kiểm cả ba cột read/update bằng context mới với 0, số lẻ, 1e-28 và decimal.MaxValue dưới en-US/vi-VN, typeof TEXT; IncomeValidationTests kiểm từng số tiền âm ở Added/Modified với cả SaveChanges và SaveChangesAsync. .5 — đã kiểm trực tiếp formatting và phân nhóm file nêu tại AC-1; các assertions cũ vẫn hiện diện và thêm ca hợp lệ cho local ID/thời gian giữa các owner. Không thay status finding cũ bằng commit giả; review này ghi bằng chứng xác nhận sửa. Giới hạn: chưa thử clone/máy sạch không có cache hoặc tải NuGet mới qua mạng; không có test riêng cho từng nhánh từ chối Extras hay từng giá trị ngày sai tùy ý, các guard/constraint tương ứng đã được đọc; kết quả xanh không chứng minh mọi đầu vào hay môi trường. Không sửa mã, approve, chạy task verify hoặc chuyển trạng thái tác vụ.",
+      "findings": []
+    }
+  ]
+}

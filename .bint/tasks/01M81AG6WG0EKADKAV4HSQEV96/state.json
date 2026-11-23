@@ -1,0 +1,302 @@
+{
+  "schema": 1,
+  "id": "01M81AG6WG0EKADKAV4HSQEV96",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-22T09:48:21Z",
+  "updated_at": "2026-11-22T10:29:34Z",
+  "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+  "reason": "Step2.1 complete: organized Data/Data.Tests and PLAN conventions, SQLite migration and exact decimal persistence; Core197/Data15 pass; independent review2 confirms five earlier issues repaired and no new findings. User stages/commits; HEAD/index unchanged.",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-22T09:48:21Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-22T09:54:19Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-22T09:54:31Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T09:58:43Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T09:59:53Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "NuGet dependency blocker resolved: solution packages and EF tool cached; continue incomplete step2.1 implementation."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T10:07:22Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T10:13:09Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Fix all five independent round1 findings and readability/test gaps before completion."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T10:18:10Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T10:18:40Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Complete explicitly requested manual formatting and behavior-specific test file organization before review2."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T10:25:09Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-22T10:29:35Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Step2.1 complete: organized Data/Data.Tests and PLAN conventions, SQLite migration and exact decimal persistence; Core197/Data15 pass; independent review2 confirms five earlier issues repaired and no new findings. User stages/commits; HEAD/index unchanged."
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "PLAN mục 3 và project skeleton đã thêm; Data/Data.Tests chưa có code theo feature, restore EF thất bại NU1301.",
+      "by": "agent",
+      "at": "2026-11-22T09:58:22Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "Chưa có entity, migration hoặc integration tests; restore EF 10.0.15 thất bại NU1301.",
+      "by": "agent",
+      "at": "2026-11-22T09:58:24Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "Core.Tests đạt 197/197; chưa có persistence decimal, constraints và tests SQLite.",
+      "by": "agent",
+      "at": "2026-11-22T09:58:27Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Chưa có ADR/development docs hoặc review độc lập vì implementation chưa hoàn tất.",
+      "by": "agent",
+      "at": "2026-11-22T09:58:30Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Data tests 8/8 gồm decimal TEXT đến 1e-28/decimal.MaxValue, vi-VN/en-US, sync/async validation, FK, overlap, unique, isolation/cascade; Core.Tests 197/197 passed, 0 skipped.",
+      "by": "agent",
+      "at": "2026-11-22T10:07:01Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1: Data 8/8; PersistenceTests migrate file mới, đọc lại context mới; CLI database update, update 0, update thành công trên file giả.",
+      "by": "agent",
+      "at": "2026-11-22T10:07:01Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "PLAN.md mục 3; src/TaxManager.Data và tests/TaxManager.Data.Tests chia theo feature/configuration/fixtures/Migrations; dotnet restore --disable-build-servers -m:1 và dotnet list package xác nhận EF 10.0.15, tool 10.0.15.",
+      "by": "agent",
+      "at": "2026-11-22T10:07:01Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "docs/development.md và docs/decisions/0013-sqlite-persistence.md đã có; reviewer độc lập của Bint chưa chạy, cần đối chiếu AC và xử lý findings.",
+      "by": "agent",
+      "at": "2026-11-22T10:07:01Z"
+    },
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "Finding .5 còn mở: PersistenceTests.cs và ConstraintTests.cs còn gom trách nhiệm, nhiều C# viết trên một dòng; dotnet format bị chặn named pipe.",
+      "by": "agent",
+      "at": "2026-11-22T10:17:44Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1: Data 13 passed; PersistenceTests migrate file mới và đọc quan hệ từ context mới; review vòng 1 xác nhận migration CLI.",
+      "by": "agent",
+      "at": "2026-11-22T10:17:44Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Core 197 passed và Data 13 passed; DecimalPersistenceTests kiểm cả ba cột sau đọc/update dưới en-US và vi-VN; IncomeValidationTests và ProfileDeletionTests kiểm validation, isolation và cascade; constraint tests dùng SQLite file.",
+      "by": "agent",
+      "at": "2026-11-22T10:17:45Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Docs đã có nhưng independent review sau sửa chưa thực hiện, finding .5 chưa xử lý xong; bint findings set fixed yêu cầu commit SHA trong khi tác vụ cấm commit.",
+      "by": "agent",
+      "at": "2026-11-22T10:17:45Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "PLAN mục 3 nêu quy ước; Data/Data.Tests tách theo feature, fixture và migration; tách ProfilePersistenceTests, MigrationTests, MonthlyIncomeConstraintTests, DependentPeriodConstraintTests và định dạng mã viết tay; dotnet test solution qua. Finding .5 chờ reviewer xác nhận.",
+      "by": "agent",
+      "at": "2026-11-22T10:24:53Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1: Data 15/15; MigrationTests migrate file mới hai lần; ProfilePersistenceTests đọc profile, income, dependent và period bằng context mới; has-pending-model-changes không có thay đổi.",
+      "by": "agent",
+      "at": "2026-11-22T10:24:54Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Full solution Core 197/197 và Data 15/15; DecimalPersistenceTests kiểm cả ba cột đọc/update en-US và vi-VN; IncomeValidationTests kiểm thiếu tiền, zero, Added/Modified sync/async và Guid.Empty (.1/.2/.4); ProfileDeletionTests kiểm cascade đồ thị A/B (.3); period tests kiểm FK, overlap, thời gian, cùng local ID và khoảng giữa các profile.",
+      "by": "agent",
+      "at": "2026-11-22T10:24:54Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "docs/development.md và ADR 0013 có hướng dẫn và giới hạn; review độc lập vòng 1 đã có nhưng chưa có vòng review sau các sửa findings .1-.5; cần reviewer xác nhận, không tự đánh dấu fixed khi không có commit.",
+      "by": "agent",
+      "at": "2026-11-22T10:24:54Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Review độc lập vòng 2 đã ghi findings=[] và bằng chứng xác nhận sửa .1-.5; docs/development.md và ADR 0013 mô tả đúng scope/limitations. Đã chạy activation, restore solution, tool restore/version 10.0.15, full solution Core 197/Data 15 passed, migration update -\u003e 0 -\u003e update trên DB giả riêng; model không pending changes. Chưa kiểm restore trên máy sạch không có package cache. Không approve hoặc chuyển trạng thái.",
+      "by": "agent",
+      "at": "2026-11-22T10:28:52Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Independent b-review round2 by codex/gpt-6.1-sol completed: zero new findings; explicitly confirms round1 .1-.5 repaired. Core197/Data15 passed, migration update/0/update successful on isolated synthetic file; no pending model change; development docs and scope limitations checked. No clean-machine package download test. No index/HEAD mutations.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-22T10:29:21Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Các lệnh dotnet ban đầu bị từ chối ghi vào C:\\Users\\LENOVO\\.dotnet; thử lại với DOTNET_CLI_HOME trong workspace.",
+      "at": "2026-11-22T09:55:43Z",
+      "by": "agent",
+      "run_id": "01M81AVGJRV82JB62FFAZEG077"
+    },
+    {
+      "step": "b-feat",
+      "message": "Restore EF 10.0.15 thất bại NU1301: proxy 127.0.0.1:9 từ chối kết nối NuGet; cache hiện không có EF, chưa thể build hoặc sinh migration.",
+      "at": "2026-11-22T09:57:15Z",
+      "by": "agent",
+      "run_id": "01M81AVGJRV82JB62FFAZEG077"
+    },
+    {
+      "step": "b-feat",
+      "message": "Lệnh restore solution --ignore-failed-sources thoát mã 1 không có đầu ra; đang chạy lại riêng để xác định nguyên nhân và tiếp tục kiểm thử.",
+      "at": "2026-11-22T10:05:13Z",
+      "by": "agent",
+      "run_id": "01M81B5BJZW7FS9BE2D81D2XS1"
+    },
+    {
+      "step": "b-feat",
+      "message": "dotnet format whitespace cho Data và Data.Tests thất bại: sandbox từ chối named pipe của MSBuild build host (UnauthorizedAccessException); định dạng và tách test theo finding .5 chưa hoàn tất.",
+      "at": "2026-11-22T10:17:44Z",
+      "by": "agent",
+      "run_id": "01M81BXPXPPR6E9ADM4G6C0X1J"
+    },
+    {
+      "step": "b-feat",
+      "message": "Finding .1: MonthlyIncome theo dõi đủ ba số tiền và cho phép zero; IncomeValidationTests qua. .2: UserProfile từ chối Guid.Empty trước tracking; test qua, model không thay đổi. .3: ProfileDeletionTests kiểm xóa dependent và profile A với graph B đầy đủ. .4: decimal update cả ba cột dưới hai culture và validation Added/Modified sync/async qua. Không thể ghi fixed bằng bint findings set vì CLI bắt buộc --commit, trong khi tác vụ cấm commit; cần reviewer xác nhận sau sửa.",
+      "at": "2026-11-22T10:17:44Z",
+      "by": "agent",
+      "run_id": "01M81BXPXPPR6E9ADM4G6C0X1J"
+    }
+  ],
+  "runs": [
+    "01M81AGBZR6TXHJ3FTFE1RXTW4",
+    "01M81AGC9JTMZ99R4E50N8PQAE",
+    "01M81AVG42RZ0WJMRVYJ0GMQEY",
+    "01M81AVGJRV82JB62FFAZEG077",
+    "01M81B5B229RHZN6BRQDDVXKMW",
+    "01M81B5BJZW7FS9BE2D81D2XS1",
+    "01M81BM6MQH0GHQY6BHWPCYTE0",
+    "01M81BM76GM1H2VVV9ST46JMGP",
+    "01M81BXPGRBW3CCP80Q4EEWYV9",
+    "01M81BXPXPPR6E9ADM4G6C0X1J",
+    "01M81C7SHX615C4C848H5ZKDEH",
+    "01M81C7SW2CX4Z2P9QH8Q5FFFQ",
+    "01M81CM58YAE8TGR3DZ9DT81KT",
+    "01M81CM5REHVFN18JTBVW13RNE"
+  ],
+  "review_rounds": 2,
+  "next_finding": 5,
+  "artifacts": {
+    "plan": "2026-11-22T09:53:55Z",
+    "requirement": "2026-11-22T09:51:15Z",
+    "tasks": "2026-11-22T10:29:34Z"
+  }
+}

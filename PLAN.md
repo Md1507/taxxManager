@@ -104,6 +104,8 @@ Cá nhân cư trú/không cư trú; mã số thuế; người phụ thuộc (đ�
 
 ## 3. Cấu trúc solution mục tiêu
 
+Feature `TaxRules` trong Data chứa persistence lương tháng/manual; xem ADR 0014 về hai đường nguồn và phạm vi chưa hỗ trợ.
+
 ```
 TaxManager.sln
 ├── src/
@@ -114,6 +116,13 @@ TaxManager.sln
     ├── TaxManager.Core.Tests/
     └── TaxManager.Data.Tests/  (từ giai đoạn 2)
 ```
+
+Quy ước cho mã Data và Data.Tests mới:
+
+- Nhóm theo trách nhiệm hoặc tính năng: `Profiles`, `Income`, `Dependents`; `Infrastructure` chứa context và factory. Mỗi kiểu chính có tệp riêng, cấu hình EF và mapper tách khỏi entity.
+- Đặt migration và model snapshot do EF sinh trong `Migrations`; giữ nguyên cấu trúc tệp generated theo công cụ EF.
+- Tests chia theo tính năng và hành vi, fixture dùng chung đặt trong `Fixtures`; không gộp các test và fixture không liên quan vào một tệp.
+- Quy ước này áp dụng cho phần Data mới, không yêu cầu di chuyển hoặc refactor Core hiện có.
 
 ---
 
@@ -213,16 +222,25 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 - **Xong khi:** lưu và đọc lại đúng; test dữ liệu xanh.
 
 #### Bước 2.2 – Bảng luật thuế có ngày hiệu lực
-- Chuyển `TaxRuleSet` vào DB (bảng quy tắc, bậc thuế) kèm ngày hiệu lực; seeder nạp luật 2025 và 2026.
-- Lưu metadata căn cứ cùng phiên bản `TaxRuleSet`; chỉ nạp URL vbpl.vn chi tiết đã xác minh, kiểm thử lưu/đọc đúng phiên bản và phát hiện URL sai hoặc thiếu nguồn.
-- Chặn trùng/chồng khoảng hiệu lực (ràng buộc trong DB hoặc kiểm tra ở tầng ứng dụng; PostgreSQL có thể dùng exclusion constraint).
-- **Xong khi:** engine đọc luật từ DB; test chống chồng hiệu lực xanh.
+- Lưu snapshot lương tháng/bảo hiểm nhập tay, bậc thuế và metadata căn cứ theo phiên bản trong SQLite; các rule graph tùy chọn khác chưa được hỗ trợ và bị từ chối.
+- Kỳ registration trọn tháng khác ngày hiệu lực văn bản; FromYear chỉ là nhãn. Trigger SQLite chặn kỳ trùng hoặc chồng trên timeline chung.
+- Nạp chính thức chỉ nhận căn cứ Verified có ID, version, VerifiedOn và URL HTTPS trang chi tiết vbpl.vn với ItemID hợp lệ. Không coi kiểm tra URL là audit pháp lý.
+- Seed và load tham khảo 2025/2026 phải gọi tường minh, giữ nguyên trạng thái và metadata Core chưa xác minh; không tự seed trong startup/migration và không dùng làm fallback chính thức.
+- **Xong khi:** engine đọc luật từ DB; kiểm thử round-trip, migration và chống chồng kỳ xanh; review độc lập hoàn tất.
 
 #### Bước 2.3 – Mã hóa và audit log
-- **Cân nhắc dữ liệu tối thiểu:** chỉ lưu những gì thật sự cần. MST có thể để tùy chọn; chỉ lưu CCCD nếu thực sự cần.
-- Mã hóa các trường nhạy cảm (AES-GCM hoặc Data Protection API); khóa nằm ngoài mã nguồn.
-- Audit log cho thay đổi dữ liệu thu nhập và khai báo.
-- **Xong khi:** mở trực tiếp DB không đọc được dữ liệu nhạy cảm; người dùng tự review phần mã hóa.
+- Chỉ lưu dữ liệu cần thiết; chưa thu thêm MST hoặc CCCD.
+- Mã hóa tên và các khoản thu nhập, bảo hiểm, thuế đã khấu trừ bằng AES-GCM; khóa bền ở ngoài mã nguồn và DB. Audit thay đổi thu nhập và khai báo phải lưu nguyên tử với thay đổi nghiệp vụ.
+- **Trạng thái 23/11/2026:** đã triển khai toàn bộ tích hợp EF protected BLOB/hydration/dirty detection, key-check và external durable ring; audit sync/async cùng transaction/savepoint với dữ liệu nghiệp vụ; append-only guard, ordinary delete giữ audit và purge riêng.
+- Migration thứ ba giữ nguyên bốn tệp migration/designer cũ; direct upgrade populated bị chặn, copy-forward synthetic TEMP tạo target mới và đối chiếu field/PK/quan hệ/rules bằng context mới. Chưa có upgrader vận hành cho dữ liệu thật; không chạy trên DB người dùng.
+- **Kiểm chứng:** build solution thành công; Data 135/135 và Core 197/197 đạt, không skip; EF has-pending-model-changes báo không có thay đổi. Có kiểm thử crypto/context swaps, DB/WAL/log confidentiality, backup/key reopen/restore, SQL/commit/cancel faults, transaction/savepoint/Save(false), stale/busy/unknown-commit retries, cascade/purge và upgrade failure/source preservation. Cảnh báo NU1900 do mạng NuGet vulnerability endpoint, không phải kiểm chứng packages an toàn.
+- **Review:** chưa chạy review độc lập 2.3; bàn giao TSK-12 cho các vòng b-review đã cấu hình. Chưa đánh dấu 2.3 hoàn tất và chưa dùng dữ liệu thật. Người dùng review bảo mật sau code/tests/review, trước dữ liệu thật.
+- Giới hạn vận hành, metadata plaintext, khóa/backup, ValidateProtection khi reopen (kể cả DB empty), retry/OperationId và xóa/purge được ghi tại ADR0015, development và sơ đồ database-schema. Không có auth, chống DBA hoặc cam kết forensic erasure/retention pháp lý.
+- **Xong khi:** triển khai và kiểm thử đầy đủ, review độc lập hoàn tất; người dùng review bảo mật trước khi dùng dữ liệu thật. Metadata, bản sao và di tích dữ liệu cũ có thể vẫn lộ thông tin.
+
+#### Bước 2.4 – Lịch sử tính toán (chưa triển khai)
+- Lưu snapshot input và result bất biến sau khi ghi, cùng RuleId, Version, provenance, phiên bản engine tính toán và thời điểm UTC; mã hóa theo cơ chế của bước 2.3.
+- Xóa thông thường giữ lịch sử theo policy được duyệt; purge hồ sơ phải bao gồm lịch sử liên quan. Không tự suy đoán thời hạn lưu pháp lý hoặc tái tạo kết quả cũ bằng engine hiện tại.
 
 ---
 
@@ -274,9 +292,10 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 | 1.3 | ☐ | |
 | 1.4 | ☐ | |
 | 1.5 | ☐ | |
-| 2.1 | ☐ | |
-| 2.2 | ☐ | |
-| 2.3 | ☐ | |
+| 2.1 | ☑ | SQLite persistence; Core 197/197 + Data 15/15; review vòng 2 đạt ngày 22/11/2026. Quy ước tổ chức file tại mục 3. |
+| 2.2 | ☑ | SQLite lưu luật theo phiên bản/kỳ và căn cứ; Core 197/197 + Data 83/83. Review độc lập vòng 5 được người dùng cho phép: không còn lỗi chặn, đã sửa lỗi dữ liệu cũ khi cập nhật (23/11/2026). |
+| 2.3 | ☐ | Code/tests tích hợp xong: Data 135/135, Core 197/197; model khớp migration. Chờ b-review độc lập và review bảo mật của người dùng trước dữ liệu thật. |
+| 2.4 | ☐ | Đã lập kế hoạch immutable input/result snapshots + rule/provenance/engine version/UTC, mã hóa và policy xóa/purge; chưa triển khai. |
 | 3.1 | ☐ | |
 | 3.2 | ☐ | |
 | 3.3 | ☐ | |

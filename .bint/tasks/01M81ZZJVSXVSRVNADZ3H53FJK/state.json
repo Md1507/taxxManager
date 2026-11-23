@@ -1,0 +1,532 @@
+{
+  "schema": 1,
+  "id": "01M81ZZJVSXVSRVNADZ3H53FJK",
+  "status": "done",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-terra"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-22T16:03:45Z",
+  "updated_at": "2026-11-23T03:18:27Z",
+  "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+  "reason": "Review5 được phép đạt; sửa .9/.10 đã kiểm chứng độc lập, suggestion tiến độ PLAN đã cập nhật;280 tests xanh, không commit",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-22T16:03:45Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-22T16:11:06Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-22T16:11:28Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T16:14:41Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T16:15:10Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Validators alone incomplete; continue full persistence/seed/load/migration/tests/docs implementation."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T16:28:07Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T16:28:22Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Update one additional legacy migration-count assertion and complete planned atomic loader read; finish regression before review."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T16:30:51Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T16:37:58Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Repair all five independent round1 findings: integer/decimal integrity, full graph validation, true batch rollback and readable type separation."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T16:45:52Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T16:54:27Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Fix remaining review2 graph Modified/deletion integrity bugs and SQL readability before final review3."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T16:58:59Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T16:59:54Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Complete last-registration lifecycle guard from latest constraint before final review3; do not submit known structural gap."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T17:02:50Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T17:12:08Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Final review3-\u003efix round: close validation/write race with transaction and two-writer regressions; no fourth review or config change."
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-22T17:17:24Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-22T17:26:32Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa finding .10 từ review4 đã được người dùng cho phép; chưa chạy review5"
+    },
+    {
+      "from": "in_progress",
+      "to": "failed",
+      "at": "2026-11-22T17:27:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat: codex báo lỗi: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at Nov 24th, 2026 12:02 AM."
+    },
+    {
+      "from": "failed",
+      "to": "in_progress",
+      "at": "2026-11-23T03:08:16Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "tiếp tục (bint run resume)"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T03:10:52Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "failed",
+      "at": "2026-11-23T03:11:13Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-review: codex thoát với mã 4294967295: \\n- `risk` — rủi ro có căn cứ nhưng chưa chứng minh được là sai;\\r\\n- `suggestion` — đề xuất cải thiện.\\r\\n\\r\\nMức độ: `critical` | `high` | `medium` | `low`. Chỉ dùng `critical`/`high` cho `bug` hoặc\\r\\n`risk` có bằng chứng cụ thể.\\r\\n\\r\\n## Bước 4 — Ghi phát hiện\\r\\n\\r\\nMột lần ghi cho cả vòng rev…"
+    },
+    {
+      "from": "failed",
+      "to": "in_review",
+      "at": "2026-11-23T03:11:56Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Người dùng cho phép thêm một review độc lập bản sửa .10; khôi phục sau khi chủ động dừng review tự khởi chạy"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-23T03:18:30Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Review5 được phép đạt; sửa .9/.10 đã kiểm chứng độc lập, suggestion tiến độ PLAN đã cập nhật;280 tests xanh, không commit"
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "Chưa có schema, mapper hoặc loader SQLite; chưa có kiểm thử calculator qua provider từ DB.",
+      "by": "agent",
+      "at": "2026-11-22T16:14:32Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "Chưa có migration TaxRules, constraints và kiểm thử upgrade; test solution hiện qua 197 Core và 30 Data.",
+      "by": "agent",
+      "at": "2026-11-22T16:14:32Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "Đã có validator và test nguồn; chưa có official import/load hoặc reference seeder/load và transaction.",
+      "by": "agent",
+      "at": "2026-11-22T16:14:32Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Chưa cập nhật ADR0014/development/PLAN hoặc hoàn tất review độc lập.",
+      "by": "agent",
+      "at": "2026-11-22T16:14:32Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "TaxRuleStoreTests: reference round-trip so sánh đầy đủ metadata và bậc, calculator dùng snapshot context mới; official synthetic và split/gap qua; nhóm TaxRules+Migrations 28/28.",
+      "by": "agent",
+      "at": "2026-11-22T16:27:08Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleStoreTests và LegalBasisValidatorTests: official verified/URL gate, seed 2025/2026 hai lần, drift, corruption và rollback overlap; nhóm TaxRules+Migrations 28/28.",
+      "by": "agent",
+      "at": "2026-11-22T16:27:08Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 41/42; ProfilePersistenceTests.cs:56 ngoài scope vẫn kỳ vọng một migration. Migrate/up-down-up database giả và nhóm 28 test TaxRules/Migrations qua; chưa đủ regression xanh.",
+      "by": "agent",
+      "at": "2026-11-22T16:27:15Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "ADR0014, development và PLAN đã cập nhật; reviewer độc lập do Bint điều phối chưa chạy và chưa xác nhận findings.",
+      "by": "agent",
+      "at": "2026-11-22T16:27:15Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "TaxRuleStoreTests: fresh-context reference round-trip, synthetic official calculator and split registrations; dotnet test TaxManager.sln: Core 197/197, Data 43/43; loader transaction test confirms all reads share one transaction.",
+      "by": "agent",
+      "at": "2026-11-22T16:30:30Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "LegalBasisValidatorTests and TaxRuleStoreTests cover official source gate, explicit reference seed/load, idempotence, drift and failed batch; dotnet test TaxManager.sln: Data 43/43.",
+      "by": "agent",
+      "at": "2026-11-22T16:30:32Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 43/43, no skipped; migration/constraint/precision tests pass; dotnet ef migrations has-pending-model-changes: no changes; original initial migration SHA256 matches plan.",
+      "by": "agent",
+      "at": "2026-11-22T16:30:34Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "ADR0014, development and PLAN updated; independent Bint review has not yet run or confirmed actionable findings. Task diff --all is available with temporary GIT_OBJECT_DIRECTORY and read-only alternate repository objects.",
+      "by": "agent",
+      "at": "2026-11-22T16:30:35Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 59/59; TaxRuleStoreTests fresh-context reference, synthetic official calculator, split registrations and load transaction.",
+      "by": "agent",
+      "at": "2026-11-22T16:45:35Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleStoreTests and TaxRuleIntegrityTests: official/reference gates, drift, dirty context, four-table rollback and reuse; full solution Data 59/59.",
+      "by": "agent",
+      "at": "2026-11-22T16:45:35Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 59/59 including migration tests and raw SQLite integrity/decimal tests; dotnet ef migrations has-pending-model-changes: no changes; initial files SHA256 match plan.",
+      "by": "agent",
+      "at": "2026-11-22T16:45:35Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Round 1 findings addressed in code and regression tests; independent reviewer has not yet reviewed these repairs or confirmed all actionable findings fixed. ADR0014 and development updated.",
+      "by": "agent",
+      "at": "2026-11-22T16:45:35Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 66/66; TaxRuleStoreTests cover fresh-context mapping, registrations and SQLite-loaded calculator.",
+      "by": "agent",
+      "at": "2026-11-22T16:58:44Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "TaxRuleStoreTests and TaxRuleIntegrityTests cover official/reference policy, drift, atomic rollback and context reuse; full suite Data 66/66.",
+      "by": "agent",
+      "at": "2026-11-22T16:58:46Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 66/66 including integrity and migration upgrade/down-up tests; EF has-pending-model-changes reports no changes; initial migration hashes match baseline.",
+      "by": "agent",
+      "at": "2026-11-22T16:58:47Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Round 2 findings .6-.8 repaired and regression tests pass; independent review round 3 and confirmation remain pending. ADR0014 documents legal basis lifecycle.",
+      "by": "agent",
+      "at": "2026-11-22T16:58:48Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln: Core 197/197, Data 70/70, 0 skipped; TaxRuleStoreTests cover fresh-context mapping and calculator using SQLite provider.",
+      "by": "agent",
+      "at": "2026-11-22T17:02:36Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Full solution Data 70/70; TaxRuleStoreTests and TaxRuleIntegrityTests cover official/reference policies, drift, batch rollback and reuse.",
+      "by": "agent",
+      "at": "2026-11-22T17:02:37Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Full solution Core 197/197 and Data 70/70 including migration upgrade/down-up and integrity tests; EF has-pending-model-changes reports no changes; InitialPersistence hashes match baseline.",
+      "by": "agent",
+      "at": "2026-11-22T17:02:37Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Last-registration lifecycle guard and sync/async regressions added; full suite passes and ADR0014 updated. Independent review round 3 and confirmation remain pending.",
+      "by": "agent",
+      "at": "2026-11-22T17:02:37Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet test TaxManager.sln --no-restore -m:1 /nodeReuse:false: Core 197/197, Data 79/79; TaxRuleStoreTests verify fresh SQLite provider and calculator.",
+      "by": "agent",
+      "at": "2026-11-22T17:17:08Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Full solution Data 79/79 includes TaxRuleStoreTests and TaxRuleIntegrityTests for official/reference policies, drift and atomic rollback.",
+      "by": "agent",
+      "at": "2026-11-22T17:17:10Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Full solution Core 197/197 and Data 79/79 including migration upgrade/down-up, integrity and two-writer tests; dotnet ef migrations has-pending-model-changes --no-build reports no changes; initial migration files not edited in this run.",
+      "by": "agent",
+      "at": "2026-11-22T17:17:11Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Review 3 identified concurrency finding .9; transaction fix and sync/async two-writer tests now pass (full Data 79/79), but no independent review after this fix: all three configured review rounds used.",
+      "by": "agent",
+      "at": "2026-11-22T17:17:13Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Implementation/docs/organization complete. Final b-feat fixes review3 finding .9; full197Core/79Data passed and orchestrator separately reran9ConcurrencyTests (9passed). Three independent reviews exhausted configured max3; final race fix awaits independent re-review. User has been asked whether to authorize one additional review for this task only; no configuration change or fourth review performed yet.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-22T17:18:27Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Full solution: Core 197/197, Data 83/83; fresh SQLite provider/calculator round-trip covered by TaxRuleStoreTests.",
+      "by": "agent",
+      "at": "2026-11-23T03:10:35Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Full solution Data 83/83 includes official/reference policy, seed idempotence, drift and atomic rollback tests.",
+      "by": "agent",
+      "at": "2026-11-23T03:10:37Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Full solution Core 197/197 and Data 83/83 includes constraints, migration upgrade/down-up, exact decimal and stale two-context sync/async regressions; EF has-pending-model-changes reports no changes.",
+      "by": "agent",
+      "at": "2026-11-23T03:10:39Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Review4 finding .10 addressed by rejecting stale modified TaxRules entities inside write transaction; 4 new sync/async regressions and full 197 Core/83 Data passed. Fix has not had independent post-fix review; only review4 was authorized, no review5 performed.",
+      "by": "agent",
+      "at": "2026-11-23T03:10:41Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Review5 user-authorized completed 23/11/2026 (run01M836785PWEHR109Y4T70KY75): no bug/risk, fixes .9/.10 independently verified with sync/async original probes; Core197/197 Data83/83 model consistency passed. Only low suggestion .11 was stale PLAN progress; root updated row to83/83, review5 complete. Files organized/ADR/development covered, hashes and HEAD/index unchanged.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-23T03:18:27Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Test seed lần hai phát hiện so sánh JSON sai vì decimal giữ scale khác nhau sau SQLite; thay bằng so sánh giá trị và metadata có kiểu.",
+      "at": "2026-11-22T16:18:47Z",
+      "by": "agent",
+      "run_id": "01M820MJF4VVM64AQG9DDF852B"
+    },
+    {
+      "step": "b-feat",
+      "message": "Full solution: Core 197 passed; Data 35 passed, 1 failed do ProfilePersistenceTests.cs:56 kỳ vọng một migration. Tệp này ngoài scope.allow; cần mở rộng phạm vi để cập nhật số migration.",
+      "at": "2026-11-22T16:22:05Z",
+      "by": "agent",
+      "run_id": "01M820MJF4VVM64AQG9DDF852B"
+    },
+    {
+      "step": "b-feat",
+      "message": "Test rollback batch mới phát hiện detach LegalBasis trước dependent gây conceptual null và che lỗi overlap; sửa thứ tự dọn tracking rồi chạy lại.",
+      "at": "2026-11-22T16:41:01Z",
+      "by": "agent",
+      "run_id": "01M821Y9MPMF2F7NFB1C56KMBC"
+    },
+    {
+      "step": "b-feat",
+      "message": "Test corruption dùng PRAGMA trên connection tự đóng và test alternate decimal nối thêm dấu chấm lần hai; sửa fixture giữ connection mở và nối các số 0, chạy lại.",
+      "at": "2026-11-22T16:42:27Z",
+      "by": "agent",
+      "run_id": "01M821Y9MPMF2F7NFB1C56KMBC"
+    },
+    {
+      "step": "b-feat",
+      "message": "Test xóa graph đầy đủ gặp EF conceptual null do đánh dấu xóa LegalBasis trước bracket phụ thuộc; đổi thứ tự xóa dependents trước bases và chạy lại.",
+      "at": "2026-11-22T16:57:00Z",
+      "by": "agent",
+      "run_id": "01M822WFFWWZEVNWWVW1SCCG0N"
+    },
+    {
+      "step": "b-feat",
+      "message": "b-feat: codex báo lỗi: You’ve hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage to purchase more credits or try again at Nov 24th, 2026 12:02 AM.",
+      "at": "2026-11-22T17:27:23Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M824QCVFQGAGMP5EXGG7VXDM"
+    },
+    {
+      "step": "b-review",
+      "message": "b-review: codex thoát với mã 4294967295: \\n- `risk` — rủi ro có căn cứ nhưng chưa chứng minh được là sai;\\r\\n- `suggestion` — đề xuất cải thiện.\\r\\n\\r\\nMức độ: `critical` | `high` | `medium` | `low`. Chỉ dùng `critical`/`high` cho `bug` hoặc\\r\\n`risk` có bằng chứng cụ thể.\\r\\n\\r\\n## Bước 4 — Ghi phát hiện\\r\\n\\r\\nMột lần ghi cho cả vòng rev…",
+      "at": "2026-11-23T03:11:13Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M8360BK3G8QDHGE21FFPEM0W"
+    }
+  ],
+  "runs": [
+    "01M81ZZWEJA08YXBB61SRM9ZY6",
+    "01M81ZZX1XGT4D5W9DRC9JHXYV",
+    "01M820DQB70YCDQXPG96SRMGVH",
+    "01M820DR0R6HTTW53RB93A22A7",
+    "01M820MJ4JEYKMQ2XV4JJRS59G",
+    "01M820MJF4VVM64AQG9DDF852B",
+    "01M821CQ8YTDX0YESFCGXECKM5",
+    "01M821CQH22DQT7EKS4XZQZWBJ",
+    "01M821HJFQQZV37GV2WQXBAGPY",
+    "01M821HJQG7ZJK0DPXG1WPK232",
+    "01M821Y9DBDYR4WHDQGM2803Q9",
+    "01M821Y9MPMF2F7NFB1C56KMBC",
+    "01M822D9ERHQGNP9MK5BN74QG4",
+    "01M822D9P6T653S8C65CY497D9",
+    "01M822WF6WE8XD7KQ72B85WJJ2",
+    "01M822WFFWWZEVNWWVW1SCCG0N",
+    "01M8236ETJ6QMGDD37M4PXPXFC",
+    "01M8236F2C4VFKQWSM3T3B1D1A",
+    "01M823CQYT3YVBM9CHRV3BPP5B",
+    "01M823CR6W83KMFE9H1M8HBTAB",
+    "01M823WW27GHC6JTSSV468EEDG",
+    "01M823WWC96PGFY5NZYBCD69PH",
+    "01M824B554F1HZ29EK5BB6XB9H",
+    "01M824B5DFSA69YGJ7KWY5399N",
+    "01M824QCVFQGAGMP5EXGG7VXDM",
+    "01M824QD5V97V9NYZRP9KJH0HX",
+    "01M8360BK3G8QDHGE21FFPEM0W",
+    "01M8360BZ9BS20V0EZATHW1KG2",
+    "01M83654742JMP9MR4H7G766C9",
+    "01M83677X1Z1H3NCQFKGGRCRTZ",
+    "01M836785PWEHR109Y4T70KY75"
+  ],
+  "review_rounds": 5,
+  "depends_on": [
+    "01M81AG6WG0EKADKAV4HSQEV96"
+  ],
+  "next_finding": 11,
+  "artifacts": {
+    "plan": "2026-11-22T17:26:32Z",
+    "requirement": "2026-11-22T16:07:08Z",
+    "tasks": "2026-11-23T03:18:26Z"
+  }
+}

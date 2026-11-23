@@ -1,0 +1,176 @@
+{
+  "task_id": "01M81ZZJVSXVSRVNADZ3H53FJK",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-22T16:36:37Z",
+      "by": "agent",
+      "run_id": "01M821HJQG7ZJK0DPXG1WPK232",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review đúng 28 tệp của task diff và diff --all: 3 bug medium đã tái hiện, 1 risk medium về test atomicity, 1 suggestion low về cấu trúc/format. Regression chạy lại: Core 197/197, Data 43/43, 0 skipped; EF has-pending-model-changes không có thay đổi; checksum initial/designer khớp baseline. Probe C# tại TEMP dùng SQLite giả đã chứng minh corruption bị ép kiểu/làm tròn và graph không hợp lệ vẫn được lưu. Chưa kiểm cạnh tranh hai writer, toàn bộ ma trận metadata/optional graph/culture trong plan hoặc thẩm định nội dung luật; không dùng DB người dùng, không sửa mã hoặc approve.",
+      "findings": [
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.1",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Ràng buộc số nguyên cho phép year/status/ordinal dạng REAL và loader âm thầm cắt phần lẻ",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleSnapshotConfiguration.cs",
+          "lines": "10-11",
+          "evidence": "Trên từng DB SQLite mới đã migrate và SeedReferencesAsync, chạy riêng UPDATE TaxRuleSnapshot SET FromYear=2025.5 WHERE FromYear=2025; UPDATE TaxRuleLegalBasis SET Status=1.5 WHERE Status=1; hoặc UPDATE TaxRuleBracket SET Ordinal=1.5 WHERE Ordinal=1. Cả ba lệnh qua constraints. Fresh-context LoadReferencesAsync và SeedReferencesAsync đều thành công; FromYear đọc lại thành 2025, status thành Unverified và ordinal thành 1. Probe output: fractional-year/status/ordinal: LOAD SUCCEEDED; RESEED ALSO SUCCEEDED (no drift reported). Các check tương ứng tại TaxRuleLegalBasisConfiguration.cs:10 và TaxRuleBracketConfiguration.cs:10 cũng chỉ kiểm khoảng giá trị.",
+          "body": "SQLite INTEGER affinity không bảo đảm storage class là integer. Kiểm kiểu nguyên và miền CLR cho FromYear, Status, Ordinal trong configuration/migration kế tiếp của tác vụ, đồng thời bảo đảm load không chấp nhận dữ liệu bị ép kiểu. Thêm raw SQL tests cho từng trường rồi fresh-context load/seed. Hiện dữ liệu không hợp lệ vượt cả yêu cầu schema và yêu cầu phát hiện corruption/drift. Không sửa initial migration S21.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.2",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Loader làm tròn decimal TEXT vượt độ chính xác và bỏ sót drift",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleLoader.cs",
+          "lines": "15-17",
+          "evidence": "Sau migrate và seed tham khảo trên DB giả, chạy UPDATE TaxRuleSnapshot SET PersonalDeduction='11000000.00000000000000000000001' WHERE FromYear=2025. Fresh-context LoadReferencesAsync thành công và trả 11000000.000000000000000000000; SeedReferencesAsync tiếp tục thành công không báo drift. Chuỗi lưu trong SQLite chứa phần giá trị khác 11000000 nhưng bị materializer decimal làm tròn trước SameRules/validation. Probe đối chứng PersonalDeduction='11000000xyz' có bị từ chối, nên chỉ bắt lỗi parse thông thường chưa đủ.",
+          "body": "Kiểm tra biểu diễn decimal gốc trước khi mất thông tin qua EF materialization hoặc dùng mapping đọc có kiểm tra tính biểu diễn chính xác; từ chối số không biểu diễn chính xác bằng CLR decimal. Áp dụng cho cả hai deductions, UpperBound và Rate. Không bắt buộc giữ scale hoặc chuỗi y hệt: các biểu diễn khác nhau nhưng cùng giá trị vẫn hợp lệ. Thêm test corruption vượt precision để loader và seeder không âm thầm chấp nhận/làm tròn như hiện tại.",
+          "criterion": 1
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.3",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "SaveChanges chỉ kiểm từng bracket nên ghi được graph có ngưỡng giảm dần",
+          "path": "src/TaxManager.Data/Infrastructure/TaxManagerDbContext.cs",
+          "lines": "40-48",
+          "evidence": "Probe trên SQLite giả: snapshot = TaxRuleMapper.ToEntity(TaxRuleSet.Vietnam2025); snapshot.Brackets[1].UpperBound = 1m; context.Add(snapshot); thêm TaxRulePeriod trọn năm tương ứng; await context.SaveChangesAsync() thành công. Sau đó fresh-context LoadReferencesAsync lỗi 'Finite bounds must increase and the last bracket must be unbounded'. ValidateEntities chỉ kiểm UpperBound \u003e 0/Rate/Ordinal từng hàng, không kiểm quan hệ giữa các bậc, bậc cuối hoặc ordinal liên tục. Requirement mục 4 yêu cầu validation semantic graph tại Data trước ghi và khi load.",
+          "body": "Bổ sung validation graph trước cả SaveChanges sync/async, bao gồm khi chỉ bracket bị thêm/sửa/xóa mà snapshot không Modified. Kiểm tập bậc sau thay đổi với dữ liệu hiện hữu thay vì coi navigation chưa load là toàn bộ graph. Thêm tests ngưỡng giảm dần, bậc cuối hữu hạn, ordinal bị khuyết và xóa bậc để chứng minh không commit graph hỏng.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.4",
+          "kind": "risk",
+          "severity": "medium",
+          "title": "Test FailedBatch chưa kiểm rollback nhiều snapshot hoặc toàn bộ bảng liên quan",
+          "path": "tests/TaxManager.Data.Tests/TaxRules/TaxRuleStoreTests.cs",
+          "lines": "90-104",
+          "evidence": "FailedBatchDoesNotPersistEarlierSnapshot chỉ truyền một TaxRuleRegistration bị overlap ở dòng 101-102; không có snapshot hợp lệ trước snapshot lỗi trong cùng input batch. Assertion duy nhất kiểm số TaxRuleSnapshot bằng 2, không kiểm LegalBasis/Bracket/Period. Vì vậy test vẫn có thể xanh nếu một triển khai commit snapshot đầu của batch trước khi snapshot sau lỗi, hoặc để lại hàng LegalBasis mồ côi. Plan TSK-4/chiến lược test mục 3 yêu cầu chứng minh batch rollback toàn bộ.",
+          "body": "Thêm batch ít nhất hai identity mới: phần đầu hợp lệ không overlap, phần sau gây lỗi tại ghi DB, rồi dùng context mới so dữ liệu/counts của cả bốn bảng trước/sau và xác nhận context có thể dùng lại. Giữ assertion loại lỗi cụ thể để tránh exception không liên quan làm test xanh. Đây là thiếu bằng chứng kiểm thử; chưa chứng minh transaction hiện tại thực sự ghi một phần.",
+          "criterion": 2
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.5",
+          "kind": "suggestion",
+          "severity": "low",
+          "title": "Tách loader/seeder thành type riêng và hoàn thiện formatting nhiều dòng theo yêu cầu",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleSeeder.cs",
+          "lines": "7-16",
+          "evidence": "TaxRuleStore là partial type trải trên TaxRuleStore.cs, TaxRuleLoader.cs và TaxRuleSeeder.cs; hai file sau không chứa type loader/seeder riêng. Mapper.cs:9-13,29-39 và Seeder.cs:60-61 gộp nhiều property trên một dòng; các check SQL cấu hình là một dòng rất dài. Requirement mục 10 và yêu cầu gốc quy định mỗi type handwritten chính một file, entity/configuration/mapper/loader/seeder/validation tách rõ, format nhiều dòng dễ đọc.",
+          "body": "Tách trách nhiệm thành các type loader và seeder/importer có tên tương ứng file, chia property initializer và các điều kiện/check SQL thành nhiều dòng dễ review, dùng helper chung nhỏ khi cần. Không đổi Core hoặc dependency để xử lý việc này.",
+          "criterion": 4
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-22T16:52:35Z",
+      "by": "agent",
+      "run_id": "01M822D9P6T653S8C65CY497D9",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Vòng 2: review đúng 33 tệp task diff và diff --all, không có tệp ngoài scope. Core 197/197 và Data 59/59 qua, 0 skipped; EF has-pending-model-changes không có thay đổi; SHA256 initial/designer khớp baseline. Đã kiểm chứng sửa integer/decimal và test rollback bốn bảng của vòng 1; loader/seeder/importer đã tách type. Còn 2 bug medium trong validation/lifecycle graph và phần formatting low của finding .5 chưa hoàn tất. Probe độc lập dùng SQLite giả tại TEMP/taxmanager-review-round2-7fb68ebaa52e4e4cad88b238493c86a8 (Program.cs và evidence.txt) tái hiện hai bug, đồng thời xác nhận tiny decimal 1e-28, exponent và MaxValue qua en-US/vi-VN. Chưa kiểm concurrency hai writer hoặc toàn bộ ma trận metadata/optional graph/trigger upgrade trong plan; migration test hiện có qua nhưng không đối chiếu toàn bộ cột và SQL/hoạt động trigger cũ. Không thẩm định nội dung luật, không dùng DB người dùng, không sửa source/approve hay đổi trạng thái tác vụ.",
+      "findings": [
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.6",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Snapshot Modified bị bỏ khỏi tập graph cần kiểm tra trước SaveChanges",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleGraphValidation.cs",
+          "lines": "12-17",
+          "evidence": "affected chỉ lấy bracket Added/Modified/Deleted và snapshot Added, không lấy snapshot Modified. Probe seed reference rồi raw DELETE bracket ordinal=1 của vietnam-2025-reference (DELETE hợp lệ với FK/check hiện có), mở snapshot không Include navigation, tăng PersonalDeduction và lưu: cả SaveChanges lẫn SaveChangesAsync đều in 'modified snapshot with ordinal gap ... SAVE SUCCEEDED'. Không có bracket tracked thay đổi nên vòng foreach kiểm graph không chạy; DB vẫn chứa graph thiếu bậc. Bằng chứng và mã probe ở C:/Users/LENOVO/AppData/Local/Temp/taxmanager-review-round2-7fb68ebaa52e4e4cad88b238493c86a8/evidence.txt và Program.cs.",
+          "body": "Đưa cả snapshot Modified vào tập identity cần kiểm tra, đọc graph hiện có rồi gộp tracked changes như đường bracket độc lập. Thêm regression cho snapshot thay đổi trong context mới với navigation chưa load và graph DB thiếu bậc hoặc ngưỡng sai; cả hai SaveChanges phải từ chối trước ghi. Đây là phần còn thiếu của yêu cầu validate complete effective graph ở sửa finding .3.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.7",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Xóa snapshot hoặc bậc hợp lệ để lại LegalBasis mồ côi làm loader từ chối timeline",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleSnapshotConfiguration.cs",
+          "lines": "12-16",
+          "evidence": "Snapshot/bracket tham chiếu LegalBasis như principal, không có cleanup căn cứ khi xóa dependent. Probe import hai snapshot official synthetic a/2025 và b/2026, mỗi snapshot 3 brackets + 4 role bases, LoadOfficialAsync ban đầu qua. Remove(a) và SaveChangesAsync thành công: còn 1 snapshot, 3 brackets nhưng 14 bases thay vì 7; fresh LoadOfficialAsync lỗi 'Tax rule graph has missing or unreferenced related data' tại loader dòng 25-28, nên b/2026 hợp lệ cũng không dùng được. Probe khác chỉ xóa bracket cuối và chuyển bracket liền trước sang UpperBound=null (graph vẫn đúng, ordinal liên tục) cũng lưu thành công rồi fresh official load lỗi tương tự. Không cần tắt FK/check hoặc raw corruption để tái hiện; Program.cs/evidence.txt tại cùng thư mục TEMP nêu trong summary.",
+          "body": "Bảo đảm thao tác xóa graph được hỗ trợ không commit căn cứ không còn tham chiếu: dọn bases không được bất kỳ role/bracket còn lại tham chiếu trong cùng transaction, hoặc từ chối rõ thao tác trước ghi nếu chưa hỗ trợ lifecycle này. Giữ kiểm tra corruption nghiêm ngặt của loader. Thêm regression xóa snapshot khi navigation chưa load và xóa bậc vẫn giữ graph hợp lệ, kiểm fresh official provider còn dùng được các registration còn lại và không có hàng mồ côi.",
+          "criterion": 3
+        },
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.8",
+          "kind": "suggestion",
+          "severity": "low",
+          "title": "Phần SQL handwritten vẫn chưa được format nhiều dòng theo yêu cầu",
+          "path": "src/TaxManager.Data/TaxRules/TaxRulePeriodConfiguration.cs",
+          "lines": "10",
+          "evidence": "CK_TaxRulePeriod_Dates vẫn nằm nguyên trên một dòng dài hơn 500 ký tự; migration AddMonthlyTaxRules cũng giữ toàn bộ date/metadata checks trên các dòng dài. Việc tách primary type và mở rộng mapper initializers đã thực hiện, nhưng phần 'expand ... long SQL checks multiline readable' trong yêu cầu sửa finding .5 chưa xong. Đây là mã configuration handwritten, không phải chỉ designer/snapshot do EF sinh.",
+          "body": "Tách SQL checks handwritten thành chuỗi nhiều dòng dễ đọc, giữ nguyên nội dung ràng buộc và model consistency; rà tương tự các configuration/importer còn câu lệnh dài. Không cần đổi công thức, nguồn pháp lý hoặc initial migration.",
+          "criterion": 4
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "at": "2026-11-22T17:09:35Z",
+      "by": "agent",
+      "run_id": "01M823CR6W83KMFE9H1M8HBTAB",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Vòng 3: 34 tệp task diff và diff --all đều trong scope; xác nhận các sửa chữa .1-.8 về integer/decimal, graph Modified, lifecycle một writer, registration cuối, tách type và SQL formatting. Full solution qua Core 197/197 và Data 70/70, 0 skipped; EF has-pending-model-changes không có thay đổi; SHA256 initial/designer khớp baseline. Probe độc lập tại TEMP/taxmanager-review3-probe kiểm đầy đủ metadata official fresh-context, FromYear/legal dates/coverage độc lập, basis-only changes sync/async, complete empty removal/reseed, tiny/exponent/MaxValue ở en-US/vi-VN và miền ngày 0001-9999; upgrade/down/up giữ nguyên toàn bộ cột S21 cùng SQL và hoạt động hai trigger cũ. Còn một bug medium: guard effective graph và thao tác ghi không cùng giao dịch, nên hai context có thể cùng lưu thành công rồi làm catalog không load được. Probe tái hiện tại TEMP/taxmanager-review3-concurrency/Program.cs và evidence.txt. Chưa kiểm toàn bộ ma trận optional graph và URL/metadata âm, stress nhiều writer hoặc audit pháp lý; không sửa source, không dùng DB người dùng, không approve hay đổi trạng thái tác vụ.",
+      "findings": [
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.9",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Validation graph tách khỏi transaction ghi cho phép hai save làm hỏng catalog",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleLegalBasisLifecycle.cs",
+          "lines": "20-31",
+          "evidence": "TaxRuleLegalBasisLifecycle đọc snapshot/bracket/basis/period bằng các query riêng; TaxManagerDbContext.cs:22-23,29-30 gọi ValidateEntities trước base.SaveChanges nên transaction tự động của EF chỉ bao thao tác ghi. Probe SQLite giả trong C:/Users/LENOVO/AppData/Local/Temp/taxmanager-review3-concurrency/Program.cs dùng SavingChanges interceptor để cho writer B hoàn tất sau validation của A và trước khi A ghi. Với một snapshot có hai registration không chồng kỳ, A xóa kỳ thứ nhất, B xóa kỳ thứ hai: cả SaveChanges lẫn SaveChangesAsync đều cho hai save thành công; fresh context ghi nhận snapshots=1, periods=0 và LoadOfficialAsync lỗi 'Tax rule database is empty.'. Probe thứ hai cho hai snapshot dùng chung một basis: mỗi writer thay riêng reference của mình bằng basis mới, cả hai save thành công nhưng còn 1 basis mồ côi và official load lỗi 'Tax rule graph has missing or unreferenced related data.'. Không dùng raw SQL để tạo trạng thái hỏng. Output đầy đủ nằm cùng thư mục trong evidence.txt.",
+          "body": "Bảo đảm projected-graph validation và toàn bộ write dùng chung ranh giới giao dịch/khóa SQLite đủ an toàn trước writer khác, kể cả query đầu tiên; hỗ trợ transaction do caller quản lý hoặc báo giới hạn rõ. Thêm regression interleaving hai context cho cả hai save paths, gồm xóa hai registration cuối và thay các reference tới basis dùng chung. Một writer phải bị từ chối/retry hoặc trạng thái cuối phải vẫn thỏa invariant và fresh official loader đọc được. Chỉ bọc riêng phần write hoặc thêm một precheck nữa không đóng được khoảng race này.",
+          "criterion": 3
+        }
+      ]
+    },
+    {
+      "round": 4,
+      "at": "2026-11-22T17:25:12Z",
+      "by": "agent",
+      "run_id": "01M824B5DFSA69YGJ7KWY5399N",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review4 (vòng bổ sung được người dùng cho phép): đã kiểm 35 tệp task diff và diff --all trong scope. Full solution qua Core 197/197, Data 79/79, 0 failed/skipped; EF has-pending-model-changes báo không thay đổi; initial migration/designer khớp SHA256 baseline, HEAD/index giữ nguyên. Bản sửa .9 đã đặt quyền ghi trước validation và giữ transaction qua write, các test interleaving/caller ownership/cleanup hiện có đều qua. Tuy nhiên probe độc lập TEMP/taxmanager-review4-probe/Program.cs, evidence.txt tái hiện một bug medium còn lại: projection lấy toàn bộ entity tracked cũ thay vì các thuộc tính EF thực sự ghi; hai writer lần lượt lưu thành công nhưng official catalog không còn load được, cả sync và async. AC-4 chưa đạt vì còn phát hiện actionable. Chưa kiểm stress nhiều writer, toàn bộ ma trận optional graphs/URL âm hoặc audit pháp lý; chỉ dùng DB synthetic, không sửa source, không approve/chuyển trạng thái hay thay config review.",
+      "findings": [
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.10",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Projection graph dùng thuộc tính tracked cũ nên hai save vẫn làm hỏng catalog",
+          "path": "src/TaxManager.Data/TaxRules/TaxRuleLegalBasisLifecycle.cs",
+          "lines": "47-48",
+          "evidence": "Probe độc lập tại C:/Users/LENOVO/AppData/Local/Temp/taxmanager-review4-probe/Program.cs (log evidence.txt), chạy trên SQLite synthetic với source hiện tại: tạo official snapshot có PersonalBasisKey và DependentBasisKey cùng trỏ basis S; hai context đọc snapshot trước khi ghi. A chuyển PersonalBasisKey sang IncomeBasisKey rồi commit; B chuyển DependentBasisKey sang TaxBasisKey rồi SaveChanges. B chỉ có DependentBasisKey IsModified, nhưng dòng 48 ghi đè toàn bộ projection vừa đọc DB bằng entity B còn PersonalBasisKey=S. Guard coi S còn được dùng, trong khi SQL chỉ cập nhật DependentBasisKey nên sau cả hai commit S mồ côi. Output cả async=False và True: first save committed; second save committed; orphan bases=1; official load failed: Tax rule graph has missing or unreferenced related data. Cùng lỗi merge tại TaxRuleGraphValidation.cs:33-34: bậc ban đầu 10,20,null; cả hai context đọc trước, A đổi bậc0 UpperBound=15 và save; B đổi bậc0 Rate=0.15, bậc1 UpperBound=12 rồi save. Projection của B dùng UpperBound cũ 10 cho bậc0 nên nhận graph, nhưng DB thực tế thành 15,12,null; cả sync/async đều lưu thành công và fresh LoadOfficialAsync lỗi Finite bounds must increase. Không cần hai transaction chồng nhau, nên quyền ghi mới không chặn trường hợp này; retry cùng context sau lỗi busy cũng có thể giữ tracked values cũ.",
+          "body": "Khi entity Modified, dựng effective post-save graph từ giá trị DB đọc trong transaction rồi chỉ áp các PropertyEntry.IsModified mà EF sẽ cập nhật, thay vì thay cả entity. Áp dụng nhất quán cho snapshot legal references, bracket graph và các projection quan hệ liên quan; hoặc phát hiện và từ chối stale state bằng kiểm soát concurrency rõ ràng. Giữ quyền ghi hiện có. Thêm regression hai context cùng load trước rồi save lần lượt/retry, cả sync và async, cho shared basis và bracket bounds; yêu cầu writer thứ hai bị từ chối trước ghi hoặc fresh official provider vẫn load đúng graph. Các test CompetingWritersCannotInvalidateCatalog hiện tại chỉ khẳng định writer chen giữa bị SQLITE_BUSY rồi bỏ context, nên chưa bắt được trường hợp tracked state cũ này.",
+          "criterion": 3
+        }
+      ]
+    },
+    {
+      "round": 5,
+      "at": "2026-11-23T03:17:23Z",
+      "by": "agent",
+      "run_id": "01M836785PWEHR109Y4T70KY75",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review5 bổ sung được người dùng cho phép: đã đối chiếu 35 tệp task diff và diff --all, đều trong scope. Xác nhận bản sửa .9 lấy quyền ghi SQLite trước validation và giữ transaction qua write; bản sửa .10 từ chối Modified TaxRules có OriginalValues khác DB dưới cùng quyền ghi, nên projection không dùng stale state để chấp nhận graph sai. Full solution chạy trực tiếp qua Core 197/197, Data 83/83, 0 failed/skipped; EF has-pending-model-changes báo không thay đổi. Probe độc lập TEMP/taxmanager-review5-probe/Program.cs và evidence.txt xác nhận shared legal basis và bracket bounds qua hai context cùng load trước rồi save lần lượt: sync/async đều chặn writer stale, fresh official loader thành công, không basis mồ côi. Migration upgrade/down-up và các test interleaving/caller ownership/validation failure/cancellation/acceptAllChanges hiện có đều qua. SHA256 hai file InitialPersistence khớp baseline trong plan; HEAD c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4 và index SHA256 3542A1D99B8922B88F7D28662498EC422D4C895E5AFFD5E14A7C14C10F87B84D giữ nguyên. Không phát hiện bug/risk mới hoặc vấn đề nghiêm trọng; còn một suggestion low về dòng tiến độ PLAN lỗi thời. Giới hạn: chưa stress nhiều writer hoặc kiểm toàn bộ ma trận optional graph/URL âm, không audit nội dung pháp lý; test migration hiện có không đối chiếu mọi cột/SQL trigger cũ trong vòng này. Probe ban đầu gặp restore/audit NuGet mạng và build song song không chạy được; build tuần tự từ cache rồi chạy no-build đã thành công, đây không phải bằng chứng lỗi sản phẩm. Chỉ dùng SQLite synthetic, không sửa source, không approve/chuyển trạng thái hoặc thay config; review này không chứng minh an toàn ngoài phạm vi đã kiểm.",
+      "findings": [
+        {
+          "id": "01M81ZZJVSXVSRVNADZ3H53FJK.11",
+          "kind": "suggestion",
+          "severity": "low",
+          "title": "Đồng bộ dòng tiến độ PLAN với bằng chứng kiểm chứng hiện tại",
+          "path": "PLAN.md",
+          "lines": "289",
+          "evidence": "Dòng 2.2 hiện ghi Core 197/197 + Data 79/79 và chờ review sau 3 vòng. Source hiện có bốn regression StaleTrackedChangesCannotInvalidateCatalog cho bản sửa .10; lần chạy độc lập dotnet test TaxManager.sln --no-restore --disable-build-servers -m:1 trong review này đạt Core 197/197 + Data 83/83. Review4 đã được ghi trong bint task show và đây là review bổ sung tiếp theo được người dùng cho phép; PLAN chưa phản ánh các mốc đó.",
+          "body": "Khi chốt tiến độ, cập nhật số test thành 83/83 và trạng thái review theo kết quả Bint thực tế; giữ dòng 2.1 và các ledger ngoài scope nguyên vẹn. Đây là đề xuất tài liệu, không phải lỗi runtime hay yêu cầu đổi cấu hình số vòng review.",
+          "criterion": 4
+        }
+      ]
+    }
+  ]
+}

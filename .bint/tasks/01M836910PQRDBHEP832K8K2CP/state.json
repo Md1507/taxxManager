@@ -1,0 +1,282 @@
+{
+  "schema": 1,
+  "id": "01M836910PQRDBHEP832K8K2CP",
+  "status": "in_review",
+  "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "created_at": "2026-11-23T03:13:00Z",
+  "updated_at": "2026-11-23T04:03:12Z",
+  "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+  "reason": "b-feat xong",
+  "classification": {
+    "plan": true,
+    "reason": "người dùng chỉ định",
+    "depth": "deep",
+    "depth_reason": "user_override",
+    "isolation": "shared",
+    "isolation_reason": "user",
+    "driver": "process",
+    "driver_reason": "default"
+  },
+  "planning_contract_version": 1,
+  "history": [
+    {
+      "from": "",
+      "to": "created",
+      "at": "2026-11-23T03:13:00Z",
+      "by": "bint",
+      "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "planned",
+      "at": "2026-11-23T03:26:08Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-req xong"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-23T03:26:43Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T03:29:29Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-23T03:29:43Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Tiếp tục toàn bộ TSK1-11; lượt trước mới primitives, chưa đủ để review"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T03:33:29Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-23T03:34:09Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Primitive/keyring xong; tiếp tục protectedEF/audit/migration/upgrader đầy đủ, không review phần thiếu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T03:36:34Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-23T03:37:43Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Người dùng cho phép tạm sol để hoàn thành tích hợp2.3"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T04:03:02Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    }
+  ],
+  "criteria": [
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "AES-GCM độc lập đã test nhưng chưa tích hợp SQLite hoặc external durable key ring; schema vẫn lưu tên và số tiền plaintext.",
+      "by": "agent",
+      "at": "2026-11-23T03:29:03Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "Chưa triển khai audit, giao dịch atomic hoặc purge.",
+      "by": "agent",
+      "at": "2026-11-23T03:29:05Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "Chưa có migration mới hoặc synthetic upgrader; Core 197 và Data 85 tests đã qua.",
+      "by": "agent",
+      "at": "2026-11-23T03:29:07Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Chưa cập nhật ADR/schema/PLAN hoặc hoàn thành independent review.",
+      "by": "agent",
+      "at": "2026-11-23T03:29:09Z"
+    },
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "Key ring va AES-GCM da test 3/3, nhung EF van map DisplayName va ba khoan tien plaintext; chua co bao ve SQLite.",
+      "by": "agent",
+      "at": "2026-11-23T03:33:09Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "Chua co audit coordinator, atomicity, normal delete hay purge.",
+      "by": "agent",
+      "at": "2026-11-23T03:33:11Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "Chua co migration moi hoac synthetic upgrader; Core 197/197 va Data 86/86 qua; HEAD va index khop baseline.",
+      "by": "agent",
+      "at": "2026-11-23T03:33:13Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "PLAN da ghi trang thai va roadmap 2.4; ADR, schema, development va independent review chua hoan tat.",
+      "by": "agent",
+      "at": "2026-11-23T03:33:15Z"
+    },
+    {
+      "index": 3,
+      "met": false,
+      "evidence": "Chua co migration 2.3 va copy-forward upgrader; Data tests 86/86 qua; bon migration cu co SHA256 khop baseline.",
+      "by": "agent",
+      "at": "2026-11-23T03:36:19Z"
+    },
+    {
+      "index": 2,
+      "met": false,
+      "evidence": "TaxManagerDbContext chua co audit coordinator, append-only guard, normal delete audit hay purge.",
+      "by": "agent",
+      "at": "2026-11-23T03:36:19Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Da bo sung so do schema hien tai va vi du DB TEMP; ADR0015, implementation 2.3 va review doc lap chua hoan tat.",
+      "by": "agent",
+      "at": "2026-11-23T03:36:19Z"
+    },
+    {
+      "index": 1,
+      "met": false,
+      "evidence": "EF mapping UserProfileConfiguration, DependentConfiguration va MonthlyIncomeConfiguration van luu plaintext; chua co hydration/key-check. Data tests 86/86 chi kiem chung trang thai hien tai.",
+      "by": "agent",
+      "at": "2026-11-23T03:36:19Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "dotnet test tests/TaxManager.Data.Tests --no-build --no-restore --disable-build-servers -m:1: 135 passed, 0 failed/skipped (exit 0). Protection/ProtectedPersistenceTests.cs covers null/Unicode/decimal, reload/projection, field/row/profile/database swaps, missing/wrong keys and DB/WAL/audit/log markers; Protection/BackupRestoreTests.cs verifies BackupDatabase plus reopened external key ring. src/TaxManager.Data/Protection/ProtectionSession.cs:17 validates sentinel; mapped fields are BLOB only. ADR0015 documents metadata-only queries requiring explicit ValidateProtection, durable external key backup/rotation and recovery limits.",
+      "by": "agent",
+      "at": "2026-11-23T04:01:59Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Data suite 135/135 exit 0 includes AuditBehaviorTests, AuditAtomicityTests, AuditRetryTests and WriteRequirementsTests: sync/async SQL/commit/cancel faults roll back; caller commit/rollback and preparation savepoint preserve earlier work; Save(false), no-op, stale/detached updates, SQLITE_BUSY, actual post-commit fault reconciliation and OperationId reuse tested. AuditSaveCoordinator.cs:17 writes business+encrypted audit through one base SaveChanges(false). ProfilePurgeService.cs:10 and cascade tests verify ordinary-delete retention, append-only guard, explicit purge and other-profile preservation. Actor is caller metadata, not authenticated.",
+      "by": "agent",
+      "at": "2026-11-23T04:01:59Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Build TaxManager.sln exit 0; full Data 135/135 and Core 197/197, no skip, exit 0. dotnet ef migrations has-pending-model-changes --no-build reports no changes (exit 0). MigrationTests plus SyntheticUpgradeTests cover fresh/idempotent schema, populated direct upgrade rejection, exact synthetic copy/readback of all fields/PK/rules, FK/triggers, Down rejection and SQL/key/readback/cancel/publish failures preserving source. Four old migration/designer SHA256 values match baseline; HEAD remains c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4; index SHA256 remains 3542A1D99B8922B88F7D28662498EC422D4C895E5AFFD5E14A7C14C10F87B84D. Only synthetic TEMP DB/key operations; bint task diff --all --stat shows task delta within allowed source/tests/docs/PLAN; git diff --check exit 0.",
+      "by": "agent",
+      "at": "2026-11-23T04:01:59Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "TSK1-11 implemented and checked; ADR0015, development guide, Mermaid schema and PLAN updated with actual 135 Data/197 Core results, crypto/metadata/key recovery, operation retry and deletion/purge boundaries. PLAN step2.4 specifies immutable input/result snapshots, RuleId+Version/provenance/engine version/UTC, encryption and deletion, without implementing2.4. Remaining TSK12 is configured independent Bint b-review: no independent review has yet run for2.3, so this combined criterion cannot honestly be marked met. Security manual review by user before any real-data use remains explicitly required. Review task-only delta using bint task diff --all with authorized TEMP object directory.",
+      "by": "agent",
+      "at": "2026-11-23T04:01:59Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-feat",
+      "message": "Triển khai chưa hoàn tất: mới có primitive AES-GCM độc lập và hai test; chưa tích hợp persistence, audit, migration, nâng cấp hoặc tài liệu. Không sử dụng dữ liệu thật.",
+      "at": "2026-11-23T03:29:11Z",
+      "by": "agent",
+      "run_id": "01M83724S96F9Q29HPPDWPW3TH"
+    },
+    {
+      "step": "b-feat",
+      "message": "bint task diff --all that bai: git add tam khong ghi duoc .git/objects; HEAD va index sau do khop baseline. Thuc thi chua hoan tat: key ring chua ket noi EF, audit va migration chua trien khai.",
+      "at": "2026-11-23T03:33:17Z",
+      "by": "agent",
+      "run_id": "01M8377MMNSYS7HCNMYE70RGQG"
+    },
+    {
+      "step": "b-feat",
+      "message": "Luot nay chi cap nhat tai lieu schema hien tai va duong dan database synthetic; chua trien khai EF encryption, audit, migration/upgrader. Khong co blocker ngoai duoc xac minh; can tiep tuc TSK-3 den TSK-12, khong coi la hoan tat.",
+      "at": "2026-11-23T03:36:25Z",
+      "by": "agent",
+      "run_id": "01M837FZ9E764V7G62V6ZGF7RB"
+    },
+    {
+      "step": "b-feat",
+      "message": "Targeted 2.3 integration: 6/8 tests passed; decimal round-trip/update assertions passed but two raw storage assertions still referenced removed plaintext GrossIncome column. Updating those assertions to BLOB encrypted fields. EF scaffold raced with a slow first build and generated duplicate migration; removed only duplicate new files, retained one final migration.",
+      "at": "2026-11-23T03:46:00Z",
+      "by": "agent",
+      "run_id": "01M837PHD95HJ5DXSGQV9C74KN"
+    },
+    {
+      "step": "b-feat",
+      "message": "Protected persistence 12/13 passed; Reload retained a locally edited unmapped amount when EF skipped assigning identical ciphertext. Fixing dirty notification and cache invalidation on tracker acceptance/reload; keeping the failing behavior assertion.",
+      "at": "2026-11-23T03:53:26Z",
+      "by": "agent",
+      "run_id": "01M837PHD95HJ5DXSGQV9C74KN"
+    }
+  ],
+  "runs": [
+    "01M836KD7R96938S25BR6171G3",
+    "01M836KDQ25MK8AGXTW5H5S5QT",
+    "01M83724A7QGAPG1Z7A5ZA4R3V",
+    "01M83724S96F9Q29HPPDWPW3TH",
+    "01M8377MAFJ4YMHH9DNDS2PMVK",
+    "01M8377MMNSYS7HCNMYE70RGQG",
+    "01M837FYYD2AJSKYDHEJ6XZFZS",
+    "01M837FZ9E764V7G62V6ZGF7RB",
+    "01M837PH1CQF4JPVH8948F4AWF",
+    "01M837PHD95HJ5DXSGQV9C74KN",
+    "01M8394XZYPHNN1SNDYSVRP0N2",
+    "01M8394YB4V5QK87J5DRFPQM95"
+  ],
+  "review_rounds": 0,
+  "depends_on": [
+    "01M81ZZJVSXVSRVNADZ3H53FJK"
+  ],
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-23T03:34:09Z",
+    "requirement": "2026-11-23T03:22:38Z",
+    "tasks": "2026-11-23T04:01:05Z"
+  }
+}
