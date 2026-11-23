@@ -85,6 +85,28 @@ public class ProtectedPersistenceTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MissingMetadataInPopulatedDatabaseCannotBeReinitializedByWrites(bool async)
+    {
+        using var db = new SqliteFileDatabase();
+        await SyntheticGraph.SeedAsync(db);
+        await using (var tamper = db.Open())
+            await tamper.Database.ExecuteSqlRawAsync("DELETE FROM DataProtectionMetadata");
+        await using (var writer = db.Open())
+        {
+            writer.Add(new TaxManager.Data.Profiles.UserProfile { DisplayName = "Synthetic new" });
+            if (async) await Assert.ThrowsAsync<DataProtectionException>(() => writer.SaveChangesAsync());
+            else Assert.Throws<DataProtectionException>(() => writer.SaveChanges());
+        }
+        await using var verify = db.Open();
+        Assert.Equal(0, await verify.Set<DataProtectionMetadata>().CountAsync());
+        Assert.Equal(1, await verify.UserProfiles.CountAsync());
+        Assert.Equal(4, await verify.Set<AuditEvent>().CountAsync());
+        Assert.Throws<DataProtectionException>(verify.ValidateProtection);
+    }
+
+    [Theory]
     [InlineData("Action")]
     [InlineData("TimestampUtc")]
     [InlineData("ProfileId")]

@@ -1,7 +1,7 @@
 # ADR 0015 — Protected SQLite fields, atomic audit and synthetic upgrade
 
-Status: implemented for synthetic data; independent Bint review and the user's security
-review before real data are still required. This does not add Identity, authorization,
+Status: implemented for synthetic data; final independent Bint review 3 confirmed all four earlier bugs fixed and reported no new findings. The user's security
+review before real data is still required. This does not add Identity, authorization,
 legal retention periods or calculation history.
 
 ## Protection boundary
@@ -56,6 +56,9 @@ and saving protected data validate the sentinel. Call ValidateProtection() when 
 an initialized DB, including an empty/ordinary-deleted DB: metadata-only queries such as
 Count/ID projections do not materialize protected fields and do not themselves validate
 keys. Missing sentinel in a populated DB is an error, not a reason to reset encryption.
+The synthetic copy-forward importer also initializes the sentinel explicitly inside its
+import transaction, even for an empty or public-rules-only source. Every published import
+can therefore validate its keys on reopen without needing a personal-data write.
 
 For rotation, provision a new active ID/key outside the app, retaining all old keys.
 New/changed rows use the active key; existing rows, the sentinel and old backups still
@@ -75,6 +78,20 @@ Encrypted-property replacement invalidates cached plaintext. Public setters noti
 tracker, and acceptance/reload invalidates the cache. The coordinator still compares
 the actual stored and proposed values to discard false modifications.
 
+Tracking binds setter notifications immediately. Attach establishes an Unchanged
+baseline: a key-only reference or values supplied before Attach do not request a write.
+Only Added/Modified/Deleted entries are collected, validated and checked for stale
+writes. A read-only tracked entity remains a no-op even if another context changed it,
+including when the save adds other entities. Attaching a principal to add a child does
+not replace the principal's existing name or create a parent audit event.
+
+Public setters called after Attach mark their corresponding encrypted properties as
+modified, including an explicit null name. Partial attached updates fill untouched
+fields from the actual DB state under the write lock before validation/audit/encryption;
+setting one amount preserves the other two. Detached Update marks every writable field
+modified and retains full replacement semantics; income replacements must supply all
+three amounts. Query-loaded entries actually changed by the caller retain stale guards.
+
 SQL predicates, ordering and aggregation on unmapped sensitive values are unsupported;
 load a bounded set by plaintext metadata and calculate in Core. Scalar ID/count queries
 are metadata access. Reload/discard or use a new context after conflicts or caller
@@ -91,8 +108,11 @@ not an authenticated identity. TaxRules-only writes and no-ops need no actor.
 One event is produced per actual add/update/delete of profile, monthly income, dependent
 or eligibility period. Auditing profiles in addition to the required entities keeps name
 changes and profile deletion explicit. Stored before-state is read under the SQLite write
-transaction. An existing tracked original that differs from storage rejects the write;
-a detached Update without stored ciphertext uses current DB before-state. Same values,
+transaction. Query-loaded and accepted tracked entries have persisted originals; an
+original that differs from storage rejects the write. Detached Update/Remove use actual
+DB before-state, including eligibility periods and key-only deletes: EF's snapshot made
+when attaching a detached object is not a loaded original or a concurrency token. These
+detached writes use current DB state and do not promise stale-client detection. Same values,
 change-then-revert, Modified-only flags and add-then-remove do not create events.
 
 The save coordinator acquires a write lock before before-state/cascade/TaxRules validation.
@@ -105,6 +125,10 @@ disabled EF auto-savepoints do not disable the coordinator's explicit transactio
 
 After successful SaveChanges(false), accept all changes or clear/reopen before saving
 again; internal audit entries are detached so they cannot be accidentally reinserted.
+Acceptance is tracked for the saved entries, not inferred from whether later edits exist.
+AcceptAllChanges followed immediately by another edit/save, and Clear followed immediately
+by Add/Update/save, require no intervening no-op Save. Entries still unaccepted continue
+to reject a new save before writing or appending audit.
 After an outer rollback, the tracker does not undo accepted state: reopen/reload.
 Interceptors that mutate/suppress application writes during the save pipeline, concurrent
 use of a DbContext, manipulating tracker OriginalValues and bulk/raw SQL writes are outside
@@ -159,8 +183,10 @@ upgrade. Raw legacy readers preserve exact decimals/nulls/keys/dates, validate F
 integer storage, and reuse strict raw tax-rule validation.
 
 No source bytes are copied into the target. A unique pending file is migrated fresh;
-all business entities and complete public rule/basis/bracket/registration rows are saved
-together. Import events identify synthetic-upgrader and the current import time, never
+the authenticated sentinel, all business entities and complete public rule/basis/bracket/
+registration rows are saved in one import transaction, including sources with no profiles.
+An empty or rules-only import creates no fictitious business audit. Import events identify
+synthetic-upgrader and the current import time, never
 pretend to reconstruct historical actors/events. A fresh context then compares every
 scalar/PK and sensitive value, decrypts audit, checks FK/trigger presence and absence of
 legacy plaintext columns. Connections close after checkpoint/journal normalization.

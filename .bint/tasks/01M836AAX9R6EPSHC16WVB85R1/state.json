@@ -1,11 +1,26 @@
 {
   "schema": 1,
   "id": "01M836AAX9R6EPSHC16WVB85R1",
-  "status": "created",
+  "status": "done",
   "workflow": "b-do",
+  "agent_choices": {
+    "implementer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "planner": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    },
+    "reviewer": {
+      "harness": "codex",
+      "model": "gpt-6.1-sol"
+    }
+  },
   "created_at": "2026-11-23T03:13:43Z",
-  "updated_at": "2026-11-23T03:37:43Z",
+  "updated_at": "2026-11-23T05:15:21Z",
   "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+  "reason": "Full2.4 implementation/docs/tests and independent review complete with no findings; synthetic development only, human security review before real data pending. No staging/commit.",
   "classification": {
     "plan": true,
     "reason": "người dùng chỉ định",
@@ -24,11 +39,140 @@
       "at": "2026-11-23T03:13:43Z",
       "by": "bint",
       "reason": "tạo tác vụ"
+    },
+    {
+      "from": "created",
+      "to": "blocked",
+      "at": "2026-11-23T04:50:37Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "bước chỉ đọc b-req (codex) đã kết thúc nhưng cây làm việc đổi trong lúc chạy: docs/decisions/0015-data-protection-audit.md — kết quả của bước đã được giữ. Nếu chính bạn sửa đồng thời: `bint run resume 01M836AAX9R6EPSHC16WVB85R1` để đi tiếp từ sau bước b-req (không chạy lại). Nếu do agent sửa: xem `git diff`, hoàn tác (Bint không hoàn tác) rồi `bint run resume 01M836AAX9R6EPSHC16WVB85R1 --rerun` để bỏ kết quả giữ và chạy lại bước, hoặc `bint task cancel 01M836AAX9R6EPSHC16WVB85R1`"
+    },
+    {
+      "from": "blocked",
+      "to": "planned",
+      "at": "2026-11-23T04:51:05Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Planning artifacts complete; root administrative ADR status update caused readonly guard, no planner source edits. Q-1 resolved from explicit PLAN retention and user delegation; implementation may proceed with approved Sol. [bỏ kết quả bước giữ b-req]"
+    },
+    {
+      "from": "planned",
+      "to": "in_progress",
+      "at": "2026-11-23T04:51:16Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat bắt đầu"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T05:11:01Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-23T05:15:21Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Full2.4 implementation/docs/tests and independent review complete with no findings; synthetic development only, human security review before real data pending. No staging/commit."
     }
   ],
-  "review_rounds": 0,
+  "criteria": [
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "CalculationHistoryService.cs:22 reads persisted profile/month income, dependent intervals and registrations AsNoTracking under writer transaction, calls MonthlySalaryCalculator then stores immutable v1 document. Targeted history74/74 and full Data300/300 pass, Core197/197 pass, no skips. CalculationCreationTests.cs:20 compares every amount/intermediate/portion/basis/rule/engine/UTC to actual Core for Official/References. SnapshotRoundTripTests.cs:19 reopens original key and fresh context, compares entire document/ciphertext after supported income/dependent/rule edits and deletion; exact decimals/cultures/clamp preserved.",
+      "by": "agent",
+      "at": "2026-11-23T05:09:42Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Full Data300/300 pass; 74 new history tests cover service-only append and sync/async bool guard, header/row/profile/field/database swaps, authenticated malformed payload, wrong/missing keys, explicit ownership/source modes, no legal status promotion. ProtectionSession.cs:48 binds all header metadata in history AAD; ProfilePurgeService.cs:43 erases history before audit/business in same transaction. DeletionTests proves retained history after both ordinary-delete paths, purge active/already-deleted target, target isolation and SQL/cancel/caller rollback. AtomicityTests proves history/audit SQL faults, caller savepoints and commit uncertainty/OperationId; CalculationFailureTests proves crypto size/overflow rollback. ConfidentialityTests inspects raw encrypted BLOBs, DB/WAL, EF logs and actual SQL parameters.",
+      "by": "agent",
+      "at": "2026-11-23T05:09:42Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "dotnet build TaxManager.sln --no-restore --disable-build-servers -m:1 exit0 (0 error, 1 NU1900 unavailable NuGet vulnerability endpoint). Postbuild dotnet test Data/Core --no-restore --no-build --disable-build-servers -m:1 exit0: Data300/300 Core197/197, 0 failed/skipped. EF migrations has-pending-model-changes --no-build exit0 no changes. HistoryMigrationTests.cs:20 migrates actual populated2.3 to additive fourth migration, preserves original ciphertext/sentinel/decrypted data/audit/rules and four triggers, reopens external keys, rejects Down. Six immutable migration/designer hashes match tests. All DB/key fixtures TEMP, no user DB. HEAD7e24438a4cb3c371e86d3ea2f4976ace83565a2b and index SHA25600CCE254774460DDFA6B4E21F64B863FAE0D23E0EAC6C91DE9569DA20AB9221D unchanged; task snapshot delta contains only allow paths, Core/config/dependencies unchanged. Scoped git diff --check exit0; existing2.3 task whitespace retained.",
+      "by": "agent",
+      "at": "2026-11-23T05:09:42Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Full Data300/300 pass; 74 new history tests cover service-only append and sync/async bool guard, header/row/profile/field/database swaps, authenticated malformed payload, wrong/missing keys, explicit ownership/source modes, no legal status promotion. ProtectionSession.cs:48 binds all header metadata in history AAD; ProfilePurgeService.cs:33 erases history before audit/business in same transaction. DeletionTests proves retained history after both ordinary-delete paths, purge active/already-deleted target, target isolation and SQL/cancel/caller rollback. AtomicityTests proves history/audit SQL faults, caller savepoints and commit uncertainty/OperationId; CalculationFailureTests proves crypto size/overflow rollback. ConfidentialityTests inspects raw encrypted BLOBs, DB/WAL, EF logs and actual SQL parameters.",
+      "by": "agent",
+      "at": "2026-11-23T05:10:46Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Independent review1 run01M83D1FQC0K2XSGANCQQX6T69 checked all44 task-only files, findings empty; Data300/Core197 passed without failures/skips, EF model consistent, six old migration hashes and HEAD/index preserved. Administrative review status updated in PLAN/ADR0016; human security review before real data remains required. User self-commits.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-23T05:15:11Z"
+    }
+  ],
+  "errors": [
+    {
+      "step": "b-req",
+      "message": "bước chỉ đọc b-req (codex) đã kết thúc nhưng cây làm việc đổi trong lúc chạy: docs/decisions/0015-data-protection-audit.md — kết quả của bước đã được giữ. Nếu chính bạn sửa đồng thời: `bint run resume 01M836AAX9R6EPSHC16WVB85R1` để đi tiếp từ sau bước b-req (không chạy lại). Nếu do agent sửa: xem `git diff`, hoàn tác (Bint không hoàn tác) rồi `bint run resume 01M836AAX9R6EPSHC16WVB85R1 --rerun` để bỏ kết quả giữ và chạy lại bước, hoặc `bint task cancel 01M836AAX9R6EPSHC16WVB85R1`",
+      "at": "2026-11-23T04:50:37Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "run_id": "01M83BGC9R1GXAX3MHR4BJPHF5"
+    },
+    {
+      "step": "b-feat",
+      "message": "First history creation suite: 9 passed, 2 failed only on JSON escaped UTC + comparison in audit assertion. Core input/result/provenance assertions passed. Replaced textual JSON comparison with semantic JsonElement.DeepEquals; no product behavior weakened.",
+      "at": "2026-11-23T04:58:29Z",
+      "by": "agent",
+      "run_id": "01M83BWZRYY85GT07SNQ00GJXY"
+    },
+    {
+      "step": "b-feat",
+      "message": "History targeted 28/29 passed; key mutation is already rejected immediately by EF CurrentValue setter, before SaveChanges. Corrected assertion to the actual rejection boundary.",
+      "at": "2026-11-23T05:00:12Z",
+      "by": "agent",
+      "run_id": "01M83BWZRYY85GT07SNQ00GJXY"
+    },
+    {
+      "step": "b-feat",
+      "message": "History targeted 58/59 passed; raw schema-corruption fixture PRAGMA did not persist because EF reopened its connection. Holding the synthetic connection open across PRAGMA and tamper; product CHECK correctly rejected mutation.",
+      "at": "2026-11-23T05:01:55Z",
+      "by": "agent",
+      "run_id": "01M83BWZRYY85GT07SNQ00GJXY"
+    },
+    {
+      "step": "b-feat",
+      "message": "Confidentiality fixture hit Windows file sharing while holding WAL connection open. Switched synthetic scan to FileStream FileShare.ReadWrite; no application behavior change.",
+      "at": "2026-11-23T05:03:15Z",
+      "by": "agent",
+      "run_id": "01M83BWZRYY85GT07SNQ00GJXY"
+    },
+    {
+      "step": "b-feat",
+      "message": "First full Data regression: 297 passed, 1 failed. ProfilePersistenceTests pinned the previous three migration IDs; updating the explicit expected list to include fourth additive history migration. No data assertion changed.",
+      "at": "2026-11-23T05:04:59Z",
+      "by": "agent",
+      "run_id": "01M83BWZRYY85GT07SNQ00GJXY"
+    }
+  ],
+  "runs": [
+    "01M83BGC9R1GXAX3MHR4BJPHF5",
+    "01M83BGCSK9AH6XHE68MHGJW7X",
+    "01M83BWZ6FGV0QADPMNC84KXC1",
+    "01M83BWZRYY85GT07SNQ00GJXY",
+    "01M83D1F8R1M5MHYWAD5D0NQ4F",
+    "01M83D1FQC0K2XSGANCQQX6T69"
+  ],
+  "review_rounds": 1,
   "depends_on": [
     "01M836910PQRDBHEP832K8K2CP"
   ],
-  "next_finding": 0
+  "next_finding": 0,
+  "artifacts": {
+    "plan": "2026-11-23T04:50:10Z",
+    "requirement": "2026-11-23T04:51:14Z",
+    "tasks": "2026-11-23T05:15:11Z"
+  }
 }

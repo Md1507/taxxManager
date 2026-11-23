@@ -7,6 +7,7 @@ using TaxManager.Data.Dependents;
 using TaxManager.Data.Income;
 using TaxManager.Data.Infrastructure;
 using TaxManager.Data.Profiles;
+using TaxManager.Data.CalculationHistory;
 
 namespace TaxManager.Data.Protection;
 
@@ -22,8 +23,12 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         if (metadata is null)
         {
             if (!initialize || context.UserProfiles.AsNoTracking().Any() ||
-                context.Set<AuditEvent>().AsNoTracking().Any())
+                context.MonthlyIncomes.AsNoTracking().Any() || context.Dependents.AsNoTracking().Any() ||
+                context.DependentEligibilityPeriods.AsNoTracking().Any() ||
+                context.Set<AuditEvent>().AsNoTracking().Any() || context.CalculationHistory.AsNoTracking().Any())
                 throw new DataProtectionException("Database protection metadata is missing.");
+            if (context.Database.CurrentTransaction is null)
+                throw new InvalidOperationException("Protection initialization requires an explicit transaction.");
             databaseId = Guid.NewGuid();
             var check = keys.Protect("TaxManager key check v1"u8, SentinelContext());
             context.Database.ExecuteSqlInterpolated(
@@ -39,11 +44,12 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
 
     private ProtectionContext SentinelContext() => new(databaseId, databaseId, "Metadata", "1", "KeyCheck");
     internal ProtectionContext FieldContext(object entity, string field) =>
-        new(databaseId, ProfileId(entity), entity.GetType().Name, RowKey(entity), field);
+        new(databaseId, ProfileId(entity), entity.GetType().Name, RowKey(entity),
+            entity is CalculationRecord h ? JsonSerializer.Serialize(new { Field = field, h.Year, h.Month, h.SchemaVersion, h.CreatedAtUtc }) : field);
 
     internal void Bind(object entity)
     {
-        if (entity is not (UserProfile or Dependent or MonthlyIncome)) return;
+        if (entity is not (UserProfile or Dependent or MonthlyIncome or CalculationRecord)) return;
         Ensure();
         BindFields(entity);
         _ = Snapshot(entity); // Fail at materialization, including AsNoTracking and client projections.
@@ -56,6 +62,13 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         byte[] Decode(byte[] bytes, string field) => keys!.Unprotect(bytes, FieldContext(entity, field));
         switch (entity)
         {
+            case CalculationRecord h:
+                h.Bind(() =>
+                {
+                    Ensure();
+                    return CalculationSnapshotCodec.Decode(Decode(h.PayloadEncrypted, "Snapshot"), h);
+                });
+                break;
             case UserProfile p: p.Name.Bind(b => Decode(b, "DisplayName"), () => context.MarkSensitiveDirty(p, "DisplayNameEncrypted")); break;
             case Dependent d: d.Name.Bind(b => Decode(b, "DisplayName"), () => context.MarkSensitiveDirty(d, "DisplayNameEncrypted")); break;
             case MonthlyIncome i:
@@ -87,6 +100,10 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         }
         switch (entity)
         {
+            case CalculationRecord h:
+                h.SetPayload(keys!.Protect(CalculationSnapshotCodec.Encode(h.Snapshot), FieldContext(h, "Snapshot")));
+                h.AcceptPayload();
+                break;
             case UserProfile p:
                 var profileName = p.DisplayName; Write("DisplayName", profileName); p.DisplayName = profileName; break;
             case Dependent d:
@@ -115,15 +132,16 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         new(databaseId, e.ProfileId, "AuditEvent", e.Id.ToString("D"),
             JsonSerializer.Serialize(new { e.OperationId, e.Ordinal, e.Entity, e.EntityKey, e.Action, e.TimestampUtc }));
 
-    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod;
+    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod or CalculationRecord;
     internal static Guid ProfileId(object e) => e switch
     {
         UserProfile p => p.Id, Dependent d => d.ProfileId, MonthlyIncome i => i.ProfileId,
-        DependentEligibilityPeriod p => p.ProfileId, _ => throw new InvalidOperationException()
+        DependentEligibilityPeriod p => p.ProfileId, CalculationRecord h => h.ProfileId, _ => throw new InvalidOperationException()
     };
     internal static string RowKey(object e) => e switch
     {
         UserProfile p => p.Id.ToString("D"),
+        CalculationRecord h => h.Id.ToString("D"),
         Dependent d => d.Id.ToString("D"),
         MonthlyIncome i => FormattableString.Invariant($"{i.Year:D4}/{i.Month:D2}"),
         DependentEligibilityPeriod p => FormattableString.Invariant($"{p.DependentId:D}/{p.EligibleFromMonth:yyyy-MM-dd}"),
@@ -134,6 +152,7 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         static string Money(decimal value) => value.ToString("G29", CultureInfo.InvariantCulture);
         return entity switch
         {
+            CalculationRecord h => CalculationSnapshotCodec.AuditSnapshot(h.Snapshot),
             UserProfile p => JsonSerializer.SerializeToElement(new { p.DisplayName }),
             Dependent d => JsonSerializer.SerializeToElement(new { d.DisplayName }),
             MonthlyIncome i => JsonSerializer.SerializeToElement(new

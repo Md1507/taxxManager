@@ -58,6 +58,8 @@ context.ValidateProtection();
 
 Một DB fresh chưa ghi protected data chưa có sentinel: lần protected Save đầu tiên
 khởi tạo sentinel trong cùng transaction. Không gọi ValidateProtection trước lần đó.
+Target do SyntheticDatabaseUpgrader công bố luôn có sentinel, kể cả nguồn trống hoặc
+chỉ có luật công khai: mở lại target phải gọi ValidateProtection ngay.
 Mở lại DB đã initialized thì gọi ValidateProtection, kể cả khi hồ sơ đã ordinary-delete.
 Materialization của names/amounts và protected Save cũng xác thực key-check. Count/ID
 projections là truy cập metadata và không tự xác thực khóa. Thiếu key/ciphertext lỗi
@@ -74,6 +76,23 @@ state trước khi quyết định retry. Không lặp mù Add/Delete.
 Caller-owned transactions giữ quyền commit/rollback. Save dùng preparation savepoint,
 nên lỗi không xóa công việc trước savepoint. Sau outer rollback phải clear/reopen/reload.
 Sau SaveChanges(false), AcceptAllChanges hoặc clear/reopen trước lần save tiếp theo.
+Có thể edit rồi Save ngay sau AcceptAllChanges, hoặc Add/Update rồi Save ngay sau
+Clear; không cần chèn một lần Save no-op. Nếu entry của lần Save(false) chưa accept
+hoặc detach/clear thì Save tiếp theo vẫn bị từ chối, không ghi audit trùng.
+Period đã load có stale guard giống income; detached Update/Remove dùng before-state
+thực tế trong DB, kể cả delete chỉ có khóa. Snapshot EF tự tạo lúc attach không phải
+concurrency token: detached writes không phát hiện được stale-client intent.
+
+Attach chỉ thiết lập baseline Unchanged; tên/số tiền mặc định hoặc được gán trước
+Attach không phải lệnh ghi. Có thể Attach principal bằng khóa rồi Add child mà không
+ghi đè parent hoặc tạo audit parent. Entity chỉ đọc không bị stale-check khi Save,
+kể cả khi context khác vừa sửa nó hoặc Save đang thêm entity khác.
+Setter public gọi sau Attach mới đánh dấu trường nhạy cảm cần ghi (kể cả tên null).
+Ví dụ Attach income bằng ProfileId/Year/Month, rồi gán GrossIncome sẽ giữ nguyên hai
+khoản còn lại từ DB trong transaction; nhiều setter sau Attach đều được ghi nhận.
+Detached Update là thay thế toàn bộ: phải cung cấp đủ ba khoản tiền. Entry thực sự
+đã load và được chỉnh sửa vẫn có stale guard. Giá trị không đổi không sinh audit.
+
 Không dùng raw SQL/bulk writes, chỉnh OriginalValues hay interceptor mutate/suppress
 writes để bỏ qua pipeline nghiệp vụ. SQL sort/filter/sum trên tên/tiền unmapped không
 được hỗ trợ; lọc bằng metadata rồi đưa giá trị đã hydrate sang Core.
@@ -103,9 +122,11 @@ var result = await new SyntheticDatabaseUpgrader().UpgradeAsync(
 
 Dừng writers trước khi gọi. Source được mở read-only với một snapshot; target phải
 chưa tồn tại, kể cả WAL/SHM/journal cũ. Upgrader tạo pending file mới, mã hóa từng hàng,
-copy toàn bộ public rules/provenance/keys, kiểm tra bằng context mới rồi mới rename
+khởi tạo sentinel trong cùng transaction với copy toàn bộ public rules/provenance/keys,
+kiểm tra bằng context mới rồi mới rename
 không overwrite. Audit import có actor synthetic-upgrader và thời điểm import, không
-bịa lịch sử cũ. Lỗi SQL/crypto/readback/key/cancel/publish giữ nguyên source; chỉ pending
+bịa lịch sử cũ. Nguồn trống/rules-only vẫn tạo target xác thực khóa được, giữ mọi luật
+công khai và không tạo business audit giả. Lỗi SQL/crypto/readback/key/cancel/publish giữ nguyên source; chỉ pending
 files của attempt được dọn. Không chuyển bytes plaintext của source sang file target.
 
 Backup DB nhất quán bằng SQLite BackupDatabase hoặc đóng toàn bộ connections/writers
@@ -134,4 +155,58 @@ graph/lifecycle/stale guards của 2.2 vẫn chạy trong transaction, kể cả
 Xem [schema](database-schema.md), [ADR0014](decisions/0014-tax-rule-persistence.md),
 [ADR0015](decisions/0015-data-protection-audit.md) và PLAN cho test/review status.
 Code/tests phải qua review độc lập Bint, rồi người dùng review bảo mật trước dữ liệu
-thật. Bước 2.4 mới được lập kế hoạch; chưa có history entities hay Web/Identity.
+thật. Bước 2.4 đã có implementation và synthetic tests, chờ independent Bint review;
+chưa có Web/Identity. Contract và giới hạn tại [ADR0016](decisions/0016-calculation-history.md).
+
+## Lịch sử tính lương tháng 2.4
+
+Sau khi DB synthetic đã migrate và có input/rules persisted tường minh:
+
+```csharp
+context.AuditContext = new AuditWriteContext("synthetic-caller", "monthly calculation",
+    OperationId: Guid.NewGuid()); // metadata caller, chưa phải authenticated identity
+var history = new CalculationHistoryService(context);
+var saved = await history.CreateMonthlyAsync(profileId, 2026, 1,
+    CalculationSourceMode.References); // Official dùng strict verified source gate
+var read = await history.ReadAsync(profileId, saved.HistoryId);
+```
+
+Import namespace TaxManager.Data.CalculationHistory. Context không được có pending
+writes. Service đọc gross/manual insurance/actual withheld và khoảng phụ thuộc đúng
+hồ sơ trong cùng transaction với catalog; gọi Core, không nhận result caller. Không
+seed/fallback, không tạo tháng thiếu. Actual withheld chỉ đối soát, exemptIncome=0;
+optional graphs không hỗ trợ bị reject. References giữ nguyên trạng thái pháp lý,
+Official không tự xác minh nội dung luật. Registration khác legal effective dates.
+
+Snapshot bất biến tự chứa mọi input/result/portion/basis/rule/engine binary identity và
+UTC. Đọc không join nguồn hiện tại hay chạy lại Core. Decimal exact; unknown schema,
+malformed/tampered payload hoặc sai khóa báo lỗi, không default. DTO read/saved có thể
+dùng sau khi đóng context; accessor entity CalculationRecord.Snapshot cần context sống.
+Không log snapshot, amount, provenance hoặc actor/purpose; SQL lưu BLOB đã mã hóa.
+
+Supported SaveChanges sync/async từ chối caller Add/Update/Delete history. Chỉ service
+được append; chỉ profile purge được erase. Raw/bulk SQL, reflection và SQLite admin
+ở ngoài contract này. Ordinary-delete giữ history/audit bằng logical ProfileId, không
+FK cascade; service Read cần đúng cặp ProfileId+HistoryId kể cả sau delete, chưa phải
+authorization. Purge xóa cả target history/audit dù profile đã xóa, không receipt;
+WAL/free pages/backups vẫn có giới hạn như 2.3, không có retention pháp lý tự đặt.
+
+Create giữ writer lock trước lần đọc đầu, rồi history/audit cùng atomic coordinator.
+Caller transaction giữ quyền commit/rollback; savepoint lỗi không mất earlier SQL.
+Validation/overflow/size/crypto/SQL/cancel lỗi không để partial history/audit. Không retry
+tự động; commit unknown cần fresh context tra OperationId, decrypt audit và đối chiếu
+history trước quyết định retry. Không reuse ID đã ghi. Sau outer rollback reload/reopen.
+
+Migration thứ tư chỉ thêm CalculationHistory; không chạy migration trên user DB.
+Downgrade 2.4 từ chối, dùng backup2.3 cùng app/key ring/metadata phù hợp để rollback.
+Giữ external keys và backup theo ADR0015; không tạo hay reset keys để chữa lỗi đọc.
+Chạy nhóm mới trước full Data/Core/model checks:
+
+```powershell
+dotnet test tests/TaxManager.Data.Tests --no-restore --disable-build-servers -m:1 --filter FullyQualifiedName~CalculationHistory
+```
+
+Review task này dùng `bint task diff 01M836AAX9R6EPSHC16WVB85R1`, sau khi Bint ghi
+checkpoint b-feat; trong lượt b-feat đang mở, `--all` cho delta từ snapshot trước tác vụ
+vì file ownership chỉ được ghi khi bước kết thúc. Không dùng diff HEAD để lẫn baseline2.3.
+Không tự commit hoặc tự ghi đã review độc lập; Bint Core điều phối b-review tiếp theo.

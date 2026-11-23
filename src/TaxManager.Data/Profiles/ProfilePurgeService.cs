@@ -30,6 +30,7 @@ public sealed class ProfilePurgeService(TaxManagerDbContext context)
             await context.Database.ExecuteSqlRawAsync("UPDATE TaxRuleSnapshot SET RuleId = RuleId WHERE 0", token);
             context.ValidateProtection();
             // No new receipt/payload is retained that would link the target after purge.
+            await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM CalculationHistory WHERE ProfileId = {profileId}", token);
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM AuditEvents WHERE ProfileId = {profileId}", token);
             await context.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM UserProfiles WHERE Id = {profileId}", token);
             token.ThrowIfCancellationRequested();

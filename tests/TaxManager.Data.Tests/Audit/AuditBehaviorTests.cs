@@ -113,9 +113,11 @@ public class AuditBehaviorTests
         Assert.Equal(EntityState.Modified, c.Entry(income).State);
         await Assert.ThrowsAsync<InvalidOperationException>(() => c.SaveChangesAsync());
         c.ChangeTracker.AcceptAllChanges();
-        Assert.Equal(0, await c.SaveChangesAsync());
         income.GrossIncome = 6;
-        await Assert.ThrowsAsync<InvalidOperationException>(() => c.SaveChangesAsync());
+        var reuse = async
+            ? await Assert.ThrowsAsync<InvalidOperationException>(() => c.SaveChangesAsync())
+            : Assert.Throws<InvalidOperationException>(() => c.SaveChanges());
+        Assert.Contains("OperationId is already recorded", reuse.Message);
         await using var verify = db.Open();
         Assert.Equal(5, (await verify.MonthlyIncomes.SingleAsync()).GrossIncome);
         Assert.Single(await verify.Set<AuditEvent>().Where(e => e.OperationId == operation).ToListAsync());

@@ -1,0 +1,74 @@
+{
+  "task_id": "01M836910PQRDBHEP832K8K2CP",
+  "rounds": [
+    {
+      "round": 1,
+      "at": "2026-11-23T04:07:43Z",
+      "by": "agent",
+      "run_id": "01M8394YB4V5QK87J5DRFPQM95",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Phát hiện 3 bug medium đã tái hiện trên DB/key synthetic: trạng thái SaveChanges(false), detached eligibility update và copy-forward không có hồ sơ. Data 135/135 và Core 197/197 qua, không skip; model không có pending changes; HEAD/index và bốn migration cũ khớp hash baseline. Không sửa mã, không thao tác DB/key thật. Chưa kiểm chứng triển khai production, ACL/backup vận hành, forensic erasure hay review bảo mật của người dùng; các kết quả xanh không chứng minh an toàn tuyệt đối.",
+      "findings": [
+        {
+          "id": "01M836910PQRDBHEP832K8K2CP.1",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "AcceptAllChanges hoặc Clear không giải phóng chặn sau SaveChanges(false)",
+          "path": "src/TaxManager.Data/Audit/AuditSaveCoordinator.cs",
+          "lines": "20-24",
+          "evidence": "pendingAcceptance chỉ được xóa khi Save tiếp theo không thấy bất kỳ entry Added/Modified/Deleted nào, không theo dõi AcceptAllChanges hoặc Clear. Chạy chương trình synthetic TEMP bằng dotnet run --project C:/Users/LENOVO/AppData/Local/Temp/taxmanager-s23-review/Review.csproj --no-build --no-restore: Add(profile), SaveChangesAsync(false), ChangeTracker.AcceptAllChanges(), đổi DisplayName, SaveChangesAsync() trả InvalidOperationException: AcceptAllChanges or clear/reopen the context before another save after SaveChanges(false). Biến thể Clear(), Add(profile mới), SaveChangesAsync() cũng lỗi và DB chỉ có 1 profile. Cả hai chuỗi đều thực hiện đúng hướng dẫn phục hồi trong ADR0015/development. Test SaveFalseRequiresAcceptanceAndOperationReuseDoesNotDuplicate hiện gọi một Save không đổi ngay sau AcceptAllChanges nên vô tình xóa cờ trước khi sửa tiếp.",
+          "body": "Ràng buộc pending acceptance cần gắn với các entry/baseline của lần Save(false), hoặc được giải phóng khi tracker thực sự accept/clear; không suy ra chưa accept chỉ từ việc hiện tại có thay đổi mới. Bổ sung các ca sync/async accept rồi sửa ngay và clear rồi add ngay, không chèn no-op Save."
+        },
+        {
+          "id": "01M836910PQRDBHEP832K8K2CP.2",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Detached Update của khoảng giảm trừ luôn bị coi là stale khi đổi ngày kết thúc",
+          "path": "src/TaxManager.Data/Audit/AuditSaveCoordinator.cs",
+          "lines": "176-180",
+          "evidence": "hasOriginal luôn true với DependentEligibilityPeriod, kể cả đối tượng vừa tạo rồi Update trong context mới. EF khởi tạo OriginalValues từ chính giá trị được gửi vào; vì EligibleToMonth mới khác DB, so sánh original với stored luôn ném stale conflict dù không có writer khác. Repro TEMP cùng lệnh trên: seed period 2026-01-01..2026-12-01, mở context mới, Update(new DependentEligibilityPeriod với cùng PK và EligibleToMonth=2026-11-01), SaveChangesAsync() trả InvalidOperationException: Business data changed since it was loaded; reload before saving. Detached Update của income được hỗ trợ và có test, ADR0015 mô tả detached Update dùng DB before-state nhưng nhánh này làm eligibility không có cùng contract.",
+          "body": "Phân biệt original đã load từ DB với snapshot EF vừa tạo khi attach/update detached; với detached period hãy dựng before-state từ DB theo contract hoặc yêu cầu concurrency token tường minh. Giữ kiểm tra stale thật cho đối tượng đã load, thêm ca detached cập nhật/xóa period và xác nhận audit before/after đúng."
+        },
+        {
+          "id": "01M836910PQRDBHEP832K8K2CP.3",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Copy-forward thất bại với legacy DB hợp lệ chưa có dữ liệu cá nhân",
+          "path": "src/TaxManager.Data/Upgrades/SyntheticDatabaseUpgrader.cs",
+          "lines": "50-55",
+          "evidence": "Sentinel chỉ được khởi tạo bởi AuditSaveCoordinator khi hasBusiness=true. Legacy DB có đúng hai migrations và chỉ có luật công khai (hoặc hoàn toàn trống) không có business entries, nên SaveChangesAsync không tạo DataProtectionMetadata; verify.ValidateProtection() sau đó luôn lỗi. Repro TEMP: migrate tới 20261122161649_AddMonthlyTaxRules, SeedReferencesAsync (2 TaxRuleSnapshot, không profile), gọi UpgradeAsync(source,newTarget,keys,true): DataProtectionException: Database protection metadata is missing. Ca source hoàn toàn trống cũng lỗi tương tự. API chỉ yêu cầu đúng hai migrations, synthetic paths và target mới, không yêu cầu có hồ sơ; đây là source hợp lệ. Nguồn vẫn được giữ nguyên, target không publish.",
+          "body": "Xử lý tường minh target chưa có protected rows: khởi tạo metadata/sentinel trong transaction import hoặc kiểm chứng trạng thái fresh theo contract trước publish, đồng thời giữ fail-closed khi metadata mất ở DB populated. Bổ sung copy-forward cho nguồn trống và nguồn chỉ có public rules, kiểm tra reopen/key validation và dữ liệu luật được bảo toàn."
+        }
+      ]
+    },
+    {
+      "round": 2,
+      "at": "2026-11-23T04:25:28Z",
+      "by": "agent",
+      "run_id": "01M83A3Y2Y22K6BEWYW0AN9K21",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review vòng 2 toàn bộ task-only delta (61 tệp): ba lỗi vòng 1 đã qua probe độc lập, nhưng phát hiện thêm một bug medium làm Save ghi đè entity Unchanged. Data 160/160 và Core 197/197 qua, không skip; EF model không có pending changes. HEAD 7e24438a4cb3c371e86d3ea2f4976ace83565a2b, index SHA256 00CCE254774460DDFA6B4E21F64B863FAE0D23E0EAC6C91DE9569DA20AB9221D và bốn hash migration cũ giữ nguyên trong vòng review. Không sửa mã, không dùng DB/key thật. Chưa kiểm chứng triển khai production, ACL/backup vận hành, forensic erasure hoặc review bảo mật của người dùng; test xanh không chứng minh an toàn tuyệt đối.",
+      "findings": [
+        {
+          "id": "01M836910PQRDBHEP832K8K2CP.4",
+          "kind": "bug",
+          "severity": "medium",
+          "title": "Attach hồ sơ Unchanged vẫn ghi đè tên thành null và tạo audit Update",
+          "path": "src/TaxManager.Data/Audit/AuditSaveCoordinator.cs",
+          "lines": "186-200",
+          "evidence": "Probe độc lập tại TEMP/taxmanager-s23-review2/Program.cs (build exit 0, chạy Review2.dll exit 0) seed một UserProfile có tên Synthetic original retained name, mở context mới, gọi Attach(new UserProfile { Id = existingId }) rồi SaveChanges/SaveChangesAsync, không gán tên hay sửa gì. Cả hai API đều in state before save=Unchanged, save result=1; fresh context đọc persisted name=\u003cNULL\u003e, audit count=2 (ban đầu chỉ 1 Add). Collect duyệt cả Unchanged, so tên null mặc định của object Attach với tên DB, rồi dòng 214 tự nâng thành Modified dù không có write intent. Probe còn chứng minh context chỉ load, HasChanges=false, sau concurrent edit ở context khác thì no-op Save cũng bị báo stale ở cả sync/async. Hai hiện tượng cùng xuất phát từ việc coi mọi tracked business entry là thay đổi cần lưu.",
+          "body": "Giữ đúng ý nghĩa Unchanged của EF: chỉ collect write intent thực tế (Added/Modified/Deleted hoặc dirty state của trường unmapped), không lấy chênh lệch giữa một reference được Attach và DB làm lệnh Update. Bind/capture dirty notifications phù hợp lúc tracking để vẫn nhận public setter edits sau Attach, đồng thời giữ detached Update/Remove dùng actual DB before-state và stale guard cho entity thực sự được sửa. Thêm regression sync/async cho key-only Attach rồi no-op Save, Attach principal khi thêm child và no-op Save khi entity chỉ đọc đã bị context khác cập nhật; tên/dữ liệu hiện hữu và audit phải được giữ nguyên nếu caller không sửa entity đó. Vị trí nâng state nằm ở dòng 214-215 cùng phương thức."
+        }
+      ]
+    },
+    {
+      "round": 3,
+      "at": "2026-11-23T04:41:48Z",
+      "by": "agent",
+      "run_id": "01M83B2H367PHJ9TNSEJ76CRWN",
+      "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
+      "summary": "Review vòng 3 toàn bộ delta tác vụ 2.3 qua bint task diff --all (62 tệp, gồm phần đã user-commit): không có phát hiện mới. Bốn lỗi .1–.4 của hai vòng trước đã được kiểm chứng lại bằng mã, regression và probe độc lập; findings rỗng không phải bảo đảm an toàn tuyệt đối.\n\nĐã đối chiếu requirement/plan/tasks, ADR0013/0014/0015, schema/development/PLAN và bốn tiêu chí: AES-GCM chuẩn với AAD theo database/profile/entity/row/field, durable external ring, sentinel và fail-closed; audit encrypted cùng transaction/savepoint, explicit caller metadata, append-only qua supported tracked API, ordinary delete giữ audit và purge riêng; migration mới/copy-forward synthetic có readback, giữ source và xử lý lỗi; 2.4 mới được lập kế hoạch, chưa implement. Metadata plaintext và giới hạn replay/DBA/backup/erasure được công bố. MCP context_for_paths không trả tri thức liên quan.\n\nKiểm chứng trực tiếp: dotnet test Data --no-restore --disable-build-servers -m:1 đạt 226/226, Core đạt 197/197 (0 failed, 0 skipped); dotnet ef migrations has-pending-model-changes --no-build exit 0, không có pending changes. Build lại hai probe cũ và probe mới đều thành công 0 warning/error. Probe vòng 1: Clear/Accept sau Save(false) rồi ghi ngay, detached period Update và rules-only upgrade đều SUCCESS. Probe vòng 2: Attach Save=0 giữ nguyên tên/audit, readonly stale Save=0 ở sync và async. Probe độc lập mới TEMP/taxmanager-s23-review3/Program.cs kết hợp key-only Attach principal, partial income setter, child insert, Save(false)-\u003eAccept-\u003egán null/setter-\u003eSave, readonly stale với mixed child insert và true stale update: PASS cả sync/async, kiểm persisted amounts, audit counts và decrypt toàn bộ events. Regression bao gồm 66 TrackingWriteIntent cases, atomicity/commit/cancellation/caller transactions/retry, ciphertext swaps/corruption/key errors, confidentiality/restore, populated migration rejection, empty/rules-only sentinel và source-preserving upgrade faults.\n\nHEAD đầu/cuối 7e24438a4cb3c371e86d3ea2f4976ace83565a2b; index SHA256 00CCE254774460DDFA6B4E21F64B863FAE0D23E0EAC6C91DE9569DA20AB9221D không đổi. Hash cả bốn migration/designer cũ khớp giá trị bất biến trong phiếu. Không sửa mã/tài liệu repository, không thao tác user DB/key, không stage/commit/reset/approve/status/verify. Chỉ tạo probe và dữ liệu giả ở TEMP cùng build artifacts.\n\nGiới hạn: chưa kiểm chứng triển khai production, ACL/quy trình backup vận hành, forensic erasure hay dữ liệu thật; scan fixture và test xanh không chứng minh mọi bản sao lịch sử an toàn. Người dùng vẫn cần review bảo mật trước khi dùng dữ liệu thật. PLAN/ADR ghi chờ vòng 3 phản ánh trạng thái trước báo cáo này; người điều phối cập nhật bàn giao sau review, reviewer không sửa mã hoặc tài liệu.",
+      "findings": []
+    }
+  ]
+}

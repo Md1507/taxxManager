@@ -61,6 +61,44 @@ namespace TaxManager.Data.Migrations
                     b.ToTable("AuditEvents", (string)null);
                 });
 
+            modelBuilder.Entity("TaxManager.Data.CalculationHistory.CalculationRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Month")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("PayloadEncrypted")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("SchemaVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfileId", "Year", "Month", "CreatedAtUtc");
+
+                    b.ToTable("CalculationHistory", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_History_Month", "Month BETWEEN 1 AND 12");
+
+                            t.HasCheckConstraint("CK_History_Schema", "SchemaVersion = 1");
+
+                            t.HasCheckConstraint("CK_History_Year", "Year BETWEEN 1 AND 9999");
+                        });
+                });
+
             modelBuilder.Entity("TaxManager.Data.Dependents.Dependent", b =>
                 {
                     b.Property<Guid>("ProfileId")

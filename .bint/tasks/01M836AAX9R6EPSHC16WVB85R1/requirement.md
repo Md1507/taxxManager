@@ -1,0 +1,31 @@
+# Yêu cầu
+
+## Mục tiêu và phạm vi
+Bước 2.4, task 01M836AAX9R6EPSHC16WVB85R1; deep/user_override. Phụ thuộc 01M836910PQRDBHEP832K8K2CP đã done ngày 23/11/2026; không có parent. Chỉ CalculationHistory trong Data và kiểm thử synthetic, sau cơ chế protection/audit 2.3. Đây là kế hoạch, chưa phải bằng chứng triển khai hoặc review.
+
+## Yêu cầu chức năng
+1. Service nhận ProfileId, Year, Month và chế độ nguồn luật tường minh Official hoặc References; đọc MonthlyIncome của đúng hồ sơ, các khoảng phụ thuộc áp dụng và registration/rules đã lưu trong cùng transaction. Không nhận gross, số phụ thuộc, luật hay kết quả do caller cung cấp để gắn nhãn đã tính. Không tự tạo tháng thiếu, seed hoặc fallback. Caller metadata không phải xác thực; lookup history phải kết hợp ProfileId và HistoryId, không lookup chỉ bằng HistoryId.
+2. Gọi MonthlySalaryCalculator.Calculate của Core với gross, manual insurance, số người phụ thuộc có khoảng tháng bao gồm cả hai đầu và exemptIncome=0. Lưu cả actual withheld từ dữ liệu nguồn làm dữ liệu đối chiếu, không gọi đó là tham số tính PIT. Snapshot chứa kỳ, input thực sự dùng, danh sách ID opaque/khoảng phụ thuộc áp dụng và count, toàn bộ kết quả trung gian và từng TaxPortion của Core. Không cần tên hồ sơ/phụ thuộc.
+3. Snapshot độc lập dữ liệu nguồn: RuleId+Version, Period/FromYear, registration PeriodFrom/PeriodTo, deductions, ordered brackets với nullable bound, mọi LegalBasis theo vai trò/bậc và liên kết căn cứ trên kết quả; giữ đủ metadata, null, VerificationStatus/VerifiedOn và ngày hiệu lực nguyên trạng. Ghi schema version, định danh/version engine cùng build identity của Core và timestamp UTC từ Clock. Đọc history giải mã snapshot đã lưu, không tính lại hoặc join luật hiện tại. Sau sửa/xóa income, sửa dependent hoặc sửa/xóa graph luật hợp lệ, history cũ không đổi.
+4. Giới hạn một nguồn lương tháng/bảo hiểm nhập tay đúng ADR0013/0014; không bổ sung automatic insurance, rounding, annual, bonus/extra, casual, multiple payers, charitable/retirement. Unsupported optional graph/schema bị từ chối rõ, không bỏ trường âm thầm. Mọi tiền và tỷ lệ giữ decimal exact, không double/REAL hoặc làm tròn; thiếu dữ liệu, số không biểu diễn exact, payload hỏng và overflow phải lỗi thay vì default.
+5. Dùng FileKeyRing, sentinel và protection primitives 2.3; khóa ngoài DB/repo. History chỉ lưu header tối thiểu và một protected BLOB, không lưu bản plaintext của input/result/rule provenance. AAD ràng buộc database/profile/history/field và header bất biến. SQL/logs/errors/audit headers không có tên, tiền hay provenance gắn với người; actor/purpose/correlation và before/after audit được mã hóa. Lỗi khóa, tamper, sai context fail closed.
+6. Insert history chỉ được service nội bộ cho phép sau phép tính Core; supported SaveChanges sync/async từ chối caller tự Add/Update, detached Update, sửa property/payload hoặc đổi khóa. Chỉ cho phép xóa theo contract hồ sơ/purge đã chốt tại Q-1; không mở cờ public để vượt guard. Snapshot đọc ra có collections bất biến/defensive copies. Không tuyên bố chống raw SQL, reflection hoặc SQLite admin.
+7. Tạo snapshot và audit Add nguyên tử; validation/crypto/SQL/audit/cancellation lỗi không để partial history/audit. Service quản lý transaction toàn bộ read-calculate-save và giữ write lock từ trước lần đọc đầu; nếu có caller transaction thì dùng savepoint toàn operation, không commit/dispose của caller. Context có pending writes bị từ chối, không flush công việc caller. Giữ semantics OperationId, no automatic retry, commit-unknown và fresh-context reconciliation của 2.3.
+8. Deletion/retention của history phải chốt Q-1 trước triển khai schema; ordinary delete giữ audit theo 2.3, purge xóa mọi history/audit target kể cả target đã ordinary-delete, không lưu receipt liên kết target và không ảnh hưởng hồ sơ khác. Không có history mất chủ không được quản lý; không tự đặt retention pháp lý hoặc hứa forensic erasure.
+9. Thêm migration thứ tư cùng designer/model snapshot, giữ sáu tệp ba migrations cũ byte-identical; fresh và upgrade từ 2.3 populated phải giữ và decrypt được dữ liệu/audit cũ cùng rules/constraints/bốn overlap triggers. Không auto-migrate startup, không dùng DB/key thật.
+10. Tổ chức feature CalculationHistory, mỗi primary type một file; tests theo hành vi, fixtures dùng TEMP. Cập nhật ADR0016, development, database-schema và PLAN. Hoàn thành implementation/tests rồi review độc lập task-only delta; sửa findings actionable trước bàn giao, người dùng tự commit và review bảo mật trước dữ liệu thật. Không sửa Core/nguồn luật/dependency versions/Bint config/models, không stage/commit/unstage/reset/stash/push/approve/force. verify.command giữ trống, development checks chạy trực tiếp ở b-feat.
+
+## Tiêu chí chấp nhận
+- [ ] AC-1: A persisted monthly calculation records actual Core input/result, precise rules/provenance/engine versions and UTC timestamp; fresh history remains unchanged after source data/rule edits.
+- [ ] AC-2: History is protected with step2.3 mechanisms, supported updates rejected, ownership/deletion/purge/audit atomicity and error semantics explicit and tested; no silent graph loss or legal status promotion.
+- [ ] AC-3: Next migration preserves previous migrations and existing data, tests use isolated synthetic DB/keys, full Core/Data regression and model consistency pass without user DB or Git index/HEAD mutations.
+- [ ] AC-4: Code and tests organized, docs/schema/PLAN accurate; independent review complete with actionable findings repaired.
+
+## Ngoài phạm vi
+Web/Identity/auth, dữ liệu thật, CCCD/MST, tính năng thuế hoặc luật mới, sửa Core hay nguồn pháp lý, triển khai lại 2.1/2.2/2.3, production upgrade/cutover/cleanup, key provisioning/rotation utility, SQL aggregate trên tiền mã hóa, quy trình retention pháp lý. B-req không sửa mã, tạo migration hay chạy development checks; không tự đổi status/approve/verify dưới bint run.
+
+## Câu hỏi mở
+- [x] Q-1: Ordinary-delete giữ hàng history bằng liên kết logic có chủ đích như audit; purge xóa cả history/audit, kể cả hồ sơ đã xóa. Đọc history vẫn bắt buộc ProfileId+HistoryId; caller cung cấp ID không phải auth. — Trả lời: Quyết định điều phối theo PLAN 2.4 và ủy quyền của người dùng “làm theo đánh giá của bạn đi”: giữ snapshot sau xóa thông thường, không FK cascade tới hồ sơ; document retention, không tự đặt thời hạn pháp lý.
+
+
+

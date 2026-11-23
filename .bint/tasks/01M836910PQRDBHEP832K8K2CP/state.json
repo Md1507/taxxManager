@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "01M836910PQRDBHEP832K8K2CP",
-  "status": "in_review",
+  "status": "done",
   "workflow": "b-do",
   "agent_choices": {
     "implementer": {
@@ -18,9 +18,9 @@
     }
   },
   "created_at": "2026-11-23T03:13:00Z",
-  "updated_at": "2026-11-23T04:03:12Z",
+  "updated_at": "2026-11-23T04:44:18Z",
   "base": "c6418b2b2ddb86cac2e4b1c148b4ac8b2b77aca4",
-  "reason": "b-feat xong",
+  "reason": "Technical implementation/tests and final independent review3 complete; human security review before real data remains documented. Continue synthetic development2.4.",
   "classification": {
     "plan": true,
     "reason": "người dùng chỉ định",
@@ -102,6 +102,41 @@
       "at": "2026-11-23T04:03:02Z",
       "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
       "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-23T04:08:13Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa toàn bộ3finding review1 và regression"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T04:19:20Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "in_progress",
+      "at": "2026-11-23T04:26:42Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Sửa review2 .4: Unchanged/Attach không phải ý định ghi; thêm regressions trước review3"
+    },
+    {
+      "from": "in_progress",
+      "to": "in_review",
+      "at": "2026-11-23T04:36:33Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "b-feat xong"
+    },
+    {
+      "from": "in_review",
+      "to": "done",
+      "at": "2026-11-23T04:44:18Z",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "reason": "Technical implementation/tests and final independent review3 complete; human security review before real data remains documented. Continue synthetic development2.4."
     }
   ],
   "criteria": [
@@ -216,6 +251,69 @@
       "evidence": "TSK1-11 implemented and checked; ADR0015, development guide, Mermaid schema and PLAN updated with actual 135 Data/197 Core results, crypto/metadata/key recovery, operation retry and deletion/purge boundaries. PLAN step2.4 specifies immutable input/result snapshots, RuleId+Version/provenance/engine version/UTC, encryption and deletion, without implementing2.4. Remaining TSK12 is configured independent Bint b-review: no independent review has yet run for2.3, so this combined criterion cannot honestly be marked met. Security manual review by user before any real-data use remains explicitly required. Review task-only delta using bint task diff --all with authorized TEMP object directory.",
       "by": "agent",
       "at": "2026-11-23T04:01:59Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Final Data suite: dotnet test tests/TaxManager.Data.Tests --no-restore --disable-build-servers -m:1 passed 160/160, 0 failed/skipped, exit 0. ProtectedPersistenceTests.cs:90 verifies missing metadata in populated DB cannot be reset by sync/async writes; existing crypto/context swaps, DB/WAL/log confidentiality, wrong/missing keys and backup/restore tests pass. SyntheticEmptyUpgradeTests.cs:21 confirms empty/rules-only targets reopen with a separately loaded durable ring and reject wrong/missing keys. ProtectionSession.cs:17 requires a transaction for initialization; docs describe plaintext metadata and recovery boundaries.",
+      "by": "agent",
+      "at": "2026-11-23T04:18:56Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Final Data 160/160 exit 0. PendingAcceptanceTests.cs:14,39,62,91 covers sync/async Save(false)-\u003eAcceptAllChanges-\u003eimmediate edit/save, Clear-\u003enew Add/save and same-object Update, and genuine unaccepted Add/Update/Delete rejection without duplicate audit. EligibilityAuditTests.cs:14,57 verifies detached period Update/key-only Delete use actual DB audit before/after and true query-loaded stale updates/deletes still reject. AuditSaveCoordinator.cs:53,211 tracks saved acceptance and real loaded/accepted originals. Existing atomicity/caller transaction/retry/cancellation/cascade/purge tests pass; actor remains caller metadata.",
+      "by": "agent",
+      "at": "2026-11-23T04:18:58Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "dotnet build TaxManager.sln --no-restore --disable-build-servers -m:1 exit 0 (0 warnings/errors); Data 160/160, Core 197/197, no skip, exit 0; EF has-pending-model-changes --no-build exit 0 reports no model changes. SyntheticEmptyUpgradeTests.cs:21,56 proves empty/rules-only copy-forward preserves every raw public-rule row and source bytes, initializes sentinel in import transaction, and publishes nothing after save fault. Original independent TEMP Review.csproj rebuilt and run exit 0: all four probes SUCCESS. Four legacy migration hashes match original task values; Core byte hashes unchanged. At session entry HEAD was already 7e24438a4cb3c371e86d3ea2f4976ace83565a2b and index SHA256 00CCE254774460DDFA6B4E21F64B863FAE0D23E0EAC6C91DE9569DA20AB9221D, differing from stale task baseline; both observed values stayed unchanged. No Git mutations or real DB/key operations. Bint task diff --all --stat and git diff --check exit 0.",
+      "by": "agent",
+      "at": "2026-11-23T04:18:59Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Implementation/docs portion complete: 25 new regression cases; feature test files separated; ADR0015, development, Mermaid schema and PLAN.md:236-237 accurately describe acceptance/stale/detached/import semantics and actual Data160/Core197 counts. Step2.4 remains planned only, with encrypted immutable snapshots, rule/provenance/engine version/UTC and deletion policy. Independent review round1 found three medium bugs; all three have code fixes and passing reproduction tests/probe, but configured independent round2 has not verified the fixes, so TSK12 remains pending and this combined criterion is not yet met. No review finding status fabricated or reviewer started. User security review is still required after code/tests/independent review and before real-data use.",
+      "by": "agent",
+      "at": "2026-11-23T04:19:01Z"
+    },
+    {
+      "index": 1,
+      "met": true,
+      "evidence": "Final dotnet test tests/TaxManager.Data.Tests --no-restore --disable-build-servers -m:1 passed 226/226, 0 failed/skipped, exit 0. Existing crypto/AAD swaps, missing/wrong keys, metadata corruption, DB/WAL/log confidentiality and durable backup/restore cases remain green. TrackingWriteIntentTests.cs:151 adds sync/async protected name null/empty and partial amount persistence with encrypted audit before/after. No plaintext column or crypto/key change; ADR0015:82 documents tracking/partial update boundary and existing recovery/metadata limitations.",
+      "by": "agent",
+      "at": "2026-11-23T04:36:12Z"
+    },
+    {
+      "index": 2,
+      "met": true,
+      "evidence": "Data 226/226 exit 0; 66 new TrackingWriteIntentTests cases (targeted 66/66) cover all four business types sync/async: key-only Attach no-op (line35), principal+child (60), read-only concurrent changes with/without mixed writes (90), post-Attach setters incl null/empty and partial/multiple amounts (119,151), detached Update/key-only Remove actual before-state and cascade audit (182), actual loaded stale rejection (220). Original review2 probe rebuilt/run exit0: Attach Save=0 keeps name/audit1 and readonly stale Save=0 both APIs. PendingAcceptanceTests, EligibilityAuditTests, atomicity/savepoint/cancellation/retry/cascade/purge suites pass; actor is caller metadata only. Coordinator:30 binds at tracking; :62,191 collects only write intent; :205 normalizes untouched detached partial fields under DB write lock; validation runs before snapshots.",
+      "by": "agent",
+      "at": "2026-11-23T04:36:13Z"
+    },
+    {
+      "index": 3,
+      "met": true,
+      "evidence": "Final dotnet build TaxManager.sln --no-restore --disable-build-servers -m:1 exit0, 0 warnings/errors; full Data226/226 and Core197/197 exit0, no skips. EF has-pending-model-changes --no-build exit0: no model changes. Original review1 and review2 TEMP probes rebuilt/run exit0, all expected success/no-op results; empty/rules-only copy-forward, fail-closed metadata, source preservation and migration fault cases pass. Four legacy migration/designer SHA256 match original specified values. HEAD remains 7e24438a4cb3c371e86d3ea2f4976ace83565a2b; index remains 00CCE254774460DDFA6B4E21F64B863FAE0D23E0EAC6C91DE9569DA20AB9221D, identical to session entry/current user baseline. Core diff empty; no real DB/key or Git mutation. git diff --check and Bint task diff --all --stat exit0 (62 files, entire2.3 baseline); TEMP object store only.",
+      "by": "agent",
+      "at": "2026-11-23T04:36:15Z"
+    },
+    {
+      "index": 4,
+      "met": false,
+      "evidence": "Implementation/docs complete for review2 finding .4: AuditSaveCoordinator and DbContext changes plus feature-separated TrackingWriteIntentTests (66 new sync/async cases); final Data226/Core197/model/build green. ADR0015:3,82, development:86, schema:103 and PLAN:236-237,297 describe actual Attach/no-op/setter/partial/detached/stale semantics and truthful test/review status; 2.4 remains planned only with encrypted immutable snapshots, rule/provenance/engine version/UTC and deletion/purge. Independent review2 verified three review1 fixes and found .4; .4 now has code/regressions and original probe success but final independent round3 has not run. TSK12 therefore remains pending; no reviewer finding status fabricated and no reviewer started. User security manual review remains required after technical review and before real data; no production/ACL/forensic erasure validation claimed.",
+      "by": "agent",
+      "at": "2026-11-23T04:36:17Z"
+    },
+    {
+      "index": 4,
+      "met": true,
+      "evidence": "Independent review3 run01M83B2H367PHJ9TNSEJ76CRWN: no new findings, all four prior bugs verified fixed; Core197/Data226 passed, EF model clean. Review status documentation updated; human security review remains required before real data. No staging/commit.",
+      "by": "Md1507 \u003cminhdung15072000@gmail.com\u003e",
+      "at": "2026-11-23T04:44:18Z"
     }
   ],
   "errors": [
@@ -253,6 +351,20 @@
       "at": "2026-11-23T03:53:26Z",
       "by": "agent",
       "run_id": "01M837PHD95HJ5DXSGQV9C74KN"
+    },
+    {
+      "step": "b-feat",
+      "message": "Review2 .4 regressions: initial test compile used LINQ variable field in property accessor, reserved in C#14; renamed edit before reproduction. Old implementation then failed 26/56 targeted cases (Attach/no-op/concurrent-read and setters), TEMP/taxmanager-s23-write-intent-red.txt. No production fix had yet been applied for that red baseline.",
+      "at": "2026-11-23T04:30:34Z",
+      "by": "agent",
+      "run_id": "01M83AG052WNW7445W7G4A4HMM"
+    },
+    {
+      "step": "b-feat",
+      "message": "After real-write filtering and partial-attach normalization, targeted 86 and new 66 tests passed. Full Data regression found IncomeValidationTests.MissingAmountsAreRejectedButExplicitZeroIsSaved now throws DataProtectionException instead of existing ArgumentException: Collect snapshots Added income before validation. Preserve validation contract by validating each intended entity after normalization and before Snapshot; do not weaken test.",
+      "at": "2026-11-23T04:32:41Z",
+      "by": "agent",
+      "run_id": "01M83AG052WNW7445W7G4A4HMM"
     }
   ],
   "runs": [
@@ -267,16 +379,24 @@
     "01M837PH1CQF4JPVH8948F4AWF",
     "01M837PHD95HJ5DXSGQV9C74KN",
     "01M8394XZYPHNN1SNDYSVRP0N2",
-    "01M8394YB4V5QK87J5DRFPQM95"
+    "01M8394YB4V5QK87J5DRFPQM95",
+    "01M839E4QG82GW9D58R9V127GZ",
+    "01M839E54A6D3STX6QQE9M6CJE",
+    "01M83A3XQ5WAVN6QA5R3MN1HWB",
+    "01M83A3Y2Y22K6BEWYW0AN9K21",
+    "01M83AFZS77B05EH7G5YWPA6G4",
+    "01M83AG052WNW7445W7G4A4HMM",
+    "01M83B2GJF91MCP7ZMXVD30HNE",
+    "01M83B2H367PHJ9TNSEJ76CRWN"
   ],
-  "review_rounds": 0,
+  "review_rounds": 3,
   "depends_on": [
     "01M81ZZJVSXVSRVNADZ3H53FJK"
   ],
-  "next_finding": 0,
+  "next_finding": 4,
   "artifacts": {
     "plan": "2026-11-23T03:34:09Z",
     "requirement": "2026-11-23T03:22:38Z",
-    "tasks": "2026-11-23T04:01:05Z"
+    "tasks": "2026-11-23T04:44:16Z"
   }
 }

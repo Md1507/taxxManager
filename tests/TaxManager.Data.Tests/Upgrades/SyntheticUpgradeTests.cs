@@ -43,7 +43,7 @@ public class SyntheticUpgradeTests
         await Assert.ThrowsAsync<SqliteException>(() => c.Database.ExecuteSqlInterpolatedAsync(
             $"INSERT INTO DependentEligibilityPeriods VALUES ({p},{d},'2026-02-01','2026-03-01')"));
         await Assert.ThrowsAsync<NotSupportedException>(() => c.GetService<IMigrator>().MigrateAsync("20261122161649_AddMonthlyTaxRules"));
-        Assert.Equal(3, (await c.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(4, (await c.Database.GetAppliedMigrationsAsync()).Count());
         await Assert.ThrowsAsync<ArgumentException>(() => new SyntheticDatabaseUpgrader().UpgradeAsync(db.DatabasePath, target, db.Keys, true));
         Assert.True(File.ReadAllBytes(target).AsSpan().IndexOf(System.Text.Encoding.UTF8.GetBytes("LEGACY_SECRET_734981")) < 0);
     }

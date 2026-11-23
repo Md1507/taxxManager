@@ -43,23 +43,28 @@ public sealed class TaxRuleProviderLoader(TaxManagerDbContext context)
         {
             await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
             var registrations = await ReadRegistrationsAsync(cancellationToken);
-            if (official)
-                foreach (var registration in registrations) TaxRuleValidator.ValidateOfficial(registration.RuleSet);
+            ValidateSourcePolicy(registrations, official);
             var provider = new TaxRuleProvider(registrations);
-            if (!official)
-            {
-                var expected = TaxRuleStoreSupport.References();
-                if (registrations.Length != expected.Length || expected.Any(e => !registrations.Any(r =>
-                    r.PeriodFrom == e.PeriodFrom && r.PeriodTo == e.PeriodTo &&
-                    TaxRuleStoreSupport.SameRules(r.RuleSet, e.RuleSet))))
-                    throw new InvalidOperationException("Reference tax rules differ from the supported reference data.");
-            }
             await transaction.CommitAsync(cancellationToken);
             return provider;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             throw new InvalidOperationException("Cannot load tax rules: the database is invalid, incomplete, or violates the selected source policy.", ex);
+        }
+    }
+
+    internal static void ValidateSourcePolicy(TaxRuleRegistration[] registrations, bool official)
+    {
+        if (official)
+            foreach (var registration in registrations) TaxRuleValidator.ValidateOfficial(registration.RuleSet);
+        else
+        {
+            var expected = TaxRuleStoreSupport.References();
+            if (registrations.Length != expected.Length || expected.Any(e => !registrations.Any(r =>
+                r.PeriodFrom == e.PeriodFrom && r.PeriodTo == e.PeriodTo &&
+                TaxRuleStoreSupport.SameRules(r.RuleSet, e.RuleSet))))
+                throw new InvalidOperationException("Reference tax rules differ from the supported reference data.");
         }
     }
 }

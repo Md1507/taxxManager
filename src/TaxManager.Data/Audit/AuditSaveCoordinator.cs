@@ -7,27 +7,65 @@ using TaxManager.Data.Income;
 using TaxManager.Data.Infrastructure;
 using TaxManager.Data.Profiles;
 using TaxManager.Data.Protection;
+using TaxManager.Data.CalculationHistory;
 
 namespace TaxManager.Data.Audit;
 
-internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, ProtectionSession protection)
+internal sealed class AuditSaveCoordinator
 {
-    private bool pendingAcceptance;
+    private readonly TaxManagerDbContext context;
+    private readonly ProtectionSession protection;
+    private readonly HashSet<object> pendingAcceptance = new(ReferenceEqualityComparer.Instance);
+    private readonly HashSet<object> databaseOriginals = new(ReferenceEqualityComparer.Instance);
+
+    internal AuditSaveCoordinator(TaxManagerDbContext context, ProtectionSession protection)
+    {
+        this.context = context;
+        this.protection = protection;
+        context.ChangeTracker.Tracked += (_, e) =>
+        {
+            // Clear does not raise StateChanged. A new tracking lifetime (even for the
+            // same CLR object) must not inherit pending acceptance or loaded originals.
+            pendingAcceptance.Remove(e.Entry.Entity);
+            databaseOriginals.Remove(e.Entry.Entity);
+            // Attach establishes an Unchanged baseline, even for a key-only stub.
+            // Bind notifications now so only subsequent public setter calls signal writes.
+            protection.BindFields(e.Entry.Entity);
+            if (e.FromQuery && ProtectionSession.IsBusiness(e.Entry.Entity))
+                databaseOriginals.Add(e.Entry.Entity);
+        };
+        context.ChangeTracker.StateChanged += (_, e) =>
+        {
+            if (e.NewState == EntityState.Detached)
+            {
+                pendingAcceptance.Remove(e.Entry.Entity);
+                databaseOriginals.Remove(e.Entry.Entity);
+            }
+            else if (e.NewState == EntityState.Unchanged && pendingAcceptance.Remove(e.Entry.Entity) &&
+                     ProtectionSession.IsBusiness(e.Entry.Entity))
+                databaseOriginals.Add(e.Entry.Entity);
+        };
+    }
 
     internal async Task<int> Save(bool async, bool accept, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         context.ChangeTracker.DetectChanges();
-        if (pendingAcceptance && context.ChangeTracker.Entries().Any(e => e.State is
-                EntityState.Added or EntityState.Modified or EntityState.Deleted))
+        if (context.ChangeTracker.Entries<CalculationRecord>().Any(e =>
+            e.State is EntityState.Modified or EntityState.Deleted ||
+            e.State == EntityState.Added && !ReferenceEquals(e.Entity, context.AuthorizedHistoryAppend)))
+            throw new InvalidOperationException("Calculation history can only be appended by the calculation service; use profile purge for erasure.");
+        var tracked = context.ChangeTracker.Entries().Select(e => e.Entity).ToHashSet(ReferenceEqualityComparer.Instance);
+        pendingAcceptance.IntersectWith(tracked);
+        databaseOriginals.IntersectWith(tracked);
+        if (pendingAcceptance.Count > 0)
             throw new InvalidOperationException("AcceptAllChanges or clear/reopen the context before another save after SaveChanges(false).");
-        pendingAcceptance = false;
         if (context.ChangeTracker.Entries().Any(e => e.Entity is AuditEvent or DataProtectionMetadata &&
                 e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Audit and protection metadata are application append-only.");
 
-        var hasBusiness = context.ChangeTracker.Entries().Any(e => ProtectionSession.IsBusiness(e.Entity));
-        if (!hasBusiness && !context.ChangeTracker.HasChanges()) return 0;
+        var hasBusiness = context.ChangeTracker.Entries().Any(e => ProtectionSession.IsBusiness(e.Entity) && HasWriteIntent(e));
+        if (!context.ChangeTracker.HasChanges()) return 0;
         var owned = context.Database.CurrentTransaction is null
             ? (async ? await context.Database.BeginTransactionAsync(token).ConfigureAwait(false) : context.Database.BeginTransaction())
             : null;
@@ -55,11 +93,12 @@ internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, Protecti
                 protection.Ensure(initialize: true);
                 ExpandCascades();
                 foreach (var entry in context.ChangeTracker.Entries().Where(e =>
-                             ProtectionSession.IsBusiness(e.Entity) && e.State != EntityState.Deleted).ToArray())
+                             ProtectionSession.IsBusiness(e.Entity) &&
+                             e.State is EntityState.Added or EntityState.Modified).ToArray())
                     protection.BindFields(entry.Entity);
             }
-            context.ValidateEntitiesForSave();
             var changes = hasBusiness ? Collect(token) : [];
+            context.ValidateEntitiesForSave();
             if (changes.Count > 0)
             {
                 var caller = context.AuditContext;
@@ -105,8 +144,10 @@ internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, Protecti
                 else transaction.ReleaseSavepoint(savepoint);
             }
             foreach (var e in events) context.Entry(e).State = EntityState.Detached;
+            pendingAcceptance.UnionWith(context.ChangeTracker.Entries()
+                .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+                .Select(e => e.Entity));
             if (accept) context.ChangeTracker.AcceptAllChanges();
-            else pendingAcceptance = true;
             return result - events.Count;
         }
         catch (Exception failure)
@@ -151,12 +192,13 @@ internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, Protecti
     private List<AuditChange> Collect(CancellationToken token)
     {
         var result = new List<AuditChange>();
-        foreach (var entry in context.ChangeTracker.Entries().Where(e => ProtectionSession.IsBusiness(e.Entity)).ToArray())
+        foreach (var entry in context.ChangeTracker.Entries().Where(e =>
+                     ProtectionSession.IsBusiness(e.Entity) && HasWriteIntent(e)).ToArray())
         {
             token.ThrowIfCancellationRequested();
-            if (entry.State is EntityState.Detached) continue;
             if (entry.State == EntityState.Added)
             {
+                TaxManagerDbContext.ValidateEntityForSave(entry.Entity);
                 result.Add(new(entry, null, ProtectionSession.Snapshot(entry.Entity)));
                 continue;
             }
@@ -165,17 +207,31 @@ internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, Protecti
             var beforeEntity = stored.ToObject();
             protection.Bind(beforeEntity);
             var before = ProtectionSession.Snapshot(beforeEntity);
+            if (entry.State == EntityState.Modified && !databaseOriginals.Contains(entry.Entity))
+            {
+                // An Attach followed by selected setters is a partial update. Fill only
+                // untouched fields from the locked DB before-state, including protected
+                // amounts absent from a key-only stub. Detached Update marks all fields
+                // modified and therefore retains its full replacement semantics.
+                foreach (var property in entry.Properties.Where(p => !p.IsModified && !p.Metadata.IsPrimaryKey()))
+                {
+                    property.OriginalValue = stored[property.Metadata.Name];
+                    property.CurrentValue = stored[property.Metadata.Name];
+                }
+            }
+            if (entry.State != EntityState.Deleted) TaxManagerDbContext.ValidateEntityForSave(entry.Entity);
             var after = entry.State == EntityState.Deleted ? (JsonElement?)null : ProtectionSession.Snapshot(entry.Entity);
             if (after is not null && before.GetRawText() == after.Value.GetRawText())
             {
                 // A detached Update or explicit Modified flag with equal values is a real no-op.
                 entry.CurrentValues.SetValues(stored);
                 entry.State = EntityState.Unchanged;
+                databaseOriginals.Add(entry.Entity);
                 continue;
             }
-            var hasOriginal = entry.Properties.Any(p => p.Metadata.Name.EndsWith("Encrypted", StringComparison.Ordinal) &&
-                p.OriginalValue is byte[] { Length: > 0 }) || entry.Entity is DependentEligibilityPeriod;
-            if (hasOriginal && entry.Properties.Any(p =>
+            // Attach/Update manufacture OriginalValues from the supplied object. Only
+            // query-loaded or accepted entries have an original suitable for stale checks.
+            if (databaseOriginals.Contains(entry.Entity) && entry.Properties.Any(p =>
                     !StructuralComparisons.StructuralEqualityComparer.Equals(p.OriginalValue, stored[p.Metadata.Name])))
                 throw new InvalidOperationException("Business data changed since it was loaded; reload before saving.");
             if (entry.State != EntityState.Deleted) entry.State = EntityState.Modified;
@@ -183,6 +239,9 @@ internal sealed class AuditSaveCoordinator(TaxManagerDbContext context, Protecti
         }
         return result;
     }
+
+    private static bool HasWriteIntent(EntityEntry entry) =>
+        entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted;
 
     private void ExpandCascades()
     {

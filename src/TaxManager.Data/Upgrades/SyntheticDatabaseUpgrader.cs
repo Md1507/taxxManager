@@ -38,6 +38,10 @@ public sealed class SyntheticDatabaseUpgrader(params IInterceptor[] targetInterc
             await using (var output = Open(pending, keys))
             {
                 await output.Database.MigrateAsync(token);
+                await using var import = await output.Database.BeginTransactionAsync(token);
+                // Every published target is initialized, including empty/rules-only imports.
+                // Keep the sentinel and imported rows in the same transaction.
+                output.InitializeProtectionForImport();
                 output.AuditContext = new AuditWriteContext("synthetic-upgrader", "Explicit legacy import; timestamps describe import, not historical changes");
                 output.AddRange(data.Profiles);
                 output.AddRange(data.Incomes);
@@ -48,6 +52,7 @@ public sealed class SyntheticDatabaseUpgrader(params IInterceptor[] targetInterc
                 output.AddRange(data.Brackets);
                 output.AddRange(data.Registrations);
                 await output.SaveChangesAsync(token);
+                await import.CommitAsync(token);
             }
             // New context, no tracked plaintext or identity-map cache may satisfy readback.
             await using (var verify = Open(pending, keys))
