@@ -301,7 +301,7 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 | 2.2 | ☑ | SQLite lưu luật theo phiên bản/kỳ và căn cứ; Core 197/197 + Data 83/83. Review độc lập vòng 5 được người dùng cho phép: không còn lỗi chặn, đã sửa lỗi dữ liệu cũ khi cập nhật (23/11/2026). |
 | 2.3 | ◐ | Triển khai, 423 test và review độc lập vòng 3 hoàn tất; bốn lỗi cũ đã được kiểm chứng sửa, không có phát hiện mới. Còn review bảo mật của người dùng trước dữ liệu thật; có thể tiếp tục 2.4 với dữ liệu giả. |
 | 2.4 | ◐ | Triển khai, docs, 497 test và review độc lập vòng 1 hoàn tất, không có phát hiện mới; model khớp. Còn review bảo mật của người dùng trước dữ liệu thật. |
-| 3.1 | ☐ | |
+| 3.1 | ✅ | Web MVP local bằng dữ liệu giả đã hoàn tất nghiệm thu kỹ thuật ngày 24/11/2026: nhập 12 tháng, kết quả và căn cứ từ snapshot; build không warning, 527 test qua (Core 197, Data 300, Web 30), EF không lệch migration, Bint verify qua và review vòng 6 xác nhận lỗi cuối đã sửa. Đã kiểm tra desktop/mobile giả lập và bàn phím; hướng dẫn, phạm vi và giới hạn tại docs/web-mvp.md. |
 | 3.2 | ☐ | |
 | 3.3 | ☐ | |
 | 4.1 | ☐ | |

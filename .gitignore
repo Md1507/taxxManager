@@ -5,6 +5,11 @@
 .agents/hooks.json
 # bint:end
 
+# Local agent tooling
+/.agents/
+/.bint/
+/.claude/
+
 # .NET SDK and build output
 /.dotnet/
 [Bb]in/

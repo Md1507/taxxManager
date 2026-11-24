@@ -155,8 +155,9 @@ graph/lifecycle/stale guards của 2.2 vẫn chạy trong transaction, kể cả
 Xem [schema](database-schema.md), [ADR0014](decisions/0014-tax-rule-persistence.md),
 [ADR0015](decisions/0015-data-protection-audit.md) và PLAN cho test/review status.
 Code/tests phải qua review độc lập Bint, rồi người dùng review bảo mật trước dữ liệu
-thật. Bước 2.4 đã có implementation và synthetic tests, chờ independent Bint review;
-chưa có Web/Identity. Contract và giới hạn tại [ADR0016](decisions/0016-calculation-history.md).
+thật. Bước 2.4 đã có implementation và synthetic tests. Web MVP 3.1 chỉ chạy demo
+synthetic local, chưa có Identity; xem [hướng dẫn Web](web-mvp.md). Contract và giới
+hạn tại [ADR0016](decisions/0016-calculation-history.md).
 
 ## Lịch sử tính lương tháng 2.4
 

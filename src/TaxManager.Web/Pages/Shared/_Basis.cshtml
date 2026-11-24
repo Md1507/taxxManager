@@ -1,0 +1,5 @@
+@model TaxManager.Web.LegalCitations.BasisView
+<details class="basis"><summary aria-label="Căn cứ @Model.Label, tháng @Model.Snapshot.Month">?</summary>
+<p>Trạng thái nguồn: @Model.Basis.Status; luật @Model.Snapshot.Rules.RuleId, phiên bản @Model.Snapshot.Rules.Version, kỳ tính tháng @Model.Snapshot.Month/@Model.Snapshot.Year. @(Model.Basis.Summary ?? "Chưa có mô tả nguồn cho kết quả này.")</p>
+<p>Căn cứ: @(Model.Basis.Id ?? "chưa có mã"), phiên bản @(Model.Basis.Version ?? "chưa có"), kỳ @(Model.Basis.Period ?? "chưa có"); văn bản @(Model.Basis.DocumentNumber ?? "chưa có"), điều @(Model.Basis.Article ?? "chưa có"), khoản @(Model.Basis.Clause ?? "chưa có"). @if (Model.SafeUrl is { } url) { <a href="@url" rel="noopener noreferrer">Nguồn metadata (@Model.Basis.Status)</a> } else { <span>Chưa có liên kết nguồn an toàn.</span> }</p>
+</details>

@@ -30,7 +30,15 @@ Bint tạo worktree; làm tay ngoài `bint run` thì chạy ở cây gốc, khô
 
 Đọc `requirement.md`, `plan.md`, `tasks.md` nếu có (đường dẫn trong `bint task show`).
 Nếu một tiêu chí chưa rõ tới mức không biết thế nào là xong, hỏi người dùng (khi chạy
-dưới `bint run`: ghi `bint task error <id> --step b-feat "<câu hỏi>"` rồi dừng).
+dưới `bint run`: ghi `bint task error <id> --step b-feat --question "<câu hỏi>"` rồi dừng). Với
+`--question`, Bint chuyển tác vụ sang chờ người sau bước này và in lệnh trả lời; người trả lời bằng
+`bint run resume <id> --answer "<trả lời>"` và b-feat chạy lại trên chính tác vụ, đề bài (hoặc lời nhắn
+nối tiếp) mang nguyên văn câu hỏi và câu trả lời. Không ghi câu hỏi bằng `bint task error` thường: nó chỉ
+là lỗi, không dừng tác vụ chờ trả lời.
+
+**Bước kết thúc mà không đổi tệp nào thì tác vụ không hoàn thành** (Bint không kiểm chứng, không review,
+không đánh `done`; tác vụ chờ người). Nếu bạn nhận ra không thể làm gì thêm, nói rõ lý do trong báo cáo
+(và ghi `--question` nếu cần thông tin từ người dùng) thay vì kết thúc im lặng.
 
 Nếu **không** chạy dưới `bint run` (`BINT_RUN_ID` trống):
 `bint task status <id> in_progress --reason "bắt đầu thực thi"`.
@@ -55,13 +63,35 @@ bint context --paths <tệp sẽ sửa>   # quy tắc theo đường dẫn
 
 - Chỉ sửa trong phạm vi `scope.allow` của phiếu; **không** chạm `scope.deny`. Đường dẫn
   được bảo vệ (`limits.protected_paths`) cần người duyệt — nếu buộc phải sửa, nói rõ lý do.
+- **Kiểm tra mục tiêu đã đóng băng thì không viết lại.** Nếu đề bài nêu "Kiểm tra mục tiêu ĐÃ ĐƯỢC VIẾT độc lập" (b-do chạy b-goal
+  trước b-feat: một phiên khác viết test hộp đen từ `requirement.md`, Bint đóng băng tệp và chạy chúng làm cổng riêng): **không viết,
+  sửa, xoá hay đổi tên** các tệp đó (sửa thì tác vụ bị chặn). Việc của bạn là làm mã sản phẩm cho chúng xanh theo đúng đặc tả; chạy riêng
+  chúng sau mỗi nhóm sửa. Tin test sai (mâu thuẫn `requirement.md`) thì ghi tiêu chí kiểm tra mục tiêu là `unmet` kèm đầu ra, đừng sửa test.
+- **Chưa có kiểm tra mục tiêu đóng băng** (đường nhanh, hoặc phiếu không qua b-goal) mà `requirement.md` có mục `## Kiểm tra mục tiêu`
+  (đề bài chép nguyên văn), hoặc đề bài đường nhanh dặn: viết nó thành **test tự động** nằm trong bộ test mà `verify.command` của phiếu
+  chạy, **trước khi sửa** (đỏ lúc này là bình thường). Test đo MỤC TIÊU của người dùng (cài dữ liệu giả vào mọi đường nhập, quét/đo mọi
+  nơi lưu liên quan), không chỉ phần bạn định sửa. Chạy riêng test này sau mỗi nhóm sửa; còn đỏ thì sửa tiếp. Không nới hay xoá test cho dễ qua.
 - Làm theo từng nhóm thay đổi nhỏ; sau mỗi nhóm chạy kiểm thử phù hợp.
+- **Lát dọc tại seam đã chốt** (skill `tdd`): test mới chỉ viết ở seam trong mục `## Seam kiểm thử` của `plan.md` (không có mục đó thì
+  seam cao nhất chạm được hành vi). Mỗi vòng **một test đỏ → bản cài đặt tối thiểu cho nó xanh**, rồi mới tới test kế tiếp; không viết
+  hết test trước. Test kiểm hành vi qua interface công khai, giá trị kỳ vọng lấy từ nguồn độc lập (không tính lại theo cách mã tính).
+  Refactor nằm ngoài vòng đỏ → xanh: thấy cần thì ghi vào báo cáo.
+- **Hành vi người dùng thấy** (tiêu chí nói về điều người dùng quan sát trên CLI/TUI/giao diện/API): dự án có skill tuỳ biến
+  `verify-<app>` (`.bint/skills/verify-*/`) thì dùng nó lái app thật cho tính năng đã sửa và ghi chứng cứ thu được vào `--evidence` của
+  tiêu chí, ngoài unit test. Không có thì nói rõ tiêu chí chỉ được kiểm qua test.
+- **Vòng sửa** (đề bài là lượt sửa sau review hoặc kiểm chứng đỏ): từ lần sửa **thứ hai** cho cùng một cổng (cùng test/phát hiện còn đỏ),
+  trước khi sửa tiếp hãy viết ra **tiền đề chung** của các lần sửa trước (điều chúng cùng giả định là đúng) và kiểm tiền đề đó bằng một
+  lệnh chạy được; tiền đề sai thì đổi hướng, đừng vá thêm lớp nữa (skill `principles`: attack-the-premise, fix-root-causes).
+- Tự làm tuần tự trong phiên này; **không sinh agent con** để chia việc (mỗi con nạp lại ngữ cảnh, tốn token gấp bội).
 - Thao tác có nguy cơ mất dữ liệu (xoá, ghi đè, migration, `git reset`/`push`) phải được
   người đồng ý trước.
 
 <!-- bint:anchor test-strategy -->
-Ưu tiên kiểm thử hẹp nhất bao phủ thay đổi, rồi mới tới bộ kiểm thử rộng hơn.
+Ưu tiên kiểm thử hẹp nhất bao phủ thay đổi: chỉ chạy test của phần đã sửa bằng lệnh test của dự án và kiểm tra mục tiêu; **không** chạy
+toàn bộ bộ test hay `verify.command` (có thể rất chậm). Sau bước này Bint tự chạy các test bị ảnh hưởng bởi thay đổi (bgraph chọn theo đồ thị phụ thuộc).
 <!-- bint:anchor-end test-strategy -->
+
+Trong `bint run` chỉ chạy test nhắm đúng phần vừa sửa (lọc theo tên test hoặc tệp test); không chạy cả module lớn, cả repo hay `verify.command` (dễ vượt giới hạn thời gian của lệnh). Kiểm chứng đầy đủ là việc của Bint.
 
 Mỗi lần thử sửa thất bại đáng kể (kiểm thử đỏ sau khi sửa, hướng làm phải bỏ), ghi lại:
 
@@ -71,8 +101,10 @@ bint task error <id> --step b-feat "<điều đã thử và vì sao không đư�
 
 ## Bước 4 — Kiểm chứng và đối chiếu
 
+Chỉ khi **không** chạy dưới `bint run` (`BINT_RUN_ID` trống) mới chạy lệnh dưới; dưới `bint run`, Bint tự chạy kiểm chứng sau bước này, đừng gọi `bint task verify`.
+
 ```sh
-bint task verify <id>      # chạy verify.command của phiếu nếu đã được người xác nhận
+bint task verify <id>      # chạy verify.command của phiếu nếu đã được người xác nhận (chỉ ngoài bint run)
 ```
 
 Với từng tiêu chí chấp nhận (đánh số từ 1 theo `bint task show`), ghi nhận kèm bằng chứng
@@ -83,12 +115,17 @@ bint task criteria <id> 1 met --evidence "go test ./internal/db/... qua 5 lần 
 bint task criteria <id> 2 unmet --evidence "chưa xử lý trường hợp …"
 ```
 
+**Không kết thúc khi kiểm tra mục tiêu còn đỏ.** Hết cách sau khi đã thử thì ghi tiêu chí của kiểm tra mục tiêu là `unmet` kèm
+đầu ra của test (`bint task criteria <id> <số> unmet --evidence "<lệnh + đầu ra>"`) và nói rõ trong báo cáo; đừng ghi `met` hay
+báo xong. Bint cũng chạy lại `verify.command` sau bước này: còn đỏ thì mở vòng sửa (trong `workflow.max_review_rounds`) hoặc dừng
+chờ người, kể cả khi review không còn phát hiện nghiêm trọng.
+
 Không đánh dấu `met` khi chưa có bằng chứng. Đây là tự đánh giá (tín hiệu trung bình);
 lệnh kiểm chứng đã được người xác nhận mới là bằng chứng mạnh.
 
 `unmet` chặn tác vụ hoàn thành kể cả khi lệnh kiểm chứng của Bint qua, nên chỉ ghi `unmet` khi có
 bằng chứng phần việc còn thiếu hoặc sai. Nếu phần chưa có bằng chứng của một tiêu chí chỉ là lệnh
-mà `verify.command` của phiếu bao phủ (ví dụ "go test toàn bộ đạt") và bạn không chạy được nó
+mà `verify.command` của phiếu bao phủ (ví dụ "toàn bộ test đạt") và bạn không chạy được nó
 trong sandbox (socket, mạng, quyền hệ thống...): **đừng** ghi `unmet` vì lý do đó. Để tiêu chí
 chưa ghi, nêu lý do trong báo cáo; Bint tự chạy lệnh kiểm chứng ngoài sandbox sau bước này.
 Không sửa tệp `tasks.md` ngoài việc đánh dấu `[x]`: giữ nguyên nội dung từng dòng TSK, kể cả

@@ -125,3 +125,5 @@ Báo cho người dùng, ngắn gọn:
 - các mục đang chờ duyệt; người dùng duyệt bằng `bint knowledge review`.
 
 Không tự sửa AGENTS.md, CLAUDE.md hay tài liệu khác của người dùng.
+
+Rà soát mục tri thức đã có (lỗi thời, bằng chứng lệch) là skill riêng: `b-knowledge-audit`.
