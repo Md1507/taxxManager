@@ -8,7 +8,7 @@
 
 ## 0. Quy tắc làm việc (dành cho cả người và công cụ AI)
 
-1. Mỗi lần chỉ làm **MỘT bước** trong plan này. Không làm trước các bước sau.
+1. Mỗi lần chỉ triển khai **MỘT bước** theo phụ thuộc trong plan này. Có thể chuẩn bị yêu cầu, thiết kế, ví dụ và rà phụ thuộc cho bước sau song song; chưa triển khai trước khi điều kiện bắt đầu đạt.
 2. Không tự thêm tính năng ngoài phạm vi của bước hiện tại.
 3. Mọi bước kết thúc bằng: `dotnet test` xanh toàn bộ, rồi `git commit`.
 4. **Mọi con số luật** (biểu thuế, mức giảm trừ, tỷ lệ/mức trần bảo hiểm, ngưỡng miễn thuế...) chỉ nằm trong bộ quy tắc `TaxRuleSet`. Tuyệt đối không hardcode trong logic.
@@ -251,6 +251,21 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 
 ### GIAI ĐOẠN 3 – WEB MVP
 
+#### Lộ trình sản phẩm sau 3.1
+
+[Roadmap sản phẩm](docs/product-roadmap.md) là nguồn đối chiếu đầy đủ 12 chức năng cốt lõi, 7 tiện ích, phạm vi và điều kiện hoàn thành. Sáu chặng dưới đây là thứ tự giao theo phụ thuộc; các bước nền và chứng cứ nghiệm thu 3.1 vẫn giữ nguyên. Mỗi chặng sau cần phiếu và kiểm chứng riêng:
+
+1. **Nhập liệu 3.1b:** lương theo giai đoạn và tháng ngoại lệ, xem trước, nền nhập bảo hiểm, giảm trừ, khấu trừ và trạng thái dữ liệu theo phạm vi 3.1b đã hoàn tất.
+2. **Lưu và mở hồ sơ năm:** chọn năm thuế, phạm vi và phiên bản luật (bản đầu chỉ 2026); lưu/mở/cập nhật hồ sơ, khấu trừ và metadata, bảo vệ/audit và xóa có chủ đích. Giữ bất biến đầu vào, snapshot và luật của lịch sử; lưu kết quả hiện có và chuẩn bị contract kết quả năm, không đòi dự báo năm đã có.
+3. **Tổng hợp và dự báo năm:** dùng hồ sơ đã lưu; tích hợp thưởng thực tế/dự kiến được hỗ trợ, người phụ thuộc theo thời gian, bảo hiểm, giảm trừ và khấu trừ; giải thích phép tính, căn cứ đúng kỳ, dữ liệu thiếu, trạng thái và độ phủ riêng. Chỉ hiện chênh lệch khi đủ khấu trừ hoặc giả định rõ; nộp thừa ước tính không bảo đảm được hoàn.
+4. **Xuất dữ liệu và checklist:** báo cáo tham khảo và checklist chuẩn bị quyết toán; sao lưu và khôi phục riêng, bảo toàn metadata, phiên bản luật và lịch sử, kiểm tra bản nhập trước khi ghi và không ghi đè âm thầm. Báo cáo không tự là bản sao lưu; PDF trình bày đẹp để sau.
+5. **Hai kịch bản:** so sánh cơ sở với thêm thưởng giả định được hỗ trợ, tránh cộng trùng gross và không ghi giả định vào hồ sơ thực tế; khoảng giữa kết quả không phải bảo đảm hay xác suất.
+6. **Đối chiếu:** so hồ sơ với số người dùng cung cấp từ công ty hoặc eTax theo nguồn, chỉ tiêu và kỳ; nêu chênh lệch và phần thiếu, không kết luận nguồn kia sai.
+
+Quyền riêng tư xuyên suốt: thu tối thiểu, không giữ file gốc hay tài khoản eTax; giải thích phạm vi xóa hồ sơ, lịch sử và bản sao, bảo vệ bản sao. Đăng nhập và cách ly tài khoản là điều kiện trước khi phục vụ nhiều người qua mạng; hiện chỉ local với dữ liệu giả, không cho phép dùng dữ liệu thật hay deploy theo lộ trình này.
+
+Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nhận lại, so sánh hai lần dự báo đã lưu và Gross–Net nằm trong backlog, chưa cam kết. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML cần quyết định và kế hoạch riêng. Chặng 2–6 và backlog chưa được coi là hoàn thành; có thể chuẩn bị thiết kế song song nhưng chỉ triển khai khi chặng trước hoàn tất.
+
 #### Bước 3.1 – Giao diện cơ bản (chưa cần đăng nhập)
 - `TaxManager.Web` (Razor Pages hoặc MVC).
 - Trang nhập lương 12 tháng, trang kết quả hiển thị **từng bước tính** (để người dùng hiểu số thuế từ đâu ra).
@@ -258,13 +273,19 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 - Disclaimer "chỉ mang tính tham khảo".
 - **Xong khi:** dùng được trên máy local.
 
+#### Bước 3.1b – Nhập theo giai đoạn và trạng thái dữ liệu
+- Demo local synthetic năm 2026, một nơi trả lương: nhập gross theo giai đoạn, tháng ngoại lệ và xem trước 12 tháng; bảo hiểm, người phụ thuộc và khấu trừ nhập theo tháng cùng trạng thái, nguồn và ghi chú. Chưa nhập khác với 0.
+- Phạm vi chốt ngày 25/11/2026 chỉ gồm nhập liệu, preview và trạng thái dữ liệu. Chưa có tính dự báo năm, kịch bản thưởng, lưu/mở hồ sơ forecast, migration hay audit forecast; các phần này và QA tương ứng làm ở bước sau. Core hiện có là nền kỹ thuật, không phải tính năng Web đã hoàn thành.
+- **Trạng thái:** phiếu 01M89PFQ3ETQDTCSGPMAN0DEPW đã hoàn tất và đưa về cây gốc; không thay đổi nghiệm thu 3.1.
+
 #### Bước 3.2 – Đăng nhập (ASP.NET Core Identity)
 - Đăng ký, đăng nhập, mỗi người chỉ thấy dữ liệu của mình.
 - Bật HTTPS, cookie an toàn, chống CSRF (mặc định của framework, kiểm tra lại).
 - **Xong khi:** thử bằng 2 tài khoản, không xem chéo được dữ liệu nhau.
 
 #### Bước 3.3 – Màn hình quyết toán năm
-- Tổng hợp cả năm, hiển thị số thuế **được hoàn** hoặc **phải nộp thêm**, kèm bảng chi tiết từng tháng.
+- Theo thứ tự roadmap: lưu/mở hồ sơ và bảo vệ/audit ở chặng 2 trước tổng hợp, dự báo năm ở chặng 3; xuất/checklist ở chặng 4, hai kịch bản ở chặng 5 và đối chiếu ở chặng 6. Không coi preview 3.1b là quyết toán.
+- Tổng hợp nghĩa vụ năm và bảng chi tiết từng tháng; chỉ hiển thị chênh lệch nộp thừa hoặc phải nộp thêm khi đủ dữ liệu khấu trừ hoặc có giả định rõ ràng, không hứa nộp thừa chắc chắn được hoàn.
 - **Xong khi:** kết quả khớp với test của bước 1.4.
 
 ---
@@ -302,6 +323,7 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 | 2.3 | ◐ | Triển khai, 423 test và review độc lập vòng 3 hoàn tất; bốn lỗi cũ đã được kiểm chứng sửa, không có phát hiện mới. Còn review bảo mật của người dùng trước dữ liệu thật; có thể tiếp tục 2.4 với dữ liệu giả. |
 | 2.4 | ◐ | Triển khai, docs, 497 test và review độc lập vòng 1 hoàn tất, không có phát hiện mới; model khớp. Còn review bảo mật của người dùng trước dữ liệu thật. |
 | 3.1 | ✅ | Web MVP local bằng dữ liệu giả đã hoàn tất nghiệm thu kỹ thuật ngày 24/11/2026: nhập 12 tháng, kết quả và căn cứ từ snapshot; build không warning, 527 test qua (Core 197, Data 300, Web 30), EF không lệch migration, Bint verify qua và review vòng 6 xác nhận lỗi cuối đã sửa. Đã kiểm tra desktop/mobile giả lập và bàn phím; hướng dẫn, phạm vi và giới hạn tại docs/web-mvp.md. |
+| 3.1b | ☑ | Phiếu 01M89PFQ3ETQDTCSGPMAN0DEPW đã done và land; phạm vi nhập liệu, preview và trạng thái, các chặng tiếp theo chưa hoàn thành. |
 | 3.2 | ☐ | |
 | 3.3 | ☐ | |
 | 4.1 | ☐ | |

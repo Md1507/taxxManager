@@ -1,5 +1,16 @@
 # Web MVP 3.1 — demo local
 
+## Increment 3.1b — xem trước đầu vào
+
+Tại `/Forecast`, nhập gross theo một hoặc nhiều giai đoạn; tháng ngoại lệ được giữ,
+tháng chồng giai đoạn được thông báo. Mở phần chi tiết để nhập bảo hiểm, người phụ
+thuộc và khấu trừ từng tháng cùng trạng thái, nguồn và ghi chú. Preview phân biệt
+chưa nhập với 0; ngày nhập là thời điểm tạo preview UTC. Dữ liệu chỉ ở form hiện tại,
+chưa được lưu. Chưa tính kết quả năm hoặc kịch bản thưởng; lưu/mở lại, migration và
+audit forecast cùng QA của các chức năng đó thuộc bước sau. Chỉ dùng dữ liệu giả.
+
+## Bước 3.1 đã nghiệm thu
+
 Chỉ dùng dữ liệu giả. Giao diện tiếng Việt nhận một nguồn lương thông thường cho đủ
 12 tháng, bảo hiểm nhập tay và thuế đã khấu trừ. Nút dữ liệu mẫu điền các số giả;
 chọn năm 2025 hoặc 2026 rồi bấm **Tính 12 tháng**. Mở từng tháng và nút `?` để xem

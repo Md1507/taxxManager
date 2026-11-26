@@ -10,6 +10,7 @@
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tính thuế lương</title><link rel="stylesheet" href="/site.css"></head>
 <body><a href="#main">Đến nội dung</a><main id="main"><h1>Tính thuế lương theo tháng</h1><p class="notice">Dữ liệu giả — chỉ dành cho demo.</p>
 <p>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</p>
+<p><a href="/Forecast">Nhập lương theo giai đoạn</a></p>
 <p><a href="/?handler=Sample">Dùng dữ liệu giả mẫu</a></p>
 @if (Model.Error is not null) { <div role="alert" class="error">@Model.Error</div> }
 <form method="post"><label for="year">Năm</label><select id="year" name="year"><option value="2025" selected="@(Model.Year == 2025)">2025</option><option value="2026" selected="@(Model.Year == 2026)">2026</option></select>

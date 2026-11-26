@@ -2,6 +2,8 @@
 
 Ngày 25/11/2026. Bản bàn giao từ grill-with-docs sau khi người dùng đồng ý các lựa chọn sản phẩm; chưa triển khai. Theo [ADR 0018](../decisions/0018-personal-annual-tax-forecast.md) và [GLOSSARY](../../GLOSSARY.md). Không đặt thời hạn hai tuần; chưa có người thử không chặn công việc kỹ thuật và không được mô tả là đã xác nhận nhu cầu thị trường.
 
+Phạm vi thực hiện 3.1b được chốt sau đó: chỉ nhập giai đoạn, UI và trạng thái dữ liệu. Đặc tả dưới đây giữ định hướng đầy đủ; dự báo năm, kịch bản, lưu/mở lại, migration và audit forecast thuộc bước sau, chưa được nghiệm thu ở 3.1b.
+
 ## Kết quả mong muốn
 
 Người dùng nhập mức lương theo giai đoạn và tháng ngoại lệ, ghi nhận bảo hiểm nhập tay và người phụ thuộc, rồi thấy ước tính thuế năm 2026 theo kịch bản cơ sở và thêm thưởng tiền chịu thuế. Hồ sơ phân biệt số thực tế, dự kiến và giả định; khi cập nhật thực tế, kết quả mới được giải thích mà không sửa lịch sử cũ. Các số từ công ty/eTax có thể được ghi nguồn từ đầu; tự động đối chiếu hai nguồn là giai đoạn sau.
