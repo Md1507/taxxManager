@@ -1,4 +1,5 @@
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
 using System.Net;
 
@@ -6,6 +7,90 @@ namespace TaxManager.Web.Tests.Forecasting;
 
 public sealed class ForecastHttpTests
 {
+    private sealed class AdjustableClock : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; }
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
+    public async Task Repeated_preview_keeps_entry_time_for_unchanged_values()
+    {
+        var clock = new AdjustableClock { Now = new DateTimeOffset(2026, 1, 2, 3, 4, 0, TimeSpan.Zero) };
+        await using var host = await DemoHost.StartAsync(clock: clock);
+        using var client = new HttpClient(new HttpClientHandler { UseCookies = true }) { BaseAddress = host.Address };
+        var initial = await client.GetStringAsync("/Forecast");
+        var token = Regex.Match(initial, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "30000000", ["Exceptions[0].Insurance"] = "0" };
+        for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
+        using var first = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
+        var firstHtml = WebUtility.HtmlDecode(await first.Content.ReadAsStringAsync());
+        Assert.Contains("02/01/2026 03:04 UTC", firstHtml);
+        var draft = Regex.Match(firstHtml, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        Assert.NotEmpty(draft);
+        values["DraftToken"] = draft;
+        clock.Now = new DateTimeOffset(2026, 1, 2, 4, 5, 0, TimeSpan.Zero);
+        using var second = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
+        var secondHtml = WebUtility.HtmlDecode(await second.Content.ReadAsStringAsync());
+        Assert.Contains("02/01/2026 03:04 UTC", secondHtml);
+        Assert.DoesNotContain("02/01/2026 04:05 UTC", secondHtml);
+        values["DraftToken"] = Regex.Match(secondHtml, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        values["Exceptions[0].InsuranceNote"] = "ghi chú mới";
+        using var third = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
+        var thirdHtml = WebUtility.HtmlDecode(await third.Content.ReadAsStringAsync());
+        Assert.Contains("02/01/2026 03:04 UTC", thirdHtml);
+        Assert.Matches("Bảo hiểm tháng 1: 0 đồng[^<]*<span>[^<]*ghi chú mới[^<]*02/01/2026 04:05 UTC", thirdHtml);
+    }
+    [Fact]
+    public async Task Removing_earlier_period_preserves_remaining_entry_time()
+    {
+        var clock = new AdjustableClock { Now = new DateTimeOffset(2026, 11, 1, 0, 0, 0, TimeSpan.Zero) };
+        await using var host = await DemoHost.StartAsync(clock: clock);
+        using var client = new HttpClient(new HttpClientHandler { UseCookies = true }) { BaseAddress = host.Address };
+        var initial = await client.GetStringAsync("/Forecast");
+        var token = Regex.Match(initial, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token,
+            ["Periods[0].FromMonth"] = "3", ["Periods[0].ToMonth"] = "6", ["Periods[0].Gross"] = "100",
+            ["Periods[1].FromMonth"] = "7", ["Periods[1].ToMonth"] = "12", ["Periods[1].Gross"] = "200" };
+        for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
+        using var first = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
+        var html = await first.Content.ReadAsStringAsync();
+        values["DraftToken"] = Regex.Match(html, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        clock.Now = clock.Now.AddDays(1);
+        using var removed = await client.PostAsync("/Forecast?handler=RemovePeriod&index=0", new FormUrlEncodedContent(values));
+        var removedHtml = await removed.Content.ReadAsStringAsync();
+        values["DraftToken"] = Regex.Match(removedHtml, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
+        foreach (var field in new[] { "FromMonth", "ToMonth", "Gross" }) { values[$"Periods[0].{field}"] = values[$"Periods[1].{field}"]; values.Remove($"Periods[1].{field}"); }
+        using var second = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
+        var result = WebUtility.HtmlDecode(await second.Content.ReadAsStringAsync());
+        Assert.Matches("Tháng 7</th>.*?01/11/2026 00:00 UTC", result);
+    }
+    [Fact]
+    public async Task New_host_reopens_synthetic_store_and_saved_form()
+    {
+        string root;
+        using var clientHandler = new HttpClientHandler { UseCookies = true };
+        await using (var first = await DemoHost.StartAsync())
+        {
+            root = first.Services.GetRequiredService<TaxManager.Web.Demo.SyntheticDatabase>().RootPath;
+            using var client = new HttpClient(clientHandler, false) { BaseAddress = first.Address };
+            var page = await client.GetStringAsync("/Forecast");
+            var token = Regex.Match(page, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
+            var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "12345.67", ["Source"] = "synthetic source" };
+            for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
+            using var response = await client.PostAsync("/Forecast?handler=Save", new FormUrlEncodedContent(values));
+            response.EnsureSuccessStatusCode();
+            Assert.Contains("synthetic source", await response.Content.ReadAsStringAsync());
+        }
+        await using var second = await DemoHost.StartAsync(syntheticRoot: root);
+        using var reopened = new HttpClient { BaseAddress = second.Address };
+        var list = await reopened.GetStringAsync("/Forecast");
+        var link = Regex.Match(list, "href=\"([^\"]*Forecast\\?id=[^\"]+)\"").Groups[1].Value;
+        Assert.NotEmpty(link);
+        var form = await reopened.GetStringAsync(WebUtility.HtmlDecode(link));
+        Assert.Contains("12345.67", form);
+        Assert.Contains("synthetic source", form);
+    }
     [Fact]
     public async Task Empty_added_period_gross_has_specific_inline_error_and_preserves_inputs()
     {

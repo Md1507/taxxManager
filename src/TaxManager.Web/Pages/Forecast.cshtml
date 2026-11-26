@@ -5,11 +5,19 @@
 <body><main>
 <h1>Dự báo thuế năm 2026</h1>
 <p>Demo local, chỉ dùng dữ liệu giả. Dành cho cá nhân cư trú có một nơi trả lương; kết quả chỉ tham khảo.</p>
-<p>Chức năng đang phát triển: hiện chỉ xem trước lương theo tháng; chưa tính thuế hoặc lưu hồ sơ.</p>
+<p>Có thể lưu hồ sơ dữ liệu giả; chức năng tính thuế năm chưa được triển khai.</p>
 <p><a href="/">Về tính thuế tháng</a></p>
+<section><h2>Hồ sơ đã lưu</h2>
+@if (Model.SavedProfiles.Count == 0) { <p>Chưa có hồ sơ đã lưu.</p> }
+@foreach (var profile in Model.SavedProfiles) { <p><a asp-page="/Forecast" asp-route-id="@profile.Id">Mở hồ sơ năm 2026</a></p> }
+</section>
+@if (Model.ProfileId is not null) { <p><a asp-page="/ForecastDelete" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision">Xóa hồ sơ này</a></p> }
 <form method="post" asp-page-handler="Preview">
+<input type="hidden" asp-for="DraftToken" />
+<input type="hidden" asp-for="ProfileId" /><input type="hidden" asp-for="Revision" />
 <div asp-validation-summary="All" class="error" role="alert" tabindex="-1" autofocus="@(!ViewData.ModelState.IsValid ? "autofocus" : null)"></div>
 <button type="submit">Xem trước 12 tháng</button>
+<button type="submit" asp-page-handler="Save">Lưu hồ sơ</button>
 <fieldset><legend>Giai đoạn lương</legend>
 <label asp-for="FromMonth">Từ tháng</label><input asp-for="FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="FromMonth"></span>
 <label asp-for="ToMonth">Đến tháng</label><input asp-for="ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="ToMonth"></span>
@@ -25,7 +33,7 @@
 <label asp-for="Periods[i].Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Periods[i].Gross" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Periods[i].Gross"></span>
 <details open="@(ViewData.ModelState[$"Periods[{i}].Note"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin lương giai đoạn thay đổi</summary><label asp-for="Periods[i].Status">Trạng thái</label><select asp-for="Periods[i].Status"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select>
 <label asp-for="Periods[i].Source">Nguồn</label><input asp-for="Periods[i].Source" />
-<label asp-for="Periods[i].Note">Ghi chú hoặc lý do giả định</label><input asp-for="Periods[i].Note" /><span class="error" asp-validation-for="Periods[i].Note"></span></details>
+<label asp-for="Periods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="Periods[@i].Note" id="Periods_@(i)__Note" rows="2">@(ViewData.ModelState[$"Periods[{i}].Note"]?.AttemptedValue ?? Model.Periods[i].Note)</textarea><span class="error" asp-validation-for="Periods[i].Note"></span></details>
 <button type="submit" asp-page-handler="RemovePeriod" name="index" value="@i" formnovalidate>Bỏ giai đoạn @(i + 1)</button></fieldset> }
 <button type="submit" asp-page-handler="AddPeriod" formnovalidate>Thêm giai đoạn thay đổi</button>
 <details open="@(Model.SelectedMonth > 0 ? "open" : null)"><summary>Dữ liệu riêng theo tháng</summary><p>Chọn tháng cần nhập hoặc chỉnh; không cần nhập nếu chưa có dữ liệu riêng.</p>

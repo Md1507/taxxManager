@@ -25,7 +25,8 @@ public static class DemoApplication
         builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
         builder.Logging.ClearProviders();
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
-        builder.Services.AddSingleton(_ => new SyntheticDatabase(Directory.GetCurrentDirectory()));
+        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton(_ => new SyntheticDatabase(Directory.GetCurrentDirectory(), builder.Configuration["SyntheticStore"]));
         builder.Services.AddScoped<ISalaryCalculator, SalaryCalculator>();
         builder.Services.AddRazorPages();
         configureServices?.Invoke(builder.Services);

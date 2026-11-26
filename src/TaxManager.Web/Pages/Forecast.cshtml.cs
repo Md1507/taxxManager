@@ -4,6 +4,13 @@ using TaxManager.Core.Forecasting;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Security.Cryptography;
+using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
+using TaxManager.Data.Forecasting;
+using TaxManager.Data.Protection;
+using TaxManager.Web.Demo;
 
 namespace TaxManager.Web.Pages;
 
@@ -31,6 +38,22 @@ public sealed class ForecastAmountBinder : IModelBinder
 
 public sealed class ForecastModel : PageModel
 {
+    private readonly IDataProtector draftProtector;
+    private readonly TimeProvider clock;
+    private readonly SyntheticDatabase database;
+    public ForecastModel(IDataProtectionProvider protection, TimeProvider clock, SyntheticDatabase database)
+    {
+        draftProtector = protection.CreateProtector("TaxManager.Forecast.EntryDraft.v1");
+        this.clock = clock;
+        this.database = database;
+    }
+    private sealed record EntryStamp(string Fingerprint, DateTimeOffset EnteredAt);
+    [BindProperty] public string? DraftToken { get; set; }
+    [BindProperty] public Guid? ProfileId { get; set; }
+    [BindProperty] public int Revision { get; set; }
+    public IReadOnlyList<ForecastDocument> SavedProfiles { get; private set; } = [];
+    private sealed record SavedDraft(int FromMonth, int ToMonth, decimal? Gross, ForecastStatus Status,
+        string? Source, string? Note, List<PeriodInput> Periods, List<ExceptionInput> Exceptions, string Stamps);
     public sealed class ExceptionInput
     {
         public int Month { get; set; }
@@ -77,7 +100,47 @@ public sealed class ForecastModel : PageModel
     public IReadOnlyDictionary<int, ForecastValue<decimal>?> WithheldPreview { get; private set; } = new Dictionary<int, ForecastValue<decimal>?>();
     public IReadOnlyList<int> ReplacedPeriodMonths { get; private set; } = [];
 
-    public void OnGet() { }
+    public async Task OnGetAsync(Guid? id)
+    {
+        try
+        {
+            await using var context = database.Open();
+            var store = new ForecastStore(context);
+            SavedProfiles = await store.ListAsync();
+            if (id is null) return;
+            var document = await store.ReadAsync(id.Value);
+            if (document is null) { ModelState.AddModelError(string.Empty, "Không tìm thấy hồ sơ này."); return; }
+            var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
+            FromMonth = draft.FromMonth; ToMonth = draft.ToMonth; Gross = draft.Gross; Status = draft.Status;
+            Source = draft.Source; Note = draft.Note; Periods = draft.Periods; Exceptions = draft.Exceptions;
+            DraftToken = draftProtector.Protect(draft.Stamps);
+            ProfileId = document.Id; Revision = document.Revision;
+            EnsureExceptionSlots();
+        }
+        catch (Exception ex) when (ex is DataProtectionException or JsonException or DbUpdateException)
+        { ModelState.AddModelError(string.Empty, "Không thể mở hồ sơ: kiểm tra khóa bảo vệ và dữ liệu."); }
+    }
+
+    public async Task<IActionResult> OnPostSaveAsync()
+    {
+        OnPostPreview();
+        if (!ModelState.IsValid || Preview is null) return Page();
+        try
+        {
+            var stamps = draftProtector.Unprotect(DraftToken!);
+            var payload = JsonSerializer.Serialize(new SavedDraft(FromMonth, ToMonth, Gross, Status, Source, Note, Periods, Exceptions, stamps));
+            await using var context = database.Open();
+            var store = new ForecastStore(context);
+            var id = ProfileId ?? await store.CreateAsync(payload);
+            if (ProfileId is not null) await store.UpdateAsync(id, Revision, payload);
+            return RedirectToPage("/Forecast", new { id });
+        }
+        catch (Exception ex) when (ex is DataProtectionException or InvalidOperationException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            ModelState.AddModelError(string.Empty, "Không lưu được hồ sơ; có thể dữ liệu đã thay đổi hoặc khóa bảo vệ không hợp lệ. Hãy mở lại và kiểm tra.");
+            return Page();
+        }
+    }
 
     public static string FormatAmount(decimal amount) => amount.ToString("N" + ((decimal.GetBits(amount)[3] >> 16) & 0x7f), CultureInfo.GetCultureInfo("vi-VN"));
 
@@ -144,6 +207,30 @@ public sealed class ForecastModel : PageModel
             ModelState.SetModelValue(key, entry.Value.RawValue, entry.Value.AttemptedValue);
             foreach (var error in entry.Value.Errors) ModelState.AddModelError(key, error.ErrorMessage);
         }
+        if (!string.IsNullOrEmpty(DraftToken))
+        {
+            try
+            {
+                var stamps = JsonSerializer.Deserialize<Dictionary<string, EntryStamp>>(draftProtector.Unprotect(DraftToken))
+                    ?? throw new CryptographicException("Draft is empty.");
+                var shifted = new Dictionary<string, EntryStamp>();
+                foreach (var stamp in stamps)
+                {
+                    var match = Regex.Match(stamp.Key, @"^period/(\d+)$");
+                    if (!match.Success || !int.TryParse(match.Groups[1].Value, out var oldIndex))
+                        shifted[stamp.Key] = stamp.Value;
+                    else if (oldIndex != index)
+                        shifted[$"period/{(oldIndex > index ? oldIndex - 1 : oldIndex)}"] = stamp.Value;
+                }
+                DraftToken = draftProtector.Protect(JsonSerializer.Serialize(shifted));
+                ModelState.Remove(nameof(DraftToken));
+            }
+            catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
+            {
+                ModelState.AddModelError(string.Empty, "Không thể đọc bản nháp; hãy mở lại hồ sơ để tiếp tục.");
+                return Page();
+            }
+        }
         Periods.RemoveAt(index);
         return Page();
     }
@@ -206,27 +293,48 @@ public sealed class ForecastModel : PageModel
             EnsureExceptionSlots();
             return Page();
         }
-        var now = DateTimeOffset.UtcNow;
+        Dictionary<string, EntryStamp> previous;
+        try
+        {
+            previous = string.IsNullOrEmpty(DraftToken) ? [] :
+                JsonSerializer.Deserialize<Dictionary<string, EntryStamp>>(draftProtector.Unprotect(DraftToken))
+                ?? throw new CryptographicException("Draft is empty.");
+        }
+        catch (Exception ex) when (ex is CryptographicException or JsonException or FormatException)
+        {
+            ModelState.AddModelError(string.Empty, "Không thể đọc bản nháp; hãy mở lại hồ sơ để tiếp tục.");
+            return Page();
+        }
+        var now = clock.GetUtcNow().ToUniversalTime();
+        var current = new Dictionary<string, EntryStamp>();
+        DateTimeOffset Stamp(string key, object value)
+        {
+            var fingerprint = JsonSerializer.Serialize(value);
+            var entered = previous.TryGetValue(key, out var old) && old.Fingerprint == fingerprint ? old.EnteredAt : now;
+            current[key] = new EntryStamp(fingerprint, entered);
+            return entered;
+        }
         InsurancePreview = Exceptions.ToDictionary(e => e.Month, e => e.Insurance is null ? null :
-            new ForecastValue<decimal>(e.Insurance.Value, e.InsuranceStatus, e.InsuranceSource, e.InsuranceNote, now));
+            new ForecastValue<decimal>(e.Insurance.Value, e.InsuranceStatus, e.InsuranceSource, e.InsuranceNote, Stamp($"{e.Month}/insurance", new { e.Insurance, e.InsuranceStatus, e.InsuranceSource, e.InsuranceNote })));
         DependentsPreview = Exceptions.ToDictionary(e => e.Month, e => e.Dependents is null ? null :
-            new ForecastValue<int>(e.Dependents.Value, e.DependentsStatus, e.DependentsSource, e.DependentsNote, now));
+            new ForecastValue<int>(e.Dependents.Value, e.DependentsStatus, e.DependentsSource, e.DependentsNote, Stamp($"{e.Month}/dependents", new { e.Dependents, e.DependentsStatus, e.DependentsSource, e.DependentsNote })));
         WithheldPreview = Exceptions.ToDictionary(e => e.Month, e => e.Withheld is null ? null :
-            new ForecastValue<decimal>(e.Withheld.Value, e.WithheldStatus, e.WithheldSource, e.WithheldNote, now));
+            new ForecastValue<decimal>(e.Withheld.Value, e.WithheldStatus, e.WithheldSource, e.WithheldNote, Stamp($"{e.Month}/withheld", new { e.Withheld, e.WithheldStatus, e.WithheldSource, e.WithheldNote })));
         var schedule = new SalarySchedule(2026);
         foreach (var item in Exceptions.Where(e => e.Gross is not null))
-            schedule = schedule.WithException(item.Month, new ForecastValue<decimal>(item.Gross!.Value, item.Status, item.Source, item.Note, now));
+            schedule = schedule.WithException(item.Month, new ForecastValue<decimal>(item.Gross!.Value, item.Status, item.Source, item.Note, Stamp($"{item.Month}/gross", new { item.Gross, item.Status, item.Source, item.Note })));
         var conflicts = new HashSet<int>();
         var replaced = new HashSet<int>();
         if (Gross is not null)
         {
-            var value = new ForecastValue<decimal>(Gross.Value, Status, Source, Note, now);
+            var value = new ForecastValue<decimal>(Gross.Value, Status, Source, Note, Stamp("base", new { Gross, Status, Source, Note, FromMonth, ToMonth }));
             conflicts.UnionWith(schedule.PreviewPeriod(FromMonth, ToMonth, value).ConflictingMonths);
             schedule = schedule.ApplyPeriod(FromMonth, ToMonth, value);
         }
-        foreach (var period in Periods)
+        for (var periodIndex = 0; periodIndex < Periods.Count; periodIndex++)
         {
-            var next = new ForecastValue<decimal>(period.Gross!.Value, period.Status, period.Source, period.Note, now);
+            var period = Periods[periodIndex];
+            var next = new ForecastValue<decimal>(period.Gross!.Value, period.Status, period.Source, period.Note, Stamp($"period/{periodIndex}", period));
             var preview = schedule.PreviewPeriod(period.FromMonth, period.ToMonth, next);
             for (var month = period.FromMonth; month <= period.ToMonth; month++)
                 if (schedule.Months[month] is not null && !preview.ConflictingMonths.Contains(month)) replaced.Add(month);
@@ -234,6 +342,8 @@ public sealed class ForecastModel : PageModel
             schedule = schedule.ApplyPeriod(period.FromMonth, period.ToMonth, next);
         }
         Preview = new SalarySchedulePreview(schedule.Months, conflicts.Order().ToArray());
+        DraftToken = draftProtector.Protect(JsonSerializer.Serialize(current));
+        ModelState.Remove(nameof(DraftToken));
         ReplacedPeriodMonths = replaced.Order().ToArray();
         return Page();
     }

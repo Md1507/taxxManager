@@ -138,6 +138,50 @@ namespace TaxManager.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaxManager.Data.Forecasting.ForecastDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("PayloadEncrypted")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<int>("Revision")
+                        .IsConcurrencyToken()
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ForecastDocuments", (string)null);
+                });
+
+            modelBuilder.Entity("TaxManager.Data.Forecasting.ForecastSnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("PayloadEncrypted")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<int>("Revision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SchemaVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId", "Revision")
+                        .IsUnique();
+
+                    b.ToTable("ForecastSnapshots", (string)null);
+                });
+
             modelBuilder.Entity("TaxManager.Data.Income.MonthlyIncome", b =>
                 {
                     b.Property<Guid>("ProfileId")

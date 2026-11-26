@@ -1,8 +1,8 @@
 # Lộ trình sản phẩm
 
-Lộ trình này ghi thứ tự sản phẩm mới nhất đã chốt; các chặng tương lai dưới đây chưa được coi là hoàn thành. Nền 3.1 đã nghiệm thu kỹ thuật cho local với dữ liệu giả; không mở lại nghiệm thu đó. Phiếu 3.1b `01M89PFQ3ETQDTCSGPMAN0DEPW` đang thực hiện nhập liệu, UX và trạng thái theo phạm vi đã chốt của chính phiếu; lộ trình này không mở rộng phiếu đó.
+Lộ trình này ghi thứ tự sản phẩm mới nhất đã chốt; các chặng tương lai dưới đây chưa được coi là hoàn thành. Nền 3.1 đã nghiệm thu kỹ thuật cho local với dữ liệu giả; không mở lại nghiệm thu đó. Phiếu 3.1b `01M89PFQ3ETQDTCSGPMAN0DEPW` đã done và land; chặng 2 đang triển khai, chưa nghiệm thu.
 
-Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-forecast.md) và [đặc tả dự báo năm](design/annual-tax-forecast.md). Khi 3.1b được đưa về cây gốc, liên kết và đồng bộ PLAN với thứ tự và trạng thái thực tế của lộ trình này, giữ nguyên bằng chứng nghiệm thu 3.1. PLAN đang được phiếu khác cập nhật.
+Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-forecast.md) và [đặc tả dự báo năm](design/annual-tax-forecast.md). PLAN đã đồng bộ thứ tự và trạng thái thực tế; giữ nguyên bằng chứng nghiệm thu 3.1.
 
 ## Phạm vi và nguyên tắc chung
 
@@ -18,7 +18,7 @@ Mười hai chức năng dưới đây là phạm vi đích; sáu chặng là th
 | Chức năng cốt lõi | Hành vi tối thiểu | Chặng phụ trách | Trạng thái / phần còn hoãn |
 |---|---|---|---|
 | 1. Hồ sơ theo năm | Chọn năm thuế, phạm vi và phiên bản luật áp dụng; phân biệt năm thuế với ngày nhập. | 2, dùng tại 3 | Bản đầu chỉ bật 2026 cho phạm vi đã chốt; không ngầm hỗ trợ năm khác. |
-| 2. Lương theo giai đoạn | Nhập mức nền một lần, thêm mốc thay đổi, chọn tháng ngoại lệ, xem trước và bỏ giai đoạn thêm nhầm; không âm thầm ghi đè ngoại lệ. | 1 | Theo phạm vi và tiêu chí riêng của 3.1b đang thực hiện, chưa khẳng định hoàn thành. |
+| 2. Lương theo giai đoạn | Nhập mức nền một lần, thêm mốc thay đổi, chọn tháng ngoại lệ, xem trước và bỏ giai đoạn thêm nhầm; không âm thầm ghi đè ngoại lệ. | 1 | 3.1b đã done và land theo tiêu chí riêng. |
 | 3. Thưởng và khoản bất thường | Ghi tháng, số tiền và khoản đã nằm trong gross hay chưa để tránh cộng trùng; chỉ xử lý loại có căn cứ và engine hỗ trợ. | 3: thực tế/dự kiến; 5: thưởng giả định kịch bản | Bản đầu chỉ gồm thưởng tiền chịu thuế từ nơi trả lương hiện tại theo nhánh engine hỗ trợ; không mở rộng 3.1b. |
 | 4. Người phụ thuộc theo thời gian | Ghi tháng bắt đầu/kết thúc và nguồn; phân biệt tự khai với xác nhận đăng ký. | 3 | Preview nhập hiện có không đồng nghĩa nghiệp vụ theo thời gian đã hoàn thành. |
 | 5. Bảo hiểm và giảm trừ | Nhập tay từ phiếu lương các khoản engine hỗ trợ; phân biệt thiếu với 0. | 1: nền nhập theo scope hiện tại; 3: tích hợp | Tự tính bảo hiểm để sau khi có đủ xác minh; không suy thêm khoản engine chưa hỗ trợ. |
@@ -48,7 +48,7 @@ Quyền riêng tư áp dụng xuyên suốt cả sáu chặng: chỉ thu dữ li
 
 ### 1. Hoàn tất 3.1b: nhập liệu, UX và trạng thái
 
-- **Bắt đầu:** phiếu `01M89PFQ3ETQDTCSGPMAN0DEPW` đang chạy trên nền 3.1; giữ nguyên phạm vi và tiêu chí của phiếu đó.
+- **Bắt đầu:** phiếu `01M89PFQ3ETQDTCSGPMAN0DEPW` đã done và land trên nền 3.1.
 - **Tối thiểu:** hoàn tất mô hình trạng thái đầu vào, nhập theo giai đoạn và tháng ngoại lệ, cùng UX thuộc phiếu; phân biệt thiếu và 0, không âm thầm ghi đè ngoại lệ hay coi giả định là thực tế.
 - **Xong khi:** phiếu 3.1b hoàn tất theo tiêu chí và kiểm chứng riêng, được đưa về cây gốc; không xem các chặng sau là xong theo đó.
 

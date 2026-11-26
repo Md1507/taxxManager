@@ -8,6 +8,7 @@ using TaxManager.Data.Income;
 using TaxManager.Data.Infrastructure;
 using TaxManager.Data.Profiles;
 using TaxManager.Data.CalculationHistory;
+using TaxManager.Data.Forecasting;
 
 namespace TaxManager.Data.Protection;
 
@@ -25,7 +26,8 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
             if (!initialize || context.UserProfiles.AsNoTracking().Any() ||
                 context.MonthlyIncomes.AsNoTracking().Any() || context.Dependents.AsNoTracking().Any() ||
                 context.DependentEligibilityPeriods.AsNoTracking().Any() ||
-                context.Set<AuditEvent>().AsNoTracking().Any() || context.CalculationHistory.AsNoTracking().Any())
+                context.Set<AuditEvent>().AsNoTracking().Any() || context.CalculationHistory.AsNoTracking().Any() ||
+                HasForecastData())
                 throw new DataProtectionException("Database protection metadata is missing.");
             if (context.Database.CurrentTransaction is null)
                 throw new InvalidOperationException("Protection initialization requires an explicit transaction.");
@@ -42,6 +44,14 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         }
     }
 
+    private bool HasForecastData()
+    {
+        // Older supported schemas do not yet contain the forecast tables.
+        var migrations = context.Database.GetAppliedMigrations().ToHashSet(StringComparer.Ordinal);
+        return migrations.Contains("20261126101030_AddForecastDocuments") && context.Set<ForecastDocument>().AsNoTracking().Any() ||
+            migrations.Contains("20261126101326_AddForecastSnapshots") && context.Set<ForecastSnapshot>().AsNoTracking().Any();
+    }
+
     private ProtectionContext SentinelContext() => new(databaseId, databaseId, "Metadata", "1", "KeyCheck");
     internal ProtectionContext FieldContext(object entity, string field) =>
         new(databaseId, ProfileId(entity), entity.GetType().Name, RowKey(entity),
@@ -49,7 +59,7 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
 
     internal void Bind(object entity)
     {
-        if (entity is not (UserProfile or Dependent or MonthlyIncome or CalculationRecord)) return;
+        if (entity is not (UserProfile or Dependent or MonthlyIncome or CalculationRecord or ForecastDocument or ForecastSnapshot)) return;
         Ensure();
         BindFields(entity);
         _ = Snapshot(entity); // Fail at materialization, including AsNoTracking and client projections.
@@ -62,6 +72,8 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         byte[] Decode(byte[] bytes, string field) => keys!.Unprotect(bytes, FieldContext(entity, field));
         switch (entity)
         {
+            case ForecastDocument f: f.Content.Bind(b => Decode(b, "Payload"), () => context.MarkSensitiveDirty(f, "PayloadEncrypted")); break;
+            case ForecastSnapshot f: f.Content.Bind(b => Decode(b, "Payload"), () => context.MarkSensitiveDirty(f, "PayloadEncrypted")); break;
             case CalculationRecord h:
                 h.Bind(() =>
                 {
@@ -83,6 +95,8 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
     {
         switch (entity)
         {
+            case ForecastDocument f: f.Content.Invalidate(); break;
+            case ForecastSnapshot f: f.Content.Invalidate(); break;
             case UserProfile p: p.Name.Invalidate(); break;
             case Dependent d: d.Name.Invalidate(); break;
             case MonthlyIncome i: i.Gross.Invalidate(); i.Insurance.Invalidate(); i.Withheld.Invalidate(); break;
@@ -100,6 +114,10 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         }
         switch (entity)
         {
+            case ForecastDocument f:
+                var payload = f.Payload; Write("Payload", payload); f.Payload = payload; break;
+            case ForecastSnapshot f:
+                var snapshotPayload = f.Payload; Write("Payload", snapshotPayload); f.Payload = snapshotPayload; break;
             case CalculationRecord h:
                 h.SetPayload(keys!.Protect(CalculationSnapshotCodec.Encode(h.Snapshot), FieldContext(h, "Snapshot")));
                 h.AcceptPayload();
@@ -132,16 +150,18 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         new(databaseId, e.ProfileId, "AuditEvent", e.Id.ToString("D"),
             JsonSerializer.Serialize(new { e.OperationId, e.Ordinal, e.Entity, e.EntityKey, e.Action, e.TimestampUtc }));
 
-    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod or CalculationRecord;
+    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod or CalculationRecord or ForecastDocument or ForecastSnapshot;
     internal static Guid ProfileId(object e) => e switch
     {
         UserProfile p => p.Id, Dependent d => d.ProfileId, MonthlyIncome i => i.ProfileId,
-        DependentEligibilityPeriod p => p.ProfileId, CalculationRecord h => h.ProfileId, _ => throw new InvalidOperationException()
+        DependentEligibilityPeriod p => p.ProfileId, CalculationRecord h => h.ProfileId, ForecastDocument f => f.Id, ForecastSnapshot f => f.DocumentId, _ => throw new InvalidOperationException()
     };
     internal static string RowKey(object e) => e switch
     {
         UserProfile p => p.Id.ToString("D"),
         CalculationRecord h => h.Id.ToString("D"),
+        ForecastDocument f => f.Id.ToString("D"),
+        ForecastSnapshot f => f.Id.ToString("D"),
         Dependent d => d.Id.ToString("D"),
         MonthlyIncome i => FormattableString.Invariant($"{i.Year:D4}/{i.Month:D2}"),
         DependentEligibilityPeriod p => FormattableString.Invariant($"{p.DependentId:D}/{p.EligibleFromMonth:yyyy-MM-dd}"),
@@ -153,6 +173,8 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         return entity switch
         {
             CalculationRecord h => CalculationSnapshotCodec.AuditSnapshot(h.Snapshot),
+            ForecastDocument f => JsonSerializer.SerializeToElement(new { f.Payload, f.Revision }),
+            ForecastSnapshot f => JsonSerializer.SerializeToElement(new { f.Payload, f.Revision, f.SchemaVersion }),
             UserProfile p => JsonSerializer.SerializeToElement(new { p.DisplayName }),
             Dependent d => JsonSerializer.SerializeToElement(new { d.DisplayName }),
             MonthlyIncome i => JsonSerializer.SerializeToElement(new

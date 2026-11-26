@@ -8,31 +8,56 @@ using TaxManager.Data.TaxRules;
 
 namespace TaxManager.Web.Demo;
 
-/// <summary>Only creates a new synthetic database and an unrelated synthetic key in TEMP.</summary>
+/// <summary>Creates or explicitly reopens an isolated synthetic store in TEMP.</summary>
 public sealed class SyntheticDatabase : IDisposable
 {
     private readonly string databasePath;
     private readonly FileKeyRing keys;
 
-    public SyntheticDatabase(string repositoryDirectory)
+    public string RootPath { get; }
+
+    public SyntheticDatabase(string repositoryDirectory, string? existingRoot = null)
     {
         var temp = Path.GetFullPath(Path.GetTempPath());
         for (DirectoryInfo? part = new(temp); part is not null; part = part.Parent)
             if ((part.Attributes & FileAttributes.ReparsePoint) != 0)
                 throw new InvalidOperationException("TEMP không được chứa liên kết.");
-        var root = Path.Combine(temp, "taxmanager-web-demo-" + Guid.NewGuid().ToString("N"));
+        var root = existingRoot is null ? Path.Combine(temp, "taxmanager-web-demo-" + Guid.NewGuid().ToString("N")) : Path.GetFullPath(existingRoot);
+        if (existingRoot is not null && (!Path.IsPathFullyQualified(existingRoot) ||
+            !string.Equals(Path.GetDirectoryName(root), temp.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase) ||
+            !Path.GetFileName(root).StartsWith("taxmanager-web-demo-", StringComparison.Ordinal)))
+            throw new InvalidOperationException("Chỉ mở lại kho demo synthetic ngay dưới TEMP.");
+        RootPath = root;
         var databaseDirectory = Path.Combine(root, "data");
-        Directory.CreateDirectory(databaseDirectory);
         var keyPath = Path.Combine(root, "synthetic-key.json");
-        using (var file = new FileStream(keyPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-            JsonSerializer.Serialize(file, new { activeKeyId = "synthetic", keys = new Dictionary<string, string>
-                { ["synthetic"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) } });
-        keys = FileKeyRing.Load(keyPath, Path.GetFullPath(repositoryDirectory), databaseDirectory);
         databasePath = Path.Combine(databaseDirectory, "synthetic.db");
-        using (new FileStream(databasePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+        var marker = Path.Combine(root, "synthetic-demo.marker");
+        if (existingRoot is null)
+        {
+            Directory.CreateDirectory(databaseDirectory);
+            File.WriteAllText(marker, "TaxManager synthetic demo v1");
+            using (var file = new FileStream(keyPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                JsonSerializer.Serialize(file, new { activeKeyId = "synthetic", keys = new Dictionary<string, string>
+                    { ["synthetic"] = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)) } });
+            using (new FileStream(databasePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+        }
+        else
+        {
+            foreach (var path in new[] { root, databaseDirectory, keyPath, databasePath, marker })
+                if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                    throw new InvalidOperationException("Kho synthetic không được chứa liên kết.");
+            if (File.ReadAllText(marker) != "TaxManager synthetic demo v1")
+                throw new InvalidOperationException("Không nhận diện được kho synthetic.");
+        }
+        keys = FileKeyRing.Load(keyPath, Path.GetFullPath(repositoryDirectory), databaseDirectory);
         using var context = Open();
-        context.Database.Migrate();
-        new TaxRuleStore(context).SeedReferencesAsync().GetAwaiter().GetResult();
+        if (existingRoot is null)
+        {
+            context.Database.Migrate();
+            new TaxRuleStore(context).SeedReferencesAsync().GetAwaiter().GetResult();
+        }
+        else new TaxManager.Data.Forecasting.ForecastStore(context).ListAsync().GetAwaiter().GetResult();
+        Console.WriteLine($"Kho demo synthetic: {RootPath}");
     }
 
     public TaxManagerDbContext Open()

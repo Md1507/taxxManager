@@ -8,6 +8,7 @@ using TaxManager.Data.Infrastructure;
 using TaxManager.Data.Profiles;
 using TaxManager.Data.Protection;
 using TaxManager.Data.CalculationHistory;
+using TaxManager.Data.Forecasting;
 
 namespace TaxManager.Data.Audit;
 
@@ -51,6 +52,8 @@ internal sealed class AuditSaveCoordinator
     {
         token.ThrowIfCancellationRequested();
         context.ChangeTracker.DetectChanges();
+        if (context.ChangeTracker.Entries<ForecastSnapshot>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Forecast snapshots are append-only.");
         if (context.ChangeTracker.Entries<CalculationRecord>().Any(e =>
             e.State is EntityState.Modified or EntityState.Deleted ||
             e.State == EntityState.Added && !ReferenceEquals(e.Entity, context.AuthorizedHistoryAppend)))

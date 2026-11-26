@@ -5,9 +5,9 @@
 Tại `/Forecast`, nhập gross theo một hoặc nhiều giai đoạn; tháng ngoại lệ được giữ,
 tháng chồng giai đoạn được thông báo. Mở phần chi tiết để nhập bảo hiểm, người phụ
 thuộc và khấu trừ từng tháng cùng trạng thái, nguồn và ghi chú. Preview phân biệt
-chưa nhập với 0; ngày nhập là thời điểm tạo preview UTC. Dữ liệu chỉ ở form hiện tại,
-chưa được lưu. Chưa tính kết quả năm hoặc kịch bản thưởng; lưu/mở lại, migration và
-audit forecast cùng QA của các chức năng đó thuộc bước sau. Chỉ dùng dữ liệu giả.
+chưa nhập với 0; thời điểm nhập UTC chỉ đổi khi giá trị hoặc metadata thay đổi.
+Chặng 2 đang triển khai lưu, mở, sửa và xóa hồ sơ dự báo synthetic; chưa nghiệm thu.
+Chưa tính kết quả năm hoặc kịch bản thưởng. Chỉ dùng dữ liệu giả.
 
 ## Bước 3.1 đã nghiệm thu
 
@@ -30,9 +30,12 @@ dotnet run --project src/TaxManager.Web -- --SyntheticDemo=true
 Mở `http://127.0.0.1:5088/`; dừng server bằng Ctrl+C trong terminal đã chạy. Cổng
 5088 phải còn trống. Không đưa thông tin cá nhân hay dữ liệu thật vào demo.
 
-Mỗi lần khởi tạo database demo tạo thư mục ngẫu nhiên dưới TEMP, một SQLite mới
+Mặc định mỗi lần khởi tạo database demo tạo thư mục ngẫu nhiên dưới TEMP, một SQLite mới
 trong thư mục `data` và khóa giả tách khỏi thư mục database. Database và khóa này
-không tự được xóa khi app dừng; chúng chỉ dùng cho thử nghiệm synthetic. App không
+không tự được xóa khi app dừng; chúng chỉ dùng cho thử nghiệm synthetic. Sau khi mở
+trang `/Forecast`, terminal in đường dẫn kho. Để mở lại kho đó trong phiên mới, thêm
+`--SyntheticStore="<đường dẫn kho synthetic dưới TEMP>"` sau `--SyntheticDemo=true`;
+giữ nguyên file khóa và marker, không tự tạo lại khóa bị mất. App không
 mở `taxmanager.local.db`, không tự provision khóa vận hành hoặc nâng cấp DB thật.
 Không có đăng nhập/Identity; ID nội bộ không phải xác thực hay phân quyền. Chỉ dùng
 trên loopback trong môi trường Development với opt-in trên; không triển khai công khai.
