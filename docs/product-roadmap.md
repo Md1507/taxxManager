@@ -11,6 +11,39 @@ Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-
 - Lưu số liệu cùng kỳ, loại chỉ tiêu, trạng thái, nguồn, ghi chú và thời điểm nhập; chưa lưu file gốc. Kết quả chỉ tham khảo, nêu phạm vi, độ đầy đủ và căn cứ/trạng thái luật được dùng; không tự nâng trạng thái xác minh hoặc dùng luật sai kỳ.
 - Thử local một người bằng dữ liệu synthetic chưa cần đăng nhập. Trước khi phục vụ nhiều người qua mạng phải có đăng nhập và cách ly tài khoản; lộ trình này không cấp quyền triển khai công khai hay dùng dữ liệu thật.
 
+## Đối chiếu chức năng với lộ trình
+
+Mười hai chức năng dưới đây là phạm vi đích; sáu chặng là thứ tự giao theo phụ thuộc. Gom chức năng vào cùng một chặng không loại bỏ hành vi nào. Trạng thái trong bảng là phạm vi và việc còn lại, không xác nhận các chặng tương lai đã hoàn thành.
+
+| Chức năng cốt lõi | Hành vi tối thiểu | Chặng phụ trách | Trạng thái / phần còn hoãn |
+|---|---|---|---|
+| 1. Hồ sơ theo năm | Chọn năm thuế, phạm vi và phiên bản luật áp dụng; phân biệt năm thuế với ngày nhập. | 2, dùng tại 3 | Bản đầu chỉ bật 2026 cho phạm vi đã chốt; không ngầm hỗ trợ năm khác. |
+| 2. Lương theo giai đoạn | Nhập mức nền một lần, thêm mốc thay đổi, chọn tháng ngoại lệ, xem trước và bỏ giai đoạn thêm nhầm; không âm thầm ghi đè ngoại lệ. | 1 | Theo phạm vi và tiêu chí riêng của 3.1b đang thực hiện, chưa khẳng định hoàn thành. |
+| 3. Thưởng và khoản bất thường | Ghi tháng, số tiền và khoản đã nằm trong gross hay chưa để tránh cộng trùng; chỉ xử lý loại có căn cứ và engine hỗ trợ. | 3: thực tế/dự kiến; 5: thưởng giả định kịch bản | Bản đầu chỉ gồm thưởng tiền chịu thuế từ nơi trả lương hiện tại theo nhánh engine hỗ trợ; không mở rộng 3.1b. |
+| 4. Người phụ thuộc theo thời gian | Ghi tháng bắt đầu/kết thúc và nguồn; phân biệt tự khai với xác nhận đăng ký. | 3 | Preview nhập hiện có không đồng nghĩa nghiệp vụ theo thời gian đã hoàn thành. |
+| 5. Bảo hiểm và giảm trừ | Nhập tay từ phiếu lương các khoản engine hỗ trợ; phân biệt thiếu với 0. | 1: nền nhập theo scope hiện tại; 3: tích hợp | Tự tính bảo hiểm để sau khi có đủ xác minh; không suy thêm khoản engine chưa hỗ trợ. |
+| 6. Khấu trừ từng tháng | Ghi số công ty đã khấu trừ riêng với thuế ứng dụng tính; dùng dữ liệu đã lưu khi tổng hợp. | 2: lưu; 3: sử dụng | Không tự suy thuế đã khấu trừ từ kết quả tính của ứng dụng. |
+| 7. Tính thuế và giải thích | Trình bày các bước tính, khoản đã đưa vào và chưa hỗ trợ cùng căn cứ đúng kỳ. | 3 | Nền tính tháng đã có không đồng nghĩa Web đã tích hợp tính năm; không tự nâng trạng thái xác minh luật. |
+| 8. Tổng hợp và dự báo năm | Tính nghĩa vụ năm ước tính và trình bày chênh lệch chỉ khi đủ dữ liệu hoặc giả định khấu trừ rõ ràng cho cả kịch bản. | 3 | Chưa triển khai tích hợp năm; nộp thừa ước tính không phải tiền chắc chắn được hoàn. |
+| 9. Trạng thái và độ đầy đủ | Phân biệt thực tế, dự kiến, giả định; nêu tháng và chỉ tiêu còn thiếu, độ phủ khấu trừ riêng và trạng thái xác minh pháp lý riêng. | 1: nền; 2: lưu; 3: độ phủ năm | Nền theo scope 3.1b; không coi một giá trị thực tế là toàn tháng hay toàn năm đầy đủ. |
+| 10. Lưu, mở và lịch sử | Mở lại hồ sơ, cập nhật từng tháng; giữ bất biến snapshot, đầu vào và phiên bản luật của mỗi lần tính. | 2 | Hỗ trợ lưu kết quả hiện có và contract riêng cho kết quả năm khi chặng 3 có; không yêu cầu chặng 2 triển khai dự báo năm trước. |
+| 11. Xuất và khôi phục | Xuất báo cáo dùng để tự giữ hoặc gửi HR; sao lưu và khôi phục giữ metadata, phiên bản và lịch sử. Kiểm tra bản nhập trước khi ghi, không âm thầm ghi đè. | 4 | Báo cáo xuất không tự là bản sao lưu có thể khôi phục; PDF trình bày đẹp để sau. |
+| 12. Quyền riêng tư | Thu tối thiểu, không giữ file gốc hay tài khoản eTax; xóa có chủ đích khi lưu trữ, bảo vệ bản sao, có đăng nhập và cách ly trước khi phục vụ nhiều người qua mạng. | Xuyên suốt 1–6; xóa ở 2, bản sao ở 4 | Hiện chỉ local với dữ liệu giả; không tự cấp quyền dùng dữ liệu thật hay deploy. |
+
+| Tiện ích | Hành vi tối thiểu | Chặng / trạng thái |
+|---|---|---|
+| Checklist | Chỉ rõ thông tin chuẩn bị quyết toán đã có và còn thiếu. | 4 |
+| Hai kịch bản | So sánh cơ sở với thêm một khoản thưởng giả định trong phạm vi hỗ trợ. | 5 |
+| Đối chiếu | Đối chiếu hồ sơ với số người dùng cung cấp theo nguồn, chỉ tiêu và kỳ. | 6 |
+| Dán Excel | Cho xem trước dữ liệu được dán trước khi áp dụng. | Backlog |
+| Sao chép năm mới | Yêu cầu xác nhận lại giá trị và luật áp dụng cho năm mới. | Backlog |
+| So sánh hai lần dự báo | So sánh các lần dự báo đã lưu; khác với hai kịch bản trong cùng một lần dự báo. | Backlog |
+| Gross–Net | Tiện ích tính riêng cho Gross–Net. | Backlog |
+
+Backlog là các ý tưởng chưa cam kết triển khai; mỗi mục cần quyết định và phạm vi riêng.
+
+Quyền riêng tư áp dụng xuyên suốt cả sáu chặng: chỉ thu dữ liệu cần thiết, không thu file gốc hay tài khoản eTax; khi có lưu trữ phải có cách xóa có chủ đích, và bản sao ở chặng 4 cũng cần được bảo vệ. Xóa hồ sơ, lịch sử và bản sao cần được diễn giải rõ phạm vi, không hứa xóa khỏi mọi bản sao một cách tự động. Đăng nhập và cách ly là điều kiện trước khi phục vụ nhiều người qua mạng, không phải cho phép dùng dữ liệu thật hay triển khai công khai lúc này.
+
 ## Sáu chặng theo thứ tự
 
 ### 1. Hoàn tất 3.1b: nhập liệu, UX và trạng thái
@@ -22,20 +55,20 @@ Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-
 ### 2. Lưu và mở lại hồ sơ theo năm
 
 - **Bắt đầu:** chặng 1 hoàn tất và contract trạng thái đầu vào đã ổn định.
-- **Tối thiểu:** lưu, mở lại và cập nhật hồ sơ năm với metadata từng giá trị; bảo vệ dữ liệu và ghi audit phù hợp nền hiện có. Lưu dự báo theo contract riêng, không biến giả định thành dữ liệu thực tế; giữ snapshot lịch sử cũ khi tính lại.
-- **Xong khi:** mở lại qua phiên lưu trữ mới giữ đúng số liệu và metadata; cập nhật thực tế và tính lại không sửa lịch sử cũ, có kiểm chứng bảo vệ và bảo toàn dữ liệu.
+- **Tối thiểu:** lưu, mở lại và cập nhật hồ sơ năm và khấu trừ từng tháng với metadata từng giá trị; bảo vệ dữ liệu, ghi audit và hỗ trợ xóa có chủ đích với phạm vi được giải thích. Lưu kết quả hiện có và chuẩn bị contract riêng cho kết quả năm khi chặng 3 có; không biến giả định thành dữ liệu thực tế.
+- **Xong khi:** mở lại qua phiên lưu trữ mới giữ đúng số liệu và metadata; cập nhật tháng và tính lại không sửa snapshot, đầu vào hay phiên bản luật của lịch sử cũ; kiểm chứng bảo vệ, bảo toàn dữ liệu và hành vi xóa. Không đòi hỏi dự báo năm đã triển khai.
 
 ### 3. Tổng hợp và dự báo năm
 
 - **Bắt đầu:** chặng 2 hoàn tất để dự báo dùng được hồ sơ đã lưu và mở lại.
-- **Tối thiểu:** tổng hợp đầu vào theo tháng, dùng engine năm cho nghĩa vụ thuế năm ước tính; hiển thị phần thực tế/dự kiến/giả định, số tháng đủ dữ liệu thực tế, độ phủ khấu trừ riêng và phạm vi chưa bao gồm. Không thay phép tính năm bằng tổng thuế tháng.
-- **Xong khi:** kết quả năm có thể giải thích từ hồ sơ và căn cứ đúng kỳ; thiếu đầu vào được báo rõ, thiếu khấu trừ không tạo chênh lệch giả; các trường hợp đủ và thiếu được kiểm chứng.
+- **Tối thiểu:** tích hợp lương, thưởng thực tế/dự kiến được hỗ trợ, bảo hiểm nhập tay, người phụ thuộc theo thời gian và khấu trừ đã lưu theo tháng; dùng engine năm cho nghĩa vụ thuế năm ước tính. Hiển thị phần thực tế/dự kiến/giả định, số tháng đủ dữ liệu thực tế, độ phủ khấu trừ riêng và phạm vi chưa bao gồm. Không thay phép tính năm bằng tổng thuế tháng hay suy khấu trừ từ thuế tính được.
+- **Xong khi:** kết quả năm giải thích được các bước, khoản đã tính/chưa hỗ trợ từ hồ sơ và căn cứ đúng kỳ; thiếu đầu vào được báo rõ, chỉ hiện chênh lệch khi đủ khấu trừ hoặc giả định rõ cho cả kịch bản; các trường hợp đủ và thiếu được kiểm chứng.
 
 ### 4. Xuất dữ liệu và checklist chuẩn bị quyết toán
 
 - **Bắt đầu:** chặng 3 hoàn tất, có tổng hợp năm và trạng thái độ đầy đủ để xuất.
-- **Tối thiểu:** xuất số liệu, nguồn/kỳ và trạng thái cần thiết cùng kết quả tham khảo; cung cấp checklist chuẩn bị quyết toán chỉ rõ phần đã có và còn thiếu. Đây không phải tờ khai chính thức.
-- **Xong khi:** người dùng có thể lấy bản xuất và checklist nhất quán với hồ sơ, thấy rõ phần thiếu và giới hạn tham khảo.
+- **Tối thiểu:** xuất báo cáo số liệu, nguồn/kỳ và trạng thái cùng kết quả tham khảo để tự giữ hoặc gửi HR; cung cấp checklist chuẩn bị quyết toán. Có bản sao lưu riêng có thể khôi phục, bảo vệ bản sao và bảo toàn metadata, phiên bản luật, lịch sử; kiểm tra bản nhập trước khi ghi và không âm thầm ghi đè. Báo cáo không tự là backup; đây không phải tờ khai chính thức. PDF trình bày đẹp để sau.
+- **Xong khi:** người dùng lấy được báo cáo và checklist nhất quán với hồ sơ, thấy phần thiếu và giới hạn tham khảo; sao lưu rồi khôi phục giữ metadata, phiên bản và lịch sử, bản nhập không hợp lệ bị từ chối trước khi ghi và không có ghi đè âm thầm.
 
 ### 5. Hai kịch bản đơn giản
 
@@ -53,4 +86,4 @@ Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-
 
 Có thể chuẩn bị yêu cầu, thiết kế, ví dụ và rà phụ thuộc cho chặng sau trong khi chặng trước đang thực hiện. Chỉ bắt đầu **triển khai** từng chặng khi điều kiện bắt đầu ở trên đã đạt; phối hợp theo tiến độ không làm thay đổi scope của phiếu 3.1b. Mỗi chặng cần phiếu và kiểm chứng riêng theo phạm vi thực tế.
 
-Backlog tiện ích: dán Excel, sao chép năm, Gross–Net và so sánh các lần tính; không đưa vào 3.1b. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML là các chặng riêng cần quyết định và lập kế hoạch sau; chưa được tính là năng lực của sáu chặng này.
+Các tiện ích backlog ở bảng trên không đưa vào 3.1b. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML là các chặng riêng cần quyết định và lập kế hoạch sau; chưa được tính là năng lực của sáu chặng này.
