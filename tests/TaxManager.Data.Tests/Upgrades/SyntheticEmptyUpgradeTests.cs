@@ -90,8 +90,12 @@ public class SyntheticEmptyUpgradeTests
             await using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var values = new object[reader.FieldCount];
-                reader.GetValues(values);
+                // Compare every legacy column. The additive annual column must be
+                // empty for copied monthly-only rules, rather than extending the oracle row.
+                var values = new List<object>();
+                for (var index = 0; index < reader.FieldCount; index++)
+                    if (reader.GetName(index) == "AnnualGraph") Assert.True(reader.IsDBNull(index));
+                    else values.Add(reader.GetValue(index));
                 rows.Add(table + ":" + JsonSerializer.Serialize(values));
             }
         }

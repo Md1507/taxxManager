@@ -18,7 +18,9 @@ public sealed class ForecastStore(TaxManagerDbContext context)
             !await context.DependentEligibilityPeriods.AsNoTracking().AnyAsync(token) &&
             !await context.CalculationHistory.AsNoTracking().AnyAsync(token) &&
             !await context.Set<ForecastDocument>().AsNoTracking().AnyAsync(token) &&
-            !await context.Set<ForecastSnapshot>().AsNoTracking().AnyAsync(token)) return [];
+            !await context.Set<ForecastSnapshot>().AsNoTracking().AnyAsync(token) &&
+            !(context.Database.GetAppliedMigrations().Any(m => m.EndsWith("_AddAnnualForecastResults", StringComparison.Ordinal)) &&
+              await context.Set<AnnualCalculationRecord>().AsNoTracking().AnyAsync(token))) return [];
         context.ValidateProtection();
         return await context.Set<ForecastDocument>().AsNoTracking().OrderBy(x => x.Id).ToListAsync(token);
     }

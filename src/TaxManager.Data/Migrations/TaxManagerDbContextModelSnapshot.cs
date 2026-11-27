@@ -138,6 +138,37 @@ namespace TaxManager.Data.Migrations
                         });
                 });
 
+            modelBuilder.Entity("TaxManager.Data.Forecasting.AnnualCalculationRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("InputRevision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("PayloadEncrypted")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<int>("SchemaVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId", "CreatedAtUtc");
+
+                    b.ToTable("AnnualCalculationHistory", (string)null);
+                });
+
             modelBuilder.Entity("TaxManager.Data.Forecasting.ForecastDocument", b =>
                 {
                     b.Property<Guid>("Id")
@@ -248,6 +279,26 @@ namespace TaxManager.Data.Migrations
                         {
                             t.HasCheckConstraint("CK_Protection_Singleton", "Id = 1");
                         });
+                });
+
+            modelBuilder.Entity("TaxManager.Data.TaxRules.AnnualForecastRule", b =>
+                {
+                    b.Property<int>("Year")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly>("PeriodFrom")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Graph")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("PeriodTo")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Year", "PeriodFrom");
+
+                    b.ToTable("AnnualForecastRules", (string)null);
                 });
 
             modelBuilder.Entity("TaxManager.Data.TaxRules.TaxRuleBracket", b =>

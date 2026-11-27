@@ -1,0 +1,11 @@
+@page
+@model TaxManager.Web.Pages.ForecastAnnualHistoryModel
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Lịch sử tính năm</title><link rel="stylesheet" href="/site.css" /></head>
+<body><main><h1>Lịch sử tính thuế năm</h1>
+<p>Demo dữ liệu giả. Mỗi kết quả giữ bản dữ liệu và căn cứ tại lần tính. Xóa hồ sơ hiện hành vẫn giữ các kết quả này.</p>
+<p><a asp-page="/Forecast" asp-route-id="@Model.Id">Mở hồ sơ</a> · <a asp-page="/Forecast">Danh sách hồ sơ</a></p>
+@if (Model.History.Count == 0) { <p>Chưa có kết quả năm được lưu cho hồ sơ này.</p> }
+@foreach (var record in Model.History) { <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.Id" asp-route-record="@record.HistoryId">@record.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") — bản dữ liệu @record.InputRevision</a></p> }
+@if (Model.Selected is not null) { <partial name="Shared/_AnnualResult" model="Model.Selected" /> }
+</main></body></html>

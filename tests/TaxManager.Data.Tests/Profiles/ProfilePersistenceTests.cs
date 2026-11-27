@@ -54,7 +54,7 @@ public class ProfilePersistenceTests
         await using (var reader = db.Open())
         {
             Assert.Equal(
-                ["20261122100144_InitialPersistence", "20261122161649_AddMonthlyTaxRules", "20261123034403_AddDataProtectionAndAudit", "20261123045552_AddCalculationHistory", "20261126101030_AddForecastDocuments", "20261126101326_AddForecastSnapshots"],
+                ["20261122100144_InitialPersistence", "20261122161649_AddMonthlyTaxRules", "20261123034403_AddDataProtectionAndAudit", "20261123045552_AddCalculationHistory", "20261126101030_AddForecastDocuments", "20261126101326_AddForecastSnapshots", "20261127043040_AddAnnualRuleGraph", "20261127102957_AddAnnualForecastResults"],
                 await reader.Database.GetAppliedMigrationsAsync());
             Assert.Empty(await reader.Database.GetPendingMigrationsAsync());
             Assert.Null((await reader.UserProfiles.SingleAsync(x => x.Id == a)).DisplayName);

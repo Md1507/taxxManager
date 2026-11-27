@@ -5,7 +5,7 @@
 <body><main>
 <h1>Dự báo thuế năm 2026</h1>
 <p>Demo local, chỉ dùng dữ liệu giả. Dành cho cá nhân cư trú có một nơi trả lương; kết quả chỉ tham khảo.</p>
-<p>Có thể lưu hồ sơ dữ liệu giả; chức năng tính thuế năm chưa được triển khai.</p>
+<p>Lưu hồ sơ trước khi tính. Mỗi lần tính năm tạo một kết quả riêng; dữ liệu dự kiến và giả định vẫn giữ nguyên trạng thái.</p>
 <p><a href="/">Về tính thuế tháng</a></p>
 <section><h2>Hồ sơ đã lưu</h2>
 @if (Model.SavedProfiles.Count == 0) { <p>Chưa có hồ sơ đã lưu.</p> }
@@ -18,6 +18,7 @@
 <div asp-validation-summary="All" class="error" role="alert" tabindex="-1" autofocus="@(!ViewData.ModelState.IsValid ? "autofocus" : null)"></div>
 <button type="submit">Xem trước 12 tháng</button>
 <button type="submit" asp-page-handler="Save">Lưu hồ sơ</button>
+@if (Model.ProfileId is not null) { <button type="submit" asp-page-handler="Calculate">Tính thuế năm</button> }
 <fieldset><legend>Giai đoạn lương</legend>
 <label asp-for="FromMonth">Từ tháng</label><input asp-for="FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="FromMonth"></span>
 <label asp-for="ToMonth">Đến tháng</label><input asp-for="ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="ToMonth"></span>
@@ -36,6 +37,32 @@
 <label asp-for="Periods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="Periods[@i].Note" id="Periods_@(i)__Note" rows="2">@(ViewData.ModelState[$"Periods[{i}].Note"]?.AttemptedValue ?? Model.Periods[i].Note)</textarea><span class="error" asp-validation-for="Periods[i].Note"></span></details>
 <button type="submit" asp-page-handler="RemovePeriod" name="index" value="@i" formnovalidate>Bỏ giai đoạn @(i + 1)</button></fieldset> }
 <button type="submit" asp-page-handler="AddPeriod" formnovalidate>Thêm giai đoạn thay đổi</button>
+<details open="@(ViewData.ModelState.Keys.Any(k => k.StartsWith("Bonuses[") && ViewData.ModelState[k]?.Errors.Count > 0) ? "open" : null)"><summary>Thưởng từ nơi trả lương hiện tại</summary>
+<p>Nhập thưởng tiền thực tế hoặc dự kiến. Chọn đã gồm gross nếu khoản này đã nằm trong lương gross của tháng nhận.</p>
+@for (var i = 0; i < Model.Bonuses.Count; i++) {
+<fieldset><legend>Khoản thưởng @(i + 1)</legend>
+<label asp-for="Bonuses[i].Month">Tháng nhận thưởng</label><input asp-for="Bonuses[i].Month" type="number" min="1" max="12" />
+<label asp-for="Bonuses[i].Amount">Số tiền thưởng (đồng)</label><input asp-for="Bonuses[i].Amount" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Bonuses[i].Amount"></span>
+<label asp-for="Bonuses[i].Status">Trạng thái</label><select asp-for="Bonuses[i].Status"><option value="Actual">Thực tế</option><option value="Planned">Dự kiến</option></select>
+<label asp-for="Bonuses[i].IncludedInGross">Đã gồm trong gross</label><select asp-for="Bonuses[i].IncludedInGross"><option value="false">Chưa gồm, cộng thêm</option><option value="true">Đã gồm trong gross</option></select>
+<label asp-for="Bonuses[i].Source">Nguồn</label><input asp-for="Bonuses[i].Source" />
+<label asp-for="Bonuses[i].Note">Ghi chú</label><textarea name="Bonuses[@i].Note" id="Bonuses_@(i)__Note" rows="2">@(ViewData.ModelState[$"Bonuses[{i}].Note"]?.AttemptedValue ?? Model.Bonuses[i].Note)</textarea>
+</fieldset> }
+<button type="submit" asp-page-handler="AddBonus" formnovalidate>Thêm khoản thưởng</button>
+</details>
+<details open="@(ViewData.ModelState.Keys.Any(k => k.StartsWith("DependentPeriods[") && ViewData.ModelState[k]?.Errors.Count > 0) ? "open" : null)"><summary>Người phụ thuộc theo giai đoạn</summary>
+<p>Nhập số người theo khoảng tháng. Dữ liệu riêng của từng tháng được giữ ưu tiên; thông tin này không xác nhận đăng ký.</p>
+@for (var i = 0; i < Model.DependentPeriods.Count; i++) {
+<fieldset><legend>Giai đoạn người phụ thuộc @(i + 1)</legend>
+<label asp-for="DependentPeriods[i].FromMonth">Từ tháng</label><input asp-for="DependentPeriods[i].FromMonth" type="number" min="1" max="12" />
+<label asp-for="DependentPeriods[i].ToMonth">Đến tháng</label><input asp-for="DependentPeriods[i].ToMonth" type="number" min="1" max="12" />
+<label asp-for="DependentPeriods[i].Count">Số người</label><input asp-for="DependentPeriods[i].Count" type="number" min="0" /><span class="error" asp-validation-for="DependentPeriods[i].Count"></span>
+<label asp-for="DependentPeriods[i].Status">Trạng thái</label><select asp-for="DependentPeriods[i].Status"><option value="Actual">Thực tế</option><option value="Planned">Dự kiến</option><option value="Assumed">Giả định</option></select>
+<label asp-for="DependentPeriods[i].Source">Nguồn</label><input asp-for="DependentPeriods[i].Source" />
+<label asp-for="DependentPeriods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="DependentPeriods[@i].Note" id="DependentPeriods_@(i)__Note" rows="2">@(ViewData.ModelState[$"DependentPeriods[{i}].Note"]?.AttemptedValue ?? Model.DependentPeriods[i].Note)</textarea>
+</fieldset> }
+<button type="submit" asp-page-handler="AddDependentPeriod" formnovalidate>Thêm giai đoạn người phụ thuộc</button>
+</details>
 <details open="@(Model.SelectedMonth > 0 ? "open" : null)"><summary>Dữ liệu riêng theo tháng</summary><p>Chọn tháng cần nhập hoặc chỉnh; không cần nhập nếu chưa có dữ liệu riêng.</p>
 <label asp-for="SelectedMonth">Chọn tháng</label><select asp-for="SelectedMonth"><option value="0">Chọn tháng</option>@for (var month = 1; month <= 12; month++) { <option value="@month">Tháng @month</option> }</select>
 <input type="hidden" name="EditingMonth" value="@Model.SelectedMonth" />
@@ -74,6 +101,12 @@
 </details>
 <button type="submit">Xem trước</button></fieldset></form>
 @if (Model.Preview is not null) { <section><h2>Xem trước 12 tháng</h2>
+@foreach (var bonus in Model.BonusPreview) {
+<p>Thưởng tháng @bonus.Month: @TaxManager.Web.Pages.ForecastModel.FormatAmount(bonus.Amount.Value) đồng — @(bonus.IncludedInGross ? "đã gồm gross" : "cộng thêm vào gross"); @(bonus.Amount.Status == TaxManager.Core.Forecasting.ForecastStatus.Actual ? "Thực tế" : "Dự kiến"); Nguồn: @bonus.Amount.Source; Ghi chú: @bonus.Amount.Note; Ngày nhập: @bonus.Amount.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture)</p>
+}
+@foreach (var period in Model.DependentPeriodPreview) {
+<p>Người phụ thuộc từ tháng @period.FromMonth đến tháng @period.ToMonth: @period.Count.Value — @(period.Count.Status switch { TaxManager.Core.Forecasting.ForecastStatus.Actual => "Thực tế", TaxManager.Core.Forecasting.ForecastStatus.Planned => "Dự kiến", _ => "Giả định" }); Nguồn: @period.Count.Source; Ghi chú: @period.Count.Note; Ngày nhập: @period.Count.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture)</p>
+}
 @foreach (var conflict in Model.Preview.ConflictingMonths) { <p>Tháng @conflict là ngoại lệ và được giữ nguyên.</p> }
 @foreach (var month in Model.ReplacedPeriodMonths) { <p>Tháng @month được thay bằng giai đoạn nhập sau.</p> }
 <table class="forecast-preview"><thead><tr><th>Tháng</th><th>Lương</th><th>Trạng thái</th><th>Nguồn</th><th>Ghi chú</th><th>Ngày nhập</th></tr></thead><tbody>@foreach (var month in Model.Preview.Months) { <tr><th scope="row">Tháng @month.Key</th><td data-label="Lương">@(month.Value is null ? "Chưa nhập" : TaxManager.Web.Pages.ForecastModel.FormatAmount(month.Value.Value) + " đồng")</td><td data-label="Trạng thái">@(month.Value is null ? "" : month.Value.Status switch { TaxManager.Core.Forecasting.ForecastStatus.Actual => "Thực tế", TaxManager.Core.Forecasting.ForecastStatus.Planned => "Dự kiến", _ => "Giả định" })</td><td data-label="Nguồn">@month.Value?.Source</td><td data-label="Ghi chú">@month.Value?.Note</td><td data-label="Ngày nhập">@(month.Value?.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture))</td></tr> }
@@ -90,4 +123,17 @@
 <p>Khấu trừ tháng @item.Key: @(item.Value is null ? "Chưa nhập" : TaxManager.Web.Pages.ForecastModel.FormatAmount(item.Value.Value) + " đồng")@if (item.Value is not null) { <span> — @(item.Value.Status switch { TaxManager.Core.Forecasting.ForecastStatus.Actual => "Thực tế", TaxManager.Core.Forecasting.ForecastStatus.Planned => "Dự kiến", _ => "Giả định" }); Nguồn: @item.Value.Source; Ghi chú: @item.Value.Note; Ngày nhập: @item.Value.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture)</span> }</p>
 }
 </section> }
+@if (Model.Completeness is { MissingObligation.Count: > 0 } missing)
+{
+    <section role="status"><h2>Chưa đủ dữ liệu tính nghĩa vụ năm</h2><p>Không tự điền 0 cho dữ liệu chưa biết. Hãy bổ sung và lưu hồ sơ.</p>
+    <ul>@foreach (var item in missing.MissingObligation) { <li>Tháng @item.Month: thiếu @(item.Kind switch { TaxManager.Core.Forecasting.ForecastInputKind.Gross => "lương gross", TaxManager.Core.Forecasting.ForecastInputKind.Insurance => "bảo hiểm", _ => "người phụ thuộc" }).</li> }</ul></section>
+}
+@if (Model.AnnualResult is not null) { <partial name="Shared/_AnnualResult" model="Model.AnnualResult" /> }
+@if (Model.ProfileId is not null)
+{
+    <section><h2>Kết quả năm đã lưu</h2>
+    <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.ProfileId">Mở lịch sử tính năm</a></p>
+    @foreach (var result in Model.AnnualHistory) { <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.ProfileId" asp-route-record="@result.HistoryId">Kết quả ngày @result.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") — bản dữ liệu @result.InputRevision</a></p> }
+    </section>
+}
 </main></body></html>

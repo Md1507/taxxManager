@@ -253,7 +253,7 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 
 #### Lộ trình sản phẩm sau 3.1
 
-[Roadmap sản phẩm](docs/product-roadmap.md) là nguồn đối chiếu đầy đủ 12 chức năng cốt lõi, 7 tiện ích, phạm vi và điều kiện hoàn thành. Sáu chặng dưới đây là thứ tự giao theo phụ thuộc; các bước nền và chứng cứ nghiệm thu 3.1 vẫn giữ nguyên. Mỗi chặng sau cần phiếu và kiểm chứng riêng:
+[Roadmap sản phẩm](docs/product-roadmap.md) là nguồn đối chiếu đầy đủ 12 chức năng cốt lõi, 7 tiện ích, phạm vi và điều kiện hoàn thành. [Kế hoạch UI/UX](UI_UX_PLAN.md) quy định màn hình, hành vi, token và kiểm tra giao diện; đối chiếu đợt UI với chặng nghiệp vụ tại mục 11 của file đó. Sáu chặng dưới đây là thứ tự giao theo phụ thuộc; các bước nền và chứng cứ nghiệm thu 3.1 vẫn giữ nguyên. Mỗi chặng sau cần phiếu và kiểm chứng riêng:
 
 1. **Nhập liệu 3.1b:** lương theo giai đoạn và tháng ngoại lệ, xem trước, nền nhập bảo hiểm, giảm trừ, khấu trừ và trạng thái dữ liệu theo phạm vi 3.1b đã hoàn tất.
 2. **Lưu và mở hồ sơ năm:** chọn năm thuế, phạm vi và phiên bản luật (bản đầu chỉ 2026); lưu/mở/cập nhật hồ sơ, khấu trừ và metadata, bảo vệ/audit và xóa có chủ đích. Giữ bất biến đầu vào, snapshot và luật của lịch sử; lưu kết quả hiện có và chuẩn bị contract kết quả năm, không đòi dự báo năm đã có.
@@ -264,7 +264,9 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 
 Quyền riêng tư xuyên suốt: thu tối thiểu, không giữ file gốc hay tài khoản eTax; giải thích phạm vi xóa hồ sơ, lịch sử và bản sao, bảo vệ bản sao. Đăng nhập và cách ly tài khoản là điều kiện trước khi phục vụ nhiều người qua mạng; hiện chỉ local với dữ liệu giả, không cho phép dùng dữ liệu thật hay deploy theo lộ trình này.
 
-Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nhận lại, so sánh hai lần dự báo đã lưu và Gross–Net nằm trong backlog, chưa cam kết. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML cần quyết định và kế hoạch riêng. Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại commit `f4f3133`; chỉ local synthetic. Chặng 3–6 và backlog chưa được coi là hoàn thành; có thể chuẩn bị thiết kế song song nhưng chỉ triển khai khi chặng trước hoàn tất. Đối chiếu hai phiếu và bằng chứng tại [báo cáo rà soát worktree](docs/reviews/2026-11-27-bint-worktrees.md).
+Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nhận lại, so sánh hai lần dự báo đã lưu và Gross–Net nằm trong backlog, chưa cam kết. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML cần quyết định và kế hoạch riêng. Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại commit `f4f3133`; chỉ local synthetic. Chặng 3 đã có luồng tính năm từ hồ sơ đã lưu, catalog năm và lịch sử mã hóa append-only trong phiếu `01M8DJDSFX7JJBRP9YZPVSG8YG`; cổng đầy đủ đã qua 629 test và EF sạch; đã nghiệm thu kỹ thuật, Bint `done` ngày 28/11/2026 sau review vòng 4 không có phát hiện và cổng 629 test/EF sạch. Chặng 4–6 và backlog chưa triển khai. [UI_UX_PLAN.md](UI_UX_PLAN.md) đã lập và đồng bộ ngày 28/11/2026; giữ phạm vi tài liệu cho tới khi chặng 3 nghiệm thu, sau đó chuẩn hóa UI Đ1–Đ2 trên chức năng hiện có. Bằng chứng hiện tại tại [kiểm chứng chặng 3](docs/reviews/2026-11-27-annual-stage-three.md).
+
+Quy ước phối hợp tài liệu, cập nhật 28/11/2026: roadmap giữ tiến độ/phụ thuộc; PLAN giữ điều kiện kỹ thuật; [UI plan](UI_UX_PLAN.md) giữ bố cục/hành vi. Khi triển khai một màn hình, cập nhật trạng thái/liên kết liên quan trong cùng tác vụ; checkbox UI không thay nghiệm thu nghiệp vụ. Hướng hình ảnh chốt: sidebar dọc 6 đến 8 mục khi đủ chức năng, thanh trên tên hồ sơ/hành động chính, light mode, bộ token brand xanh ở mục 10 UI plan. Chưa có tokens.css trong mã tại lần đối chiếu này; tạo khi triển khai UI, không chọn palette tùy trang hoặc viết lại luồng tính năm. Đ6 UI là tài khoản/quyền dữ liệu, không phải chặng nghiệp vụ 6 đối chiếu nguồn.
 
 #### Bước 3.1 – Giao diện cơ bản (chưa cần đăng nhập)
 - `TaxManager.Web` (Razor Pages hoặc MVC).
@@ -323,9 +325,9 @@ Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nh�
 | 2.3 | ◐ | Triển khai, 423 test và review độc lập vòng 3 hoàn tất; bốn lỗi cũ đã được kiểm chứng sửa, không có phát hiện mới. Còn review bảo mật của người dùng trước dữ liệu thật; có thể tiếp tục 2.4 với dữ liệu giả. |
 | 2.4 | ◐ | Triển khai, docs, 497 test và review độc lập vòng 1 hoàn tất, không có phát hiện mới; model khớp. Còn review bảo mật của người dùng trước dữ liệu thật. |
 | 3.1 | ✅ | Web MVP local bằng dữ liệu giả đã hoàn tất nghiệm thu kỹ thuật ngày 24/11/2026: nhập 12 tháng, kết quả và căn cứ từ snapshot; build không warning, 527 test qua (Core 197, Data 300, Web 30), EF không lệch migration, Bint verify qua và review vòng 6 xác nhận lỗi cuối đã sửa. Đã kiểm tra desktop/mobile giả lập và bàn phím; hướng dẫn, phạm vi và giới hạn tại docs/web-mvp.md. |
-| 3.1b | ☑ | Phiếu 01M89PFQ3ETQDTCSGPMAN0DEPW đã done và land; phạm vi nhập liệu, preview và trạng thái, các chặng tiếp theo chưa hoàn thành. |
+| 3.1b | ☑ | Phiếu 01M89PFQ3ETQDTCSGPMAN0DEPW đã done và land; phạm vi nhập liệu, preview và trạng thái; xem roadmap cho các chặng tiếp theo. |
 | 3.2 | ☐ | |
-| 3.3 | ☐ | |
+| 3.3 | ☑ | Đã tích hợp tính năm từ revision đã lưu, thưởng/người phụ thuộc theo kỳ, giải thích và lịch sử năm mã hóa. Phiếu 01M8DJDSFX7JJBRP9YZPVSG8YG đã qua Core209/Data319/Web101 và EF sau hai assertion được người dùng duyệt; đã tháo freeze, review vòng 4 không có phát hiện; Bint done ngày 28/11/2026; xem docs/reviews/2026-11-27-annual-stage-three.md. |
 | 4.1 | ☐ | |
 | 4.2 | ☐ | |
 | 4.3 | ☐ | |

@@ -49,17 +49,19 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         // Older supported schemas do not yet contain the forecast tables.
         var migrations = context.Database.GetAppliedMigrations().ToHashSet(StringComparer.Ordinal);
         return migrations.Contains("20261126101030_AddForecastDocuments") && context.Set<ForecastDocument>().AsNoTracking().Any() ||
-            migrations.Contains("20261126101326_AddForecastSnapshots") && context.Set<ForecastSnapshot>().AsNoTracking().Any();
+            migrations.Contains("20261126101326_AddForecastSnapshots") && context.Set<ForecastSnapshot>().AsNoTracking().Any() ||
+            migrations.Any(m => m.EndsWith("_AddAnnualForecastResults", StringComparison.Ordinal)) && context.Set<AnnualCalculationRecord>().AsNoTracking().Any();
     }
 
     private ProtectionContext SentinelContext() => new(databaseId, databaseId, "Metadata", "1", "KeyCheck");
     internal ProtectionContext FieldContext(object entity, string field) =>
         new(databaseId, ProfileId(entity), entity.GetType().Name, RowKey(entity),
-            entity is CalculationRecord h ? JsonSerializer.Serialize(new { Field = field, h.Year, h.Month, h.SchemaVersion, h.CreatedAtUtc }) : field);
+            entity is CalculationRecord h ? JsonSerializer.Serialize(new { Field = field, h.Year, h.Month, h.SchemaVersion, h.CreatedAtUtc }) :
+            entity is AnnualCalculationRecord a ? JsonSerializer.Serialize(new { Field = field, a.Year, a.InputRevision, a.SchemaVersion, a.CreatedAtUtc }) : field);
 
     internal void Bind(object entity)
     {
-        if (entity is not (UserProfile or Dependent or MonthlyIncome or CalculationRecord or ForecastDocument or ForecastSnapshot)) return;
+        if (entity is not (UserProfile or Dependent or MonthlyIncome or CalculationRecord or ForecastDocument or ForecastSnapshot or AnnualCalculationRecord)) return;
         Ensure();
         BindFields(entity);
         _ = Snapshot(entity); // Fail at materialization, including AsNoTracking and client projections.
@@ -72,6 +74,7 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         byte[] Decode(byte[] bytes, string field) => keys!.Unprotect(bytes, FieldContext(entity, field));
         switch (entity)
         {
+            case AnnualCalculationRecord a: a.Content.Bind(b => Decode(b, "Payload"), () => context.MarkSensitiveDirty(a, "PayloadEncrypted")); break;
             case ForecastDocument f: f.Content.Bind(b => Decode(b, "Payload"), () => context.MarkSensitiveDirty(f, "PayloadEncrypted")); break;
             case ForecastSnapshot f: f.Content.Bind(b => Decode(b, "Payload"), () => context.MarkSensitiveDirty(f, "PayloadEncrypted")); break;
             case CalculationRecord h:
@@ -95,6 +98,7 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
     {
         switch (entity)
         {
+            case AnnualCalculationRecord a: a.Content.Invalidate(); break;
             case ForecastDocument f: f.Content.Invalidate(); break;
             case ForecastSnapshot f: f.Content.Invalidate(); break;
             case UserProfile p: p.Name.Invalidate(); break;
@@ -114,6 +118,8 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         }
         switch (entity)
         {
+            case AnnualCalculationRecord a:
+                var annualPayload = a.Payload; Write("Payload", annualPayload); a.Payload = annualPayload; break;
             case ForecastDocument f:
                 var payload = f.Payload; Write("Payload", payload); f.Payload = payload; break;
             case ForecastSnapshot f:
@@ -150,14 +156,16 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         new(databaseId, e.ProfileId, "AuditEvent", e.Id.ToString("D"),
             JsonSerializer.Serialize(new { e.OperationId, e.Ordinal, e.Entity, e.EntityKey, e.Action, e.TimestampUtc }));
 
-    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod or CalculationRecord or ForecastDocument or ForecastSnapshot;
+    internal static bool IsBusiness(object e) => e is UserProfile or Dependent or MonthlyIncome or DependentEligibilityPeriod or CalculationRecord or ForecastDocument or ForecastSnapshot or AnnualCalculationRecord;
     internal static Guid ProfileId(object e) => e switch
     {
+        AnnualCalculationRecord a => a.DocumentId,
         UserProfile p => p.Id, Dependent d => d.ProfileId, MonthlyIncome i => i.ProfileId,
         DependentEligibilityPeriod p => p.ProfileId, CalculationRecord h => h.ProfileId, ForecastDocument f => f.Id, ForecastSnapshot f => f.DocumentId, _ => throw new InvalidOperationException()
     };
     internal static string RowKey(object e) => e switch
     {
+        AnnualCalculationRecord a => a.Id.ToString("D"),
         UserProfile p => p.Id.ToString("D"),
         CalculationRecord h => h.Id.ToString("D"),
         ForecastDocument f => f.Id.ToString("D"),
@@ -172,6 +180,7 @@ internal sealed class ProtectionSession(TaxManagerDbContext context, FileKeyRing
         static string Money(decimal value) => value.ToString("G29", CultureInfo.InvariantCulture);
         return entity switch
         {
+            AnnualCalculationRecord a => JsonSerializer.SerializeToElement(a.Snapshot),
             CalculationRecord h => CalculationSnapshotCodec.AuditSnapshot(h.Snapshot),
             ForecastDocument f => JsonSerializer.SerializeToElement(new { f.Payload, f.Revision }),
             ForecastSnapshot f => JsonSerializer.SerializeToElement(new { f.Payload, f.Revision, f.SchemaVersion }),

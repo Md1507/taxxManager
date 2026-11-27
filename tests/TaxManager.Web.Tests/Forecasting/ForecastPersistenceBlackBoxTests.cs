@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using TaxManager.Web.Demo;
 using Xunit;
@@ -18,6 +19,111 @@ namespace TaxManager.Web.Tests.Forecasting;
 /// </summary>
 public sealed class ForecastPersistenceBlackBoxTests
 {
+    [Fact]
+    public async Task New_host_upgrades_stage_two_store_and_computes_without_rewriting_saved_payload()
+    {
+        string root;
+        Guid id;
+        string payload;
+        await using (var first = await DemoHost.StartAsync())
+        {
+            root = Storage(first).RootPath;
+            using var browser = new Browser(first.Address);
+            var values = new Dictionary<string, string> { ["Gross"] = "30000000" };
+            for (var i = 0; i < 12; i++)
+            {
+                values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
+                values[$"Exceptions[{i}].Insurance"] = "0";
+                values[$"Exceptions[{i}].Dependents"] = "0";
+            }
+            await Save(browser, await browser.Get("/Forecast"), values);
+            await using var context = Storage(first).Open();
+            var saved = Assert.Single(await new TaxManager.Data.Forecasting.ForecastStore(context).ListAsync());
+            id = saved.Id;
+            payload = saved.Payload!;
+            await context.GetService<Microsoft.EntityFrameworkCore.Migrations.IMigrator>()
+                .MigrateAsync("20261126101326_AddForecastSnapshots");
+        }
+        await using var second = await DemoHost.StartAsync(syntheticRoot: root);
+        using var reopened = new Browser(second.Address);
+        var page = await reopened.Get("/Forecast?id=" + id);
+        var result = await reopened.Submit(page, "Tính thuế năm");
+        Assert.Contains("11.400.000", WebUtility.HtmlDecode(result.Html));
+        await using var upgraded = Storage(second).Open();
+        Assert.Equal(payload, (await new TaxManager.Data.Forecasting.ForecastStore(upgraded).ReadAsync(id))!.Payload);
+        Assert.Single(await new TaxManager.Data.Forecasting.AnnualForecastService(upgraded).HistoryAsync(id));
+        Assert.False(upgraded.Database.HasPendingModelChanges());
+    }
+
+    private sealed class AdjustableClock : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; }
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
+    public async Task Dependent_period_survives_restart_without_overwriting_month_data()
+    {
+        var clock = new AdjustableClock { Now = new DateTimeOffset(2026, 1, 2, 3, 4, 0, TimeSpan.Zero) };
+        var input = Inputs();
+        input["DependentPeriods[0].FromMonth"] = "7";
+        input["DependentPeriods[0].ToMonth"] = "12";
+        input["DependentPeriods[0].Count"] = "1";
+        input["DependentPeriods[0].Status"] = "Planned";
+        input["DependentPeriods[0].Source"] = "Tự khai";
+        input["DependentPeriods[0].Note"] = "Chưa xác nhận đăng ký";
+        input["Exceptions[2].Dependents"] = "2";
+        string root;
+        string[] dates;
+        await using (var host = await DemoHost.StartAsync(clock: clock))
+        {
+            root = Storage(host).RootPath;
+            using var browser = new Browser(host.Address);
+            await Save(browser, await browser.Get("/Forecast"), input);
+            var saved = await OpenSaved(browser, input);
+            AssertInputs(input, saved);
+            dates = EntryDates(await browser.Submit(saved, "Xem trước")).ToArray();
+        }
+        clock.Now = clock.Now.AddDays(1);
+        await using var reopened = await DemoHost.StartAsync(syntheticRoot: root, clock: clock);
+        using var fresh = new Browser(reopened.Address);
+        var again = await OpenSaved(fresh, input);
+        AssertInputs(input, again);
+        Assert.Equal(dates, EntryDates(await fresh.Submit(again, "Xem trước")));
+    }
+
+    [Fact]
+    public async Task Bonus_metadata_and_entry_time_survive_reopening_the_synthetic_store()
+    {
+        var clock = new AdjustableClock { Now = new DateTimeOffset(2026, 1, 2, 3, 4, 0, TimeSpan.Zero) };
+        var input = Inputs();
+        input["Bonuses[0].Month"] = "12";
+        input["Bonuses[0].Amount"] = "20000000";
+        input["Bonuses[0].Status"] = "Planned";
+        input["Bonuses[0].IncludedInGross"] = "true";
+        input["Bonuses[0].Source"] = "Kế hoạch thưởng";
+        input["Bonuses[0].Note"] = "Dòng một\nDòng hai";
+        string root;
+        string[] dates;
+        await using (var host = await DemoHost.StartAsync(clock: clock))
+        {
+            root = Storage(host).RootPath;
+            using var browser = new Browser(host.Address);
+            await Save(browser, await browser.Get("/Forecast"), input);
+            var opened = await OpenSaved(browser, input);
+            AssertInputs(input, opened);
+            var preview = await browser.Submit(opened, "Xem trước");
+            Assert.Contains("Kế hoạch thưởng", WebUtility.HtmlDecode(preview.Html));
+            dates = EntryDates(preview).ToArray();
+        }
+        clock.Now = clock.Now.AddDays(1);
+        await using var reopened = await DemoHost.StartAsync(syntheticRoot: root, clock: clock);
+        using var fresh = new Browser(reopened.Address);
+        var saved = await OpenSaved(fresh, input);
+        AssertInputs(input, saved);
+        Assert.Equal(dates, EntryDates(await fresh.Submit(saved, "Xem trước")));
+    }
+
     [Fact]
     public async Task Reopening_host_rejects_wrong_or_missing_key_even_after_profile_deletion()
     {

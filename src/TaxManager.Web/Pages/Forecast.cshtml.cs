@@ -52,8 +52,32 @@ public sealed class ForecastModel : PageModel
     [BindProperty] public Guid? ProfileId { get; set; }
     [BindProperty] public int Revision { get; set; }
     public IReadOnlyList<ForecastDocument> SavedProfiles { get; private set; } = [];
+    public AnnualCalculationSnapshot? AnnualResult { get; private set; }
+    public ForecastCompleteness? Completeness { get; private set; }
+    public IReadOnlyList<AnnualCalculationSnapshot> AnnualHistory { get; private set; } = [];
     private sealed record SavedDraft(int FromMonth, int ToMonth, decimal? Gross, ForecastStatus Status,
-        string? Source, string? Note, List<PeriodInput> Periods, List<ExceptionInput> Exceptions, string Stamps);
+        string? Source, string? Note, List<PeriodInput> Periods, List<ExceptionInput> Exceptions, string Stamps,
+        List<BonusInput>? Bonuses = null, List<DependentPeriodInput>? DependentPeriods = null);
+    public sealed class BonusInput
+    {
+        public int Month { get; set; } = 12;
+        [ModelBinder(BinderType = typeof(ForecastAmountBinder))] public decimal? Amount { get; set; }
+        public ForecastStatus Status { get; set; } = ForecastStatus.Planned;
+        public string? Source { get; set; }
+        public string? Note { get; set; }
+        public bool IncludedInGross { get; set; }
+    }
+    [BindProperty] public List<BonusInput> Bonuses { get; set; } = [new()];
+    public sealed class DependentPeriodInput
+    {
+        public int FromMonth { get; set; } = 1;
+        public int ToMonth { get; set; } = 12;
+        public int? Count { get; set; }
+        public ForecastStatus Status { get; set; } = ForecastStatus.Planned;
+        public string? Source { get; set; }
+        public string? Note { get; set; }
+    }
+    [BindProperty] public List<DependentPeriodInput> DependentPeriods { get; set; } = [new()];
     public sealed class ExceptionInput
     {
         public int Month { get; set; }
@@ -98,6 +122,8 @@ public sealed class ForecastModel : PageModel
     public IReadOnlyDictionary<int, ForecastValue<decimal>?> InsurancePreview { get; private set; } = new Dictionary<int, ForecastValue<decimal>?>();
     public IReadOnlyDictionary<int, ForecastValue<int>?> DependentsPreview { get; private set; } = new Dictionary<int, ForecastValue<int>?>();
     public IReadOnlyDictionary<int, ForecastValue<decimal>?> WithheldPreview { get; private set; } = new Dictionary<int, ForecastValue<decimal>?>();
+    public IReadOnlyList<ForecastBonus> BonusPreview { get; private set; } = [];
+    public IReadOnlyList<ForecastDependentPeriod> DependentPeriodPreview { get; private set; } = [];
     public IReadOnlyList<int> ReplacedPeriodMonths { get; private set; } = [];
 
     public async Task OnGetAsync(Guid? id)
@@ -113,8 +139,11 @@ public sealed class ForecastModel : PageModel
             var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
             FromMonth = draft.FromMonth; ToMonth = draft.ToMonth; Gross = draft.Gross; Status = draft.Status;
             Source = draft.Source; Note = draft.Note; Periods = draft.Periods; Exceptions = draft.Exceptions;
+            Bonuses = draft.Bonuses is { Count: > 0 } ? draft.Bonuses : [new()];
+            DependentPeriods = draft.DependentPeriods is { Count: > 0 } ? draft.DependentPeriods : [new()];
             DraftToken = draftProtector.Protect(draft.Stamps);
             ProfileId = document.Id; Revision = document.Revision;
+            AnnualHistory = await new AnnualForecastService(context).HistoryAsync(document.Id);
             EnsureExceptionSlots();
         }
         catch (Exception ex) when (ex is DataProtectionException or JsonException or DbUpdateException)
@@ -128,7 +157,7 @@ public sealed class ForecastModel : PageModel
         try
         {
             var stamps = draftProtector.Unprotect(DraftToken!);
-            var payload = JsonSerializer.Serialize(new SavedDraft(FromMonth, ToMonth, Gross, Status, Source, Note, Periods, Exceptions, stamps));
+            var payload = JsonSerializer.Serialize(new SavedDraft(FromMonth, ToMonth, Gross, Status, Source, Note, Periods, Exceptions, stamps, Bonuses, DependentPeriods));
             await using var context = database.Open();
             var store = new ForecastStore(context);
             var id = ProfileId ?? await store.CreateAsync(payload);
@@ -140,6 +169,44 @@ public sealed class ForecastModel : PageModel
             ModelState.AddModelError(string.Empty, "Không lưu được hồ sơ; có thể dữ liệu đã thay đổi hoặc khóa bảo vệ không hợp lệ. Hãy mở lại và kiểm tra.");
             return Page();
         }
+    }
+
+    public async Task<IActionResult> OnPostCalculateAsync()
+    {
+        OnPostPreview();
+        if (!ModelState.IsValid || Preview is null) return Page();
+        if (ProfileId is null)
+        {
+            ModelState.AddModelError(string.Empty, "Hãy lưu hồ sơ trước khi tính năm.");
+            return Page();
+        }
+        try
+        {
+            await using var context = database.Open();
+            context.Clock = clock;
+            var document = await new ForecastStore(context).ReadAsync(ProfileId.Value);
+            if (document is null || document.Revision != Revision)
+                throw new InvalidOperationException("Hồ sơ đã thay đổi; hãy mở lại.");
+            var stored = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
+            var current = new SavedDraft(FromMonth, ToMonth, Gross, Status, Source, Note, Periods, Exceptions, "", Bonuses, DependentPeriods);
+            var comparable = stored with { Stamps = "", Bonuses = stored.Bonuses is { Count: > 0 } ? stored.Bonuses : [new()],
+                DependentPeriods = stored.DependentPeriods is { Count: > 0 } ? stored.DependentPeriods : [new()] };
+            if (JsonSerializer.Serialize(current) != JsonSerializer.Serialize(comparable))
+            {
+                ModelState.AddModelError(string.Empty, "Bạn có thay đổi chưa lưu. Hãy lưu hồ sơ trước khi tính năm.");
+                return Page();
+            }
+            var attempt = await new AnnualForecastService(context).CalculateAsync(ProfileId.Value, Revision);
+            Completeness = attempt.Completeness;
+            AnnualResult = attempt.Snapshot;
+            AnnualHistory = await new AnnualForecastService(context).HistoryAsync(ProfileId.Value);
+        }
+        catch (Exception ex) when (ex is DataProtectionException or InvalidOperationException or ArgumentException or
+            JsonException or NotSupportedException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            ModelState.AddModelError(string.Empty, "Chưa tính được năm: hồ sơ có thể đã thay đổi, thiếu luật hoặc kỳ áp dụng, hoặc dữ liệu/khóa không hợp lệ. Hãy mở lại và kiểm tra.");
+        }
+        return Page();
     }
 
     public static string FormatAmount(decimal amount) => amount.ToString("N" + ((decimal.GetBits(amount)[3] >> 16) & 0x7f), CultureInfo.GetCultureInfo("vi-VN"));
@@ -190,6 +257,19 @@ public sealed class ForecastModel : PageModel
     {
         EnsureExceptionSlots();
         if (Periods.Count < 11) Periods.Add(new PeriodInput());
+        return Page();
+    }
+
+    public IActionResult OnPostAddBonus()
+    {
+        EnsureExceptionSlots();
+        if (Bonuses.Count < 100) Bonuses.Add(new BonusInput());
+        return Page();
+    }
+    public IActionResult OnPostAddDependentPeriod()
+    {
+        EnsureExceptionSlots();
+        if (DependentPeriods.Count < 12) DependentPeriods.Add(new DependentPeriodInput());
         return Page();
     }
 
@@ -253,6 +333,31 @@ public sealed class ForecastModel : PageModel
             if (p.Gross is null && ModelState[grossKey]?.Errors.Count is not > 0)
                 ModelState.AddModelError(grossKey, $"Giai đoạn thay đổi {i + 1}: hãy nhập lương gross mỗi tháng, hoặc bỏ giai đoạn này.");
         }
+        for (var i = 0; i < Bonuses.Count; i++)
+        {
+            var bonus = Bonuses[i];
+            if (bonus.Amount is null && (bonus.Source is not null || bonus.Note is not null))
+                ModelState.AddModelError($"Bonuses[{i}].Amount", "Hãy nhập số tiền thưởng hoặc bỏ thông tin thưởng.");
+            if (bonus.Amount is not null && (bonus.Amount < 0 || bonus.Month is < 1 or > 12 ||
+                bonus.Status is not (ForecastStatus.Actual or ForecastStatus.Planned)))
+                ModelState.AddModelError($"Bonuses[{i}].Amount", "Thưởng cần số tiền không âm, tháng hợp lệ và trạng thái thực tế hoặc dự kiến.");
+        }
+        if (Bonuses.Count > 100) ModelState.AddModelError(string.Empty, "Quá nhiều khoản thưởng.");
+        for (var i = 0; i < DependentPeriods.Count; i++)
+        {
+            var period = DependentPeriods[i];
+            if (period.Count is null && (period.Source is not null || period.Note is not null))
+                ModelState.AddModelError($"DependentPeriods[{i}].Count", "Hãy nhập số người hoặc bỏ thông tin giai đoạn.");
+            if (period.Count is not null && (period.Count < 0 || period.FromMonth is < 1 or > 12 ||
+                period.ToMonth is < 1 or > 12 || period.FromMonth > period.ToMonth || !Enum.IsDefined(period.Status) ||
+                period.Status == ForecastStatus.Assumed && string.IsNullOrWhiteSpace(period.Note)))
+                ModelState.AddModelError($"DependentPeriods[{i}].Count", "Kiểm tra số người, khoảng tháng và lý do giả định.");
+        }
+        var populatedDependentPeriods = DependentPeriods.Where(p => p.Count is not null).ToArray();
+        if (DependentPeriods.Count > 12 || populatedDependentPeriods.SelectMany(p =>
+            p.FromMonth is >= 1 and <= 12 && p.ToMonth >= p.FromMonth && p.ToMonth <= 12
+                ? Enumerable.Range(p.FromMonth, p.ToMonth - p.FromMonth + 1) : []).GroupBy(m => m).Any(g => g.Count() > 1))
+            ModelState.AddModelError(string.Empty, "Các giai đoạn người phụ thuộc không được trùng tháng.");
         for (var i = 0; i < Exceptions.Count; i++)
         {
             var e = Exceptions[i];
@@ -314,10 +419,31 @@ public sealed class ForecastModel : PageModel
             current[key] = new EntryStamp(fingerprint, entered);
             return entered;
         }
+        var bonusPreview = new List<ForecastBonus>();
+        for (var i = 0; i < Bonuses.Count; i++)
+            if (Bonuses[i].Amount is { } amount)
+            {
+                var bonus = Bonuses[i];
+                bonusPreview.Add(new ForecastBonus($"bonus/{i}", bonus.Month,
+                    new ForecastValue<decimal>(amount, bonus.Status, bonus.Source, bonus.Note, Stamp($"bonus/{i}", bonus)), bonus.IncludedInGross));
+            }
+        BonusPreview = bonusPreview.AsReadOnly();
+        var dependentPreview = new List<ForecastDependentPeriod>();
+        for (var i = 0; i < DependentPeriods.Count; i++)
+            if (DependentPeriods[i].Count is { } count)
+            {
+                var period = DependentPeriods[i];
+                dependentPreview.Add(new ForecastDependentPeriod(period.FromMonth, period.ToMonth,
+                    new ForecastValue<int>(count, period.Status, period.Source, period.Note, Stamp($"dependent-period/{i}", period))));
+            }
+        DependentPeriodPreview = dependentPreview.AsReadOnly();
         InsurancePreview = Exceptions.ToDictionary(e => e.Month, e => e.Insurance is null ? null :
             new ForecastValue<decimal>(e.Insurance.Value, e.InsuranceStatus, e.InsuranceSource, e.InsuranceNote, Stamp($"{e.Month}/insurance", new { e.Insurance, e.InsuranceStatus, e.InsuranceSource, e.InsuranceNote })));
         DependentsPreview = Exceptions.ToDictionary(e => e.Month, e => e.Dependents is null ? null :
             new ForecastValue<int>(e.Dependents.Value, e.DependentsStatus, e.DependentsSource, e.DependentsNote, Stamp($"{e.Month}/dependents", new { e.Dependents, e.DependentsStatus, e.DependentsSource, e.DependentsNote })));
+        DependentsPreview = ForecastDependentPeriod.Apply(Enumerable.Range(1, 12)
+            .Select(month => new ForecastMonth(month, null, null, DependentsPreview[month], null)),
+            DependentPeriodPreview).ToDictionary(month => month.Month, month => month.Dependents);
         WithheldPreview = Exceptions.ToDictionary(e => e.Month, e => e.Withheld is null ? null :
             new ForecastValue<decimal>(e.Withheld.Value, e.WithheldStatus, e.WithheldSource, e.WithheldNote, Stamp($"{e.Month}/withheld", new { e.Withheld, e.WithheldStatus, e.WithheldSource, e.WithheldNote })));
         var schedule = new SalarySchedule(2026);
@@ -350,6 +476,10 @@ public sealed class ForecastModel : PageModel
 
     private void EnsureExceptionSlots()
     {
+        // Legacy RemovePeriod posts use an unprefixed `index`. MVC can bind that
+        // index to absent optional collections, producing a null empty slot.
+        for (var i = 0; i < Bonuses.Count; i++) Bonuses[i] ??= new();
+        for (var i = 0; i < DependentPeriods.Count; i++) DependentPeriods[i] ??= new();
         while (Exceptions.Count < 12) Exceptions.Add(new ExceptionInput { Month = Exceptions.Count + 1 });
     }
 }

@@ -74,7 +74,7 @@ public static class TaxRuleMapper
         if (entity.AnnualGraph is not null)
         {
             var annual = AnnualRuleGraphCodec.Decode(entity.AnnualGraph);
-            if (!TaxRuleStoreSupport.SameRules(result, annual))
+            if (!TaxRuleStoreSupport.SameMonthlyRules(result, annual))
                 throw new InvalidOperationException("Annual graph does not match its monthly snapshot.");
             TaxRuleValidator.ValidateSupported(annual);
             return annual;

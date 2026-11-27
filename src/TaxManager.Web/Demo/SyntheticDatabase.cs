@@ -55,8 +55,19 @@ public sealed class SyntheticDatabase : IDisposable
         {
             context.Database.Migrate();
             new TaxRuleStore(context).SeedReferencesAsync().GetAwaiter().GetResult();
+            new AnnualForecastRuleCatalog(context).SeedReferencesAsync().GetAwaiter().GetResult();
         }
-        else new TaxManager.Data.Forecasting.ForecastStore(context).ListAsync().GetAwaiter().GetResult();
+        else
+        {
+            new TaxManager.Data.Forecasting.ForecastStore(context).ListAsync().GetAwaiter().GetResult();
+            // Authenticate the existing store before any additive schema upgrade.
+            var needsAnnualUpgrade = !context.Database.GetAppliedMigrations().Any(m => m.EndsWith("_AddAnnualForecastResults", StringComparison.Ordinal));
+            if (needsAnnualUpgrade)
+            {
+                context.Database.Migrate();
+                new AnnualForecastRuleCatalog(context).SeedReferencesAsync().GetAwaiter().GetResult();
+            }
+        }
         Console.WriteLine($"Kho demo synthetic: {RootPath}");
     }
 

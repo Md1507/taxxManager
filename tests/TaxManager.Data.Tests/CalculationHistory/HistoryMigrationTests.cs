@@ -48,7 +48,7 @@ public class HistoryMigrationTests
             Assert.Equal(3, (await c.Database.GetAppliedMigrationsAsync()).Count());
             await c.Database.MigrateAsync();
             await c.Database.MigrateAsync();
-            Assert.Equal(6, (await c.Database.GetAppliedMigrationsAsync()).Count());
+            Assert.Equal(8, (await c.Database.GetAppliedMigrationsAsync()).Count());
             await Assert.ThrowsAsync<NotSupportedException>(() => c.GetService<IMigrator>()
                 .MigrateAsync("20261123034403_AddDataProtectionAndAudit"));
             Assert.Equal(4, (await c.Database.GetAppliedMigrationsAsync()).Count());

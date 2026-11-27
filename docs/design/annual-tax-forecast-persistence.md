@@ -1,19 +1,29 @@
-# Đề xuất lưu dự báo và migration
+# Lưu dự báo, kết quả năm và migration
 
-Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`, chỉ dùng synthetic TEMP. Hai migration additive `AddForecastDocuments` và `AddForecastSnapshots` đã nằm trên cây chính. Các mục kết quả năm và graph annual/bonus dưới đây là thiết kế cho chặng 3, chưa triển khai; xem [báo cáo đối chiếu](../reviews/2026-11-27-bint-worktrees.md).
+Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`, chỉ dùng synthetic TEMP. Hai migration additive `AddForecastDocuments` và `AddForecastSnapshots` đã nằm trên cây chính. Graph annual/bonus và kết quả năm đã triển khai trong phiếu chặng 3, đã nghiệm thu kỹ thuật ngày 28/11/2026 (Bint done, 629 test và EF sạch, review vòng 4 không có phát hiện); xem [bằng chứng](../reviews/2026-11-27-annual-stage-three.md).
 
 - Thêm bảng hồ sơ dự báo riêng với khóa hồ sơ và payload mã hóa, chứa năm, các giá trị theo kỳ, chỉ tiêu, trạng thái, nguồn, ghi chú và ngày nhập; không dùng `MonthlyIncome` cho giá trị dự kiến hoặc giả định.
 - Bảng snapshot dự báo hiện giữ đầu vào mã hóa theo revision, tạo bản mới khi lưu/cập nhật và giữ nguyên bản trước; chưa chứa kết quả tính năm hay snapshot luật năm. Contract kết quả năm riêng được mô tả bên dưới.
 - Nối pipeline protection và audit hiện có: xác thực khóa khi đọc lại kể cả kết quả trống, mã hóa metadata nhạy cảm, ghi dữ liệu và audit cùng transaction, xử lý rollback; giữ nghĩa ordinary-delete/purge hiện có.
 - Migration additive thêm bảng/chỉ mục cần thiết, cập nhật EF model snapshot; không sửa migration hoặc designer cũ, không đổi bảng/snapshot lịch sử. Giữ guard cho DB legacy và chỉ thử trên SQLite/keys synthetic trong TEMP.
-- Chặng 3 sẽ mở rộng graph annual/bonus ở Data bằng contract có kiểm thử, giữ registration theo kỳ và trạng thái căn cứ, giữ cổng References/Official. Không tạo luật từ trí nhớ hoặc fallback khi kỳ/rule không hỗ trợ.
+- Chặng 3 mở rộng graph annual/bonus ở Data bằng contract có kiểm thử, giữ registration theo kỳ và trạng thái căn cứ, giữ cổng References/Official. Không tạo luật từ trí nhớ hoặc fallback khi kỳ/rule không hỗ trợ.
 - Kiểm chứng bằng SQLite synthetic cho upgrade, context mới, decimal và metadata, khóa sai/thiếu, rollback, audit, confidentiality và bất biến lịch sử; giữ kiểm tra EF pending model changes.
 
-Snapshot hiện lưu đầu vào dự báo theo revision; chưa tạo kết quả năm giả. Log `verify-final-full.log` của phiếu ghi Core 205/205, Data 305/305, Web 70/70 và EF không có model changes; review vòng 7 không có phát hiện mới. QA mobile/bàn phím/focus do phiên điều phối trước thực hiện và lưu trong constraints/logs của phiếu; không coi đây là QA mới của lần rà soát worktree.
+Ở mốc chặng 2, snapshot chỉ lưu đầu vào theo revision. Log `verify-final-full.log` của phiếu ghi Core 205/205, Data 305/305, Web 70/70 và EF không có model changes; review vòng 7 không có phát hiện mới. QA mobile/bàn phím/focus do phiên điều phối trước thực hiện và lưu trong constraints/logs của phiếu; không coi đây là QA mới của lần rà soát worktree.
 
 ## Contract riêng cho kết quả năm ở chặng 3
 
-Snapshot đầu vào của chặng 2 không phải kết quả năm. Khi chặng 3 triển khai, mỗi lần tính năm cần một bản ghi kết quả riêng, append-only, có định danh lần tính, năm, thời điểm tính, tham chiếu chính xác revision snapshot đầu vào và phiên bản lược đồ payload. Payload kết quả được mã hóa phải giữ kết quả, trạng thái/độ đầy đủ và bản chụp căn cứ, phiên bản luật áp dụng cho từng kỳ; không chỉ trỏ tới luật hoặc đầu vào có thể bị thay đổi. Tính lại tạo bản ghi mới trong cùng transaction với audit, không ghi đè bản cũ; xóa hồ sơ thông thường vẫn giữ lịch sử theo semantics hiện tại. Chặng 3 sẽ xác định schema chi tiết và kiểm chứng migration, bảo vệ, tính nguyên tử và đọc lại các phiên bản; chặng 2 chưa có bảng hay API lưu kết quả năm và không tạo bản ghi giả.
+Snapshot đầu vào chặng 2 giữ nguyên payload và revision. `ForecastDraftReader` đọc draft Web cùng EntryStamp gốc; không rewrite JSON cũ. Contract `ForecastAnnualInput` có envelope `InputSchemaVersion=1` cho caller ngoài Web. Giá trị thiếu vẫn nullable; không lưu placeholder khấu trừ của adapter Core.
+
+Migration `20261127043040_AddAnnualRuleGraph` thêm cột graph nullable, migration `20261127102957_AddAnnualForecastResults` thêm `AnnualForecastRules` và `AnnualCalculationHistory`. Không sửa byte migration/designer cũ. Khi đọc schema trước cột graph, adapter SELECT bổ sung NULL; khi insert graph null, EF bỏ cột đó để đường legacy/copy-forward vẫn chạy. Chỉ ghi graph khác null trên schema hỗ trợ; guard copy-forward legacy giữ nguyên.
+
+`AnnualForecastRuleCatalog` seed rõ ràng bộ References 2026 H1/H2 từ snapshot Core hiện có, gồm annual/rounding/bonus và căn cứ đầy đủ, bỏ graph tự tính bảo hiểm vì chỉ nhận nhập tay. Catalog năm riêng giữ catalog tháng cũ nguyên trạng. Khi tính, kiểm catalog tháng, nguồn và độ phủ kỳ cùng catalog năm đã lưu; không seed/fallback khi graph/kỳ bị thiếu hoặc lệch. Không nâng trạng thái nguồn và không dùng References như Official.
+
+`AnnualForecastService.CalculateAsync(documentId, revision)` yêu cầu context không có pending writes; khóa ghi SQLite, xác thực sentinel, đọc hồ sơ, snapshot revision và catalog trong cùng transaction, rồi tự gọi engine năm. Revision cũ/bị xóa bị từ chối. Thiếu đầu vào nghĩa vụ trả danh sách tháng/chỉ tiêu, không append. Tính được thì append kết quả mới cùng audit, hỗ trợ savepoint và rollback transaction của caller; không nhận kết quả do caller cung cấp.
+
+`AnnualCalculationHistory` có ID lần tính, document ID, revision, năm, schema version và thời điểm UTC. Payload mã hóa chứa nguyên draft gốc, input đã chuẩn hóa cùng trạng thái/nguồn/ghi chú/ngày nhập, ID snapshot đầu vào, phiên bản engine, kết quả chi tiết và bản chụp graph/kỳ áp dụng luật. AAD xác thực metadata nhận diện. SaveChanges từ chối append trực tiếp và mọi update/delete kết quả. Lịch sử đọc snapshot, không phụ thuộc live catalog/profile, và xác thực khóa kể cả lookup trống. Ordinary delete giữ lịch sử/audit; không thêm cascade. Chưa có purge riêng cho annual history hay chức năng xóa vật lý WAL/backups.
+
+Downgrade không được xóa bảng lịch sử năm đã có dữ liệu; khi bảng năm trống, mốc guard lịch sử tháng cũ vẫn giữ nguyên. Khởi động kho synthetic chặng 2 xác thực kho trước, rồi nâng schema và seed catalog năm; kho đã nâng không được tự sửa catalog hỏng. Không dùng đường demo này cho DB vận hành.
 
 ## Đối chiếu byte migration cũ trong worktree
 

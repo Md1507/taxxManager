@@ -62,7 +62,7 @@ internal static class LegacyDataReader
         await TaxRuleStorageValidator.ValidateAsync(context, token);
         return new(profiles, incomes, dependents, periods,
             await context.Set<TaxRuleLegalBasis>().AsNoTracking().ToListAsync(token),
-            await context.Set<TaxRuleSnapshot>().AsNoTracking().ToListAsync(token),
+            await new TaxRuleStoreSupport(context).SnapshotRows().AsNoTracking().ToListAsync(token),
             await context.Set<TaxRuleBracket>().AsNoTracking().ToListAsync(token),
             await context.Set<TaxRulePeriod>().AsNoTracking().ToListAsync(token));
     }

@@ -18,7 +18,7 @@ public class MigrationTests
         await using var context = database.Open();
         await context.Database.MigrateAsync();
         await context.Database.MigrateAsync();
-        Assert.Equal(6, (await context.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(8, (await context.Database.GetAppliedMigrationsAsync()).Count());
         Assert.Empty(await context.Database.GetPendingMigrationsAsync());
     }
     [Fact]

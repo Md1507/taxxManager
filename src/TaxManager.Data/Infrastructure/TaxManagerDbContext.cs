@@ -26,6 +26,7 @@ public sealed class TaxManagerDbContext : DbContext
     public AuditWriteContext? AuditContext { get; set; }
     public TimeProvider Clock { get; set; } = TimeProvider.System;
     internal CalculationRecord? AuthorizedHistoryAppend { get; set; }
+    internal TaxManager.Data.Forecasting.AnnualCalculationRecord? AuthorizedAnnualAppend { get; set; }
 
     public TaxManagerDbContext(DbContextOptions<TaxManagerDbContext> options, FileKeyRing? keys = null) : base(options)
     {

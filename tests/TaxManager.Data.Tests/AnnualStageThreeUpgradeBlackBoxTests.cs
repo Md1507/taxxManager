@@ -65,9 +65,11 @@ public sealed class AnnualStageThreeUpgradeBlackBoxTests
         var history = await new ForecastStore(reopened).HistoryAsync(id);
         Assert.Equal(2, history.Count);
         Assert.All(history, snapshot => Assert.Equal(payload, snapshot.Payload));
-        Assert.Contains("Planned", document.Payload);
-        Assert.Contains("Assumed", document.Payload);
         using var originalInput = JsonDocument.Parse(document.Payload!);
+        Assert.Equal(ForecastStatus.Planned, originalInput.RootElement.GetProperty("Periods")[0]
+            .GetProperty("Gross").GetProperty("Status").Deserialize<ForecastStatus>());
+        Assert.Equal(ForecastStatus.Assumed, originalInput.RootElement.GetProperty("Exceptions")[0]
+            .GetProperty("Insurance").GetProperty("Status").Deserialize<ForecastStatus>());
         Assert.Equal(entered, originalInput.RootElement.GetProperty("Periods")[0].GetProperty("Gross").GetProperty("EnteredAt").GetDateTimeOffset());
     }
 

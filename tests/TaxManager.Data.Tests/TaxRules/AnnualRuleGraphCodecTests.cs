@@ -1,12 +1,37 @@
 using TaxManager.Core;
 using TaxManager.Core.Forecasting;
 using TaxManager.Data.TaxRules;
+using TaxManager.Data.Tests.Fixtures;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace TaxManager.Data.Tests.TaxRules;
 
 public sealed class AnnualRuleGraphCodecTests
 {
+    [Fact]
+    public async Task Reference_loader_rejects_an_unexpected_annual_graph()
+    {
+        using var database = new SqliteFileDatabase();
+        await using (var context = database.Open())
+        {
+            await context.Database.MigrateAsync();
+            await new TaxRuleStore(context).SeedReferencesAsync();
+            var entity = await context.Set<TaxRuleSnapshot>().SingleAsync(x => x.RuleId == TaxRuleSet.Vietnam2026.Id);
+            var monthly = TaxRuleSet.Vietnam2026;
+            var annual = TaxRuleSet.CreateVietnam2026CashBonusProvider(InsuranceRegion.I).GetForMonth(2026, 1);
+            var injected = new TaxRuleSet(monthly.Id, monthly.Version, monthly.Period, monthly.FromYear,
+                monthly.PersonalDeduction, monthly.DependentDeduction, monthly.Brackets,
+                monthly.PersonalDeductionBasis, monthly.DependentDeductionBasis, monthly.TaxableIncomeBasis,
+                monthly.TaxBasis, roundingPolicy: annual.RoundingPolicy,
+                annualSalaryRules: annual.AnnualSalaryRules, cashBonusRules: annual.CashBonusRules);
+            entity.AnnualGraph = AnnualRuleGraphCodec.Encode(injected);
+            await context.SaveChangesAsync();
+        }
+        await using var fresh = database.Open();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new TaxRuleStore(fresh).LoadReferencesAsync());
+    }
+
     [Fact]
     public void Mapper_preserves_supported_annual_graph_and_legal_status()
     {

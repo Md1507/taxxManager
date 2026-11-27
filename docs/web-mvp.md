@@ -6,8 +6,16 @@ Tại `/Forecast`, nhập gross theo một hoặc nhiều giai đoạn; tháng n
 tháng chồng giai đoạn được thông báo. Mở phần chi tiết để nhập bảo hiểm, người phụ
 thuộc và khấu trừ từng tháng cùng trạng thái, nguồn và ghi chú. Preview phân biệt
 chưa nhập với 0; thời điểm nhập UTC chỉ đổi khi giá trị hoặc metadata thay đổi.
-Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`: lưu, mở, sửa và xóa hồ sơ dự báo synthetic. Danh sách hồ sơ nằm ngay tại `/Forecast`; mở lại cùng kho qua `SyntheticStore` như hướng dẫn bên dưới. Xem [báo cáo đối chiếu](reviews/2026-11-27-bint-worktrees.md).
-Chưa tính kết quả năm hoặc kịch bản thưởng. Chỉ dùng dữ liệu giả.
+Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`: lưu, mở, sửa và xóa hồ sơ dự báo synthetic. Danh sách hồ sơ nằm ngay tại `/Forecast`; mở lại cùng kho qua `SyntheticStore` như hướng dẫn bên dưới.
+Chặng 3 đã có luồng tính năm từ hồ sơ đã lưu, đã nghiệm thu kỹ thuật ngày 28/11/2026 (Bint done, 629 test và EF sạch, review vòng 4 không có phát hiện); xem [kiểm chứng](reviews/2026-11-27-annual-stage-three.md). Chỉ dùng dữ liệu giả.
+
+## Tính năm từ hồ sơ đã lưu — chặng 3
+
+Tại `/Forecast`, nhập lương và các khoản bảo hiểm/người phụ thuộc theo tháng. Có thể nhập người phụ thuộc theo giai đoạn; ngoại lệ tháng vẫn ưu tiên. Mở phần thưởng để nhập thưởng tiền thực tế/dự kiến từ nơi trả hiện tại, chọn đã gồm gross để tránh cộng trùng. Mỗi giá trị giữ trạng thái, nguồn, ghi chú và ngày nhập. Để trống là chưa biết; chỉ nhập 0 khi xác nhận không phát sinh.
+
+Bấm **Lưu hồ sơ**, rồi **Tính thuế năm**. Thay đổi chưa lưu cần lưu trước khi tính. Thiếu gross, bảo hiểm hoặc người phụ thuộc sẽ hiện tháng/chỉ tiêu cần bổ sung và không lưu kết quả giả. Thiếu khấu trừ vẫn tính nghĩa vụ nhưng chưa có chênh lệch. Kết quả có bước tính năm, bậc thuế, dữ liệu thực tế/dự kiến/giả định, X/12 tháng đầy đủ thực tế và độ phủ khấu trừ riêng. Nguồn luật giữ trạng thái hiện có; nộp thừa ước tính không bảo đảm được hoàn.
+
+Mỗi lần tính tạo kết quả mới. **Mở lịch sử tính năm** đọc snapshot đã lưu, kể cả sau khi xóa hồ sơ thông thường nếu giữ liên kết lịch sử. Lịch sử không bị tính lại theo catalog hay hồ sơ mới. Chỉ kho synthetic hợp lệ được mở lại/nâng cấp; khóa hoặc sentinel sai/thiếu gây lỗi, không tạo lại tự động. Chưa triển khai kịch bản thưởng giả định, xuất/checklist, sao lưu/khôi phục hay đối chiếu.
 
 ## Bước 3.1 đã nghiệm thu
 
@@ -42,8 +50,7 @@ trên loopback trong môi trường Development với opt-in trên; không tri�
 
 Nguồn References giữ nguyên Missing/Unverified/Verified và không khẳng định đã kiểm
 chứng pháp lý. Link chỉ lấy từ metadata HTTPS hợp lệ; kỳ không có luật được hỗ trợ
-không fallback. Demo không có người phụ thuộc trong form, không hỗ trợ thưởng, nhiều
-nguồn lương, quyết toán, làm tròn, so sánh hay tự cập nhật luật bằng AI. Không nhập
+không fallback. Trang tính tháng `/` giữ phạm vi cũ; trang `/Forecast` hỗ trợ lương/thưởng tiền một nơi trả, bảo hiểm nhập tay và người phụ thuộc theo tháng/giai đoạn. Không hỗ trợ nhiều nguồn lương, so sánh kịch bản hay tự cập nhật luật bằng AI. Không nhập
 CCCD/MST. Tiền được parse và tính bằng decimal phía server, không tính bằng JS float.
 
 Kiểm thử mục tiêu trong quá trình phát triển, sau restore cache:

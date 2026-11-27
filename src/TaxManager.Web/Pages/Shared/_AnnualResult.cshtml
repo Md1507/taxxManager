@@ -1,0 +1,72 @@
+@model TaxManager.Data.Forecasting.AnnualCalculationSnapshot
+@using TaxManager.Web.Pages
+@using TaxManager.Core.Forecasting
+@using TaxManager.Data.TaxRules
+@{
+    var result = Model.Result;
+    var rules = Model.Rules.Select(r => AnnualRuleGraphCodec.Decode(r.Graph)).ToArray();
+    var annual = rules[0].AnnualSalaryRules!;
+    string Amount(decimal value) => ForecastModel.FormatAmount(value);
+    string Status(ForecastStatus value) => value switch { ForecastStatus.Actual => "Thực tế", ForecastStatus.Planned => "Dự kiến", _ => "Giả định" };
+    var bases = rules.SelectMany(r => new[] { r.TaxBasis, r.PersonalDeductionBasis, r.DependentDeductionBasis,
+        r.TaxableIncomeBasis, r.RoundingPolicy!.Basis, r.AnnualSalaryRules!.TaxRules.TaxBasis,
+        r.AnnualSalaryRules.PeriodBasis, r.AnnualSalaryRules.TransitionBasis, r.AnnualSalaryRules.SettlementBasis,
+        r.AnnualSalaryRules.DependentPeriodBasis, r.CashBonusRules!.TaxableBasis, r.CashBonusRules.TimingBasis }).Distinct().ToArray();
+}
+<section id="annual-result" aria-labelledby="annual-heading">
+<h2 id="annual-heading">Nghĩa vụ thuế năm @Model.Year ước tính</h2>
+<p class="notice">@Amount(result.Obligation) đồng</p>
+<p>Kết quả tham khảo, dữ liệu giả; tính lúc @Model.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") từ bản dữ liệu @Model.InputRevision.</p>
+<p>Đủ dữ liệu thực tế cho nghĩa vụ: @result.ActualObligationMonths/12 tháng. Một tháng chỉ là thực tế khi gross, bảo hiểm, người phụ thuộc và mọi khoản thưởng của tháng đều là thực tế.</p>
+<p>Độ phủ khấu trừ: @result.WithholdingMonths/12 tháng đã nhập; @result.ActualWithholdingMonths/12 tháng có khấu trừ thực tế. Khấu trừ được theo dõi riêng với nghĩa vụ.</p>
+<dl class="annual-totals">
+<dt>Tổng thu nhập chịu thuế (gross và thưởng tính thêm)</dt><dd>@Amount(result.GrossIncome) đồng</dd>
+<dt>Thưởng cộng thêm vào gross</dt><dd>@Amount(result.BonusAdded) đồng</dd>
+<dt>Thưởng đã gồm trong gross, không cộng trùng</dt><dd>@Amount(result.BonusAlreadyInGross) đồng</dd>
+<dt>Bảo hiểm bắt buộc nhập tay</dt><dd>@Amount(result.Insurance) đồng</dd>
+<dt>Giảm trừ bản thân cả năm</dt><dd>@Amount(result.PersonalDeduction) đồng</dd>
+<dt>Giảm trừ người phụ thuộc</dt><dd>@Amount(result.DependentDeduction) đồng</dd>
+<dt>Thu nhập tính thuế năm</dt><dd>@Amount(result.TaxableIncome) đồng</dd>
+<dt>Đã khấu trừ thực tế</dt><dd>@Amount(result.ActualWithheld) đồng</dd>
+<dt>Khấu trừ dự kiến/giả định đã nhập</dt><dd>@Amount(result.ForecastWithheld) đồng</dd>
+<dt>Tổng khấu trừ đã nhập</dt><dd>@Amount(result.ActualWithheld + result.ForecastWithheld) đồng</dd>
+</dl>
+@if (result.Difference is { } difference)
+{
+    <p class="notice">@(difference >= 0 ? "Nộp thêm ước tính" : "Nộp thừa ước tính"): @Amount(Math.Abs(difference)) đồng.</p>
+    <p>Khoản nộp thừa ước tính không phải cam kết được hoàn; còn phụ thuộc điều kiện và hồ sơ quyết toán.</p>
+}
+else
+{
+    <p>Chưa đủ khấu trừ cả năm để tính chênh lệch. Thiếu khấu trừ tháng @string.Join(", ", Model.Input.Months.Where(m => m.Withheld is null).Select(m => m.Month)). Nghĩa vụ năm vẫn tính được.</p>
+}
+<details><summary>Bước tính và biểu thuế lũy tiến năm</summary>
+<p>Thu nhập tính thuế = tổng thu nhập − bảo hiểm − giảm trừ bản thân − giảm trừ người phụ thuộc; chỉ lấy tối thiểu 0 sau khi tổng hợp cả năm. Không cộng số thuế của 12 tháng để thay thuế năm.</p>
+<table class="forecast-preview"><caption>Các bậc tính năm @Model.Year</caption><thead><tr><th>Bậc</th><th>Thu nhập trong bậc</th><th>Thuế suất</th><th>Thuế</th></tr></thead><tbody>
+@for (var i = 0; i < result.Portions.Length; i++) { var portion = result.Portions[i]; <tr><th scope="row">Bậc @(i + 1)</th><td data-label="Thu nhập trong bậc">@Amount(portion.TaxableAmount) đồng</td><td data-label="Thuế suất">@((portion.Rate * 100).ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")))%</td><td data-label="Thuế">@Amount(portion.Tax) đồng</td></tr> }
+</tbody></table></details>
+<details><summary>Dữ liệu và trạng thái từng tháng đã dùng</summary>
+@foreach (var month in Model.Input.Months)
+{
+    <section><h3>Tháng @month.Month</h3>
+    <p>Gross: @Amount(month.Gross!.Value) đồng — @Status(month.Gross.Status); nguồn: @month.Gross.Source; ghi chú: @month.Gross.Note; ngày nhập: @month.Gross.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'").</p>
+    <p>Bảo hiểm: @Amount(month.Insurance!.Value) đồng — @Status(month.Insurance.Status); nguồn: @month.Insurance.Source; ghi chú: @month.Insurance.Note; ngày nhập: @month.Insurance.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'").</p>
+    <p>Người phụ thuộc: @month.Dependents!.Value — @Status(month.Dependents.Status); nguồn: @month.Dependents.Source; ghi chú: @month.Dependents.Note; ngày nhập: @month.Dependents.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'"). Đây là thông tin người dùng nhập, không xác nhận đăng ký.</p>
+    @if (month.Withheld is { } withheld) { <p>Khấu trừ: @Amount(withheld.Value) đồng — @Status(withheld.Status); nguồn: @withheld.Source; ghi chú: @withheld.Note; ngày nhập: @withheld.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'").</p> }
+    else { <p>Khấu trừ: chưa nhập.</p> }
+    </section>
+}
+@foreach (var bonus in Model.Input.Bonuses) { <p>Thưởng tháng @bonus.Month: @Amount(bonus.Amount.Value) đồng — @Status(bonus.Amount.Status), @(bonus.IncludedInGross ? "đã gồm gross" : "cộng thêm vào gross"); nguồn: @bonus.Amount.Source; ghi chú: @bonus.Amount.Note; ngày nhập: @bonus.Amount.EnteredAt.ToString("dd/MM/yyyy HH:mm 'UTC'").</p> }
+</details>
+<details><summary>Căn cứ và trạng thái nguồn</summary>
+<p>Trạng thái pháp lý của nguồn độc lập với trạng thái thực tế/dự kiến/giả định của dữ liệu. Các nguồn tham khảo hiện chưa được xác minh (Unverified).</p>
+@foreach (var registration in Model.Rules) { <p>Kỳ áp dụng: @registration.PeriodFrom.ToString("dd/MM/yyyy") – @registration.PeriodTo.ToString("dd/MM/yyyy"); luật @AnnualRuleGraphCodec.Decode(registration.Graph).Id, phiên bản @AnnualRuleGraphCodec.Decode(registration.Graph).Version.</p> }
+@foreach (var basis in bases)
+{
+    <p>Trạng thái: @basis.Status; văn bản @basis.DocumentNumber, điều @basis.Article, khoản @basis.Clause, điểm @basis.Point; kỳ @basis.Period; mã @basis.Id, phiên bản @basis.Version. @basis.Summary
+    @if (Uri.TryCreate(basis.SourceUrl, UriKind.Absolute, out var source) && source.Scheme == "https") { <a href="@source.AbsoluteUri" rel="noopener noreferrer">Mở nguồn căn cứ</a> }
+    </p>
+}
+<p>Chỉ hỗ trợ lương và thưởng tiền chịu thuế tại một nơi trả, bảo hiểm nhập tay và giảm trừ người phụ thuộc theo tháng. Chưa hỗ trợ khoản miễn thuế, từ thiện, hưu trí tự nguyện hoặc thu nhập từ nơi trả khác trong hồ sơ này.</p>
+</details>
+</section>

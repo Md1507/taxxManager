@@ -9,6 +9,7 @@ using TaxManager.Data.Profiles;
 using TaxManager.Data.Protection;
 using TaxManager.Data.CalculationHistory;
 using TaxManager.Data.Forecasting;
+using TaxManager.Data.TaxRules;
 
 namespace TaxManager.Data.Audit;
 
@@ -52,6 +53,10 @@ internal sealed class AuditSaveCoordinator
     {
         token.ThrowIfCancellationRequested();
         context.ChangeTracker.DetectChanges();
+        if (context.ChangeTracker.Entries<AnnualCalculationRecord>().Any(e =>
+            e.State is EntityState.Modified or EntityState.Deleted ||
+            e.State == EntityState.Added && !ReferenceEquals(e.Entity, context.AuthorizedAnnualAppend)))
+            throw new InvalidOperationException("Annual history can only be appended by the annual calculation service.");
         if (context.ChangeTracker.Entries<ForecastSnapshot>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Forecast snapshots are append-only.");
         if (context.ChangeTracker.Entries<CalculationRecord>().Any(e =>
@@ -135,6 +140,14 @@ internal sealed class AuditSaveCoordinator
             var result = async
                 ? await context.SaveCoreAsync(token).ConfigureAwait(false)
                 : context.SaveCore();
+            foreach (var rule in context.ChangeTracker.Entries<TaxRuleSnapshot>()
+                         .Where(e => e.State == EntityState.Added && e.Entity.AnnualGraph is not null).Select(e => e.Entity))
+            {
+                if (async) await context.Database.ExecuteSqlInterpolatedAsync(
+                    $"UPDATE TaxRuleSnapshot SET AnnualGraph = {rule.AnnualGraph} WHERE RuleId = {rule.RuleId} AND Version = {rule.Version}", token);
+                else context.Database.ExecuteSqlInterpolated(
+                    $"UPDATE TaxRuleSnapshot SET AnnualGraph = {rule.AnnualGraph} WHERE RuleId = {rule.RuleId} AND Version = {rule.Version}");
+            }
             token.ThrowIfCancellationRequested();
             if (owned is not null)
             {
