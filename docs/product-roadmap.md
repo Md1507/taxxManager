@@ -1,6 +1,6 @@
 # Lộ trình sản phẩm
 
-Lộ trình này ghi thứ tự sản phẩm mới nhất đã chốt; các chặng tương lai dưới đây chưa được coi là hoàn thành. Nền 3.1 đã nghiệm thu kỹ thuật cho local với dữ liệu giả; không mở lại nghiệm thu đó. Phiếu 3.1b `01M89PFQ3ETQDTCSGPMAN0DEPW` đã done và land; chặng 2 đang triển khai, chưa nghiệm thu.
+Lộ trình này ghi thứ tự sản phẩm mới nhất đã chốt; các chặng tương lai dưới đây chưa được coi là hoàn thành. Nền 3.1 đã nghiệm thu kỹ thuật cho local với dữ liệu giả; không mở lại nghiệm thu đó. Phiếu 3.1b `01M89PFQ3ETQDTCSGPMAN0DEPW` và phiếu chặng 2 `01M8BK6R1EC84DFJ05Z8FH31C2` đều đã done, land và tích hợp vào `master`; chặng 3–6 chưa hoàn thành. Xem [đối chiếu tiêu chí và bằng chứng](reviews/2026-11-27-bint-worktrees.md).
 
 Tham chiếu: [PLAN](../PLAN.md), [ADR 0018](decisions/0018-personal-annual-tax-forecast.md) và [đặc tả dự báo năm](design/annual-tax-forecast.md). PLAN đã đồng bộ thứ tự và trạng thái thực tế; giữ nguyên bằng chứng nghiệm thu 3.1.
 
@@ -54,6 +54,7 @@ Quyền riêng tư áp dụng xuyên suốt cả sáu chặng: chỉ thu dữ li
 
 ### 2. Lưu và mở lại hồ sơ theo năm
 
+- **Trạng thái:** đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026; mã tại commit `f4f3133`. Phạm vi local synthetic, năm 2026; danh sách hồ sơ nằm ngay tại `/Forecast`. Log đầy đủ cuối phiếu: Core 205, Data 305, Web 70 test qua, EF không lệch migration; QA browser do phiên điều phối trước thực hiện. Contract kết quả năm mới là thiết kế cho chặng 3.
 - **Bắt đầu:** chặng 1 hoàn tất và contract trạng thái đầu vào đã ổn định.
 - **Tối thiểu:** lưu, mở lại và cập nhật hồ sơ năm và khấu trừ từng tháng với metadata từng giá trị; bảo vệ dữ liệu, ghi audit và hỗ trợ xóa có chủ đích với phạm vi được giải thích. Lưu kết quả hiện có và chuẩn bị contract riêng cho kết quả năm khi chặng 3 có; không biến giả định thành dữ liệu thực tế.
 - **Xong khi:** mở lại qua phiên lưu trữ mới giữ đúng số liệu và metadata; cập nhật tháng và tính lại không sửa snapshot, đầu vào hay phiên bản luật của lịch sử cũ; kiểm chứng bảo vệ, bảo toàn dữ liệu và hành vi xóa. Không đòi hỏi dự báo năm đã triển khai.

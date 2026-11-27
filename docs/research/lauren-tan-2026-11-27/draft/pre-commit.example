@@ -1,0 +1,8 @@
+#!/bin/sh
+# Independent hook placement [c]; command comes from this repo's AGENTS.md.
+# Pre-commit checks the current working tree, not an isolated staged snapshot.
+# Copy selectively into an existing hook; do not overwrite its other gates.
+set -eu
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+bint test affected --run

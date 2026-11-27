@@ -264,7 +264,7 @@ Làm **từng loại một**, và chỉ làm khi bạn đã có tài liệu chí
 
 Quyền riêng tư xuyên suốt: thu tối thiểu, không giữ file gốc hay tài khoản eTax; giải thích phạm vi xóa hồ sơ, lịch sử và bản sao, bảo vệ bản sao. Đăng nhập và cách ly tài khoản là điều kiện trước khi phục vụ nhiều người qua mạng; hiện chỉ local với dữ liệu giả, không cho phép dùng dữ liệu thật hay deploy theo lộ trình này.
 
-Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nhận lại, so sánh hai lần dự báo đã lưu và Gross–Net nằm trong backlog, chưa cam kết. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML cần quyết định và kế hoạch riêng. Chặng 2 đang triển khai và chưa nghiệm thu; chặng 3–6 và backlog chưa được coi là hoàn thành; có thể chuẩn bị thiết kế song song nhưng chỉ triển khai khi chặng trước hoàn tất.
+Các tiện ích dán Excel có xem trước, sao chép năm mới có xác nhận lại, so sánh hai lần dự báo đã lưu và Gross–Net nằm trong backlog, chưa cam kết. Cập nhật luật bằng AI, nhiều nơi trả lương, freelance/kinh doanh, thu nhập nước ngoài, OCR và XML cần quyết định và kế hoạch riêng. Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại commit `f4f3133`; chỉ local synthetic. Chặng 3–6 và backlog chưa được coi là hoàn thành; có thể chuẩn bị thiết kế song song nhưng chỉ triển khai khi chặng trước hoàn tất. Đối chiếu hai phiếu và bằng chứng tại [báo cáo rà soát worktree](docs/reviews/2026-11-27-bint-worktrees.md).
 
 #### Bước 3.1 – Giao diện cơ bản (chưa cần đăng nhập)
 - `TaxManager.Web` (Razor Pages hoặc MVC).

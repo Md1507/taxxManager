@@ -6,7 +6,7 @@ Tại `/Forecast`, nhập gross theo một hoặc nhiều giai đoạn; tháng n
 tháng chồng giai đoạn được thông báo. Mở phần chi tiết để nhập bảo hiểm, người phụ
 thuộc và khấu trừ từng tháng cùng trạng thái, nguồn và ghi chú. Preview phân biệt
 chưa nhập với 0; thời điểm nhập UTC chỉ đổi khi giá trị hoặc metadata thay đổi.
-Chặng 2 đang triển khai lưu, mở, sửa và xóa hồ sơ dự báo synthetic; chưa nghiệm thu.
+Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`: lưu, mở, sửa và xóa hồ sơ dự báo synthetic. Danh sách hồ sơ nằm ngay tại `/Forecast`; mở lại cùng kho qua `SyntheticStore` như hướng dẫn bên dưới. Xem [báo cáo đối chiếu](reviews/2026-11-27-bint-worktrees.md).
 Chưa tính kết quả năm hoặc kịch bản thưởng. Chỉ dùng dữ liệu giả.
 
 ## Bước 3.1 đã nghiệm thu

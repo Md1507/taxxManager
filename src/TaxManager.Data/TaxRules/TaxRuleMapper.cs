@@ -41,6 +41,7 @@ public static class TaxRuleMapper
             FromYear = rules.FromYear,
             PersonalDeduction = rules.PersonalDeduction,
             DependentDeduction = rules.DependentDeduction,
+            AnnualGraph = rules.AnnualSalaryRules is null ? null : AnnualRuleGraphCodec.Encode(rules),
             PersonalBasis = ToEntity(rules.PersonalDeductionBasis),
             DependentBasis = ToEntity(rules.DependentDeductionBasis),
             IncomeBasis = ToEntity(rules.TaxableIncomeBasis),
@@ -70,6 +71,14 @@ public static class TaxRuleMapper
             ToCore(entity.PersonalBasis), ToCore(entity.DependentBasis),
             ToCore(entity.IncomeBasis), ToCore(entity.TaxBasis));
         TaxRuleValidator.ValidateSupported(result);
+        if (entity.AnnualGraph is not null)
+        {
+            var annual = AnnualRuleGraphCodec.Decode(entity.AnnualGraph);
+            if (!TaxRuleStoreSupport.SameRules(result, annual))
+                throw new InvalidOperationException("Annual graph does not match its monthly snapshot.");
+            TaxRuleValidator.ValidateSupported(annual);
+            return annual;
+        }
         return result;
     }
 }

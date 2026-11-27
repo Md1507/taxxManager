@@ -8,6 +8,7 @@ public sealed class TaxRuleSnapshot
     public int FromYear { get; set; }
     public decimal PersonalDeduction { get; set; }
     public decimal DependentDeduction { get; set; }
+    public string? AnnualGraph { get; set; }
     public Guid PersonalBasisKey { get; set; }
     public Guid DependentBasisKey { get; set; }
     public Guid IncomeBasisKey { get; set; }

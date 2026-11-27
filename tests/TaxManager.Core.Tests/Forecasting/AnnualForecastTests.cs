@@ -6,6 +6,87 @@ namespace TaxManager.Core.Tests.Forecasting;
 public sealed class AnnualForecastTests
 {
     [Fact]
+    public void Bonus_in_gross_requires_bonus_rule_for_its_month()
+    {
+        var when = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var amount = new ForecastValue<decimal>(30_000_000m, ForecastStatus.Actual, "Phiếu", null, when);
+        var zero = new ForecastValue<decimal>(0m, ForecastStatus.Actual, "Phiếu", null, when);
+        var dependents = new ForecastValue<int>(0, ForecastStatus.Actual, "Tự khai", null, when);
+        var months = Enumerable.Range(1, 12).Select(m => new ForecastMonth(m, amount, zero, dependents, null));
+        var bonus = new ForecastBonus("bonus", 12, amount, true);
+
+        Assert.Throws<InvalidOperationException>(() => AnnualForecastCalculator.Calculate(2026, months,
+            [bonus], TaxRuleSet.CreateVietnam2026AnnualSalaryProvider(InsuranceRegion.I)));
+    }
+
+    [Fact]
+    public void Missing_obligation_inputs_are_reported_by_month_separately_from_withholding()
+    {
+        var when = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var actual = new ForecastValue<decimal>(0, ForecastStatus.Actual, "Tự khai", null, when);
+        var dependents = new ForecastValue<int>(0, ForecastStatus.Actual, "Tự khai", null, when);
+        var months = Enumerable.Range(1, 12).Select(m => new ForecastMonth(m,
+            m == 2 ? null : actual, m == 3 ? null : actual, m == 4 ? null : dependents,
+            m == 5 ? actual : null)).ToArray();
+
+        var completeness = AnnualForecastCalculator.Assess(months);
+
+        Assert.Equal(new[] { new ForecastMissingInput(2, ForecastInputKind.Gross),
+            new ForecastMissingInput(3, ForecastInputKind.Insurance),
+            new ForecastMissingInput(4, ForecastInputKind.Dependents) }, completeness.MissingObligation);
+        Assert.Equal(9, completeness.ActualObligationMonths);
+        Assert.Equal(1, completeness.WithholdingMonths);
+        Assert.DoesNotContain(5, completeness.MissingWithholdingMonths);
+        Assert.Equal(11, completeness.MissingWithholdingMonths.Count);
+    }
+
+    [Fact]
+    public void Dependent_period_applies_to_its_months_without_overwriting_monthly_input()
+    {
+        var when = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var gross = new ForecastValue<decimal>(30_000_000m, ForecastStatus.Actual, "Phiếu", null, when);
+        var zero = new ForecastValue<decimal>(0m, ForecastStatus.Actual, "Phiếu", null, when);
+        var periodValue = new ForecastValue<int>(1, ForecastStatus.Planned, "Tự khai", null, when);
+        var actualZero = new ForecastValue<int>(0, ForecastStatus.Actual, "Tự khai", null, when);
+        var months = Enumerable.Range(1, 12).Select(m => new ForecastMonth(m, gross, zero,
+            m < 7 || m == 9 ? actualZero : null, null)).ToArray();
+
+        var resolved = ForecastDependentPeriod.Apply(months, [new(7, 12, periodValue)]);
+        var result = AnnualForecastCalculator.Calculate(2026, resolved,
+            TaxRuleSet.CreateVietnam2026AnnualSalaryProvider(InsuranceRegion.I));
+
+        Assert.Equal(8_300_000m, result.Obligation);
+        Assert.Equal(7, result.ActualObligationMonths);
+        Assert.Equal(ForecastStatus.Actual, resolved.Single(x => x.Month == 9).Dependents!.Status);
+        Assert.Equal(ForecastStatus.Planned, resolved.Single(x => x.Month == 7).Dependents!.Status);
+        Assert.Null(months[6].Dependents);
+    }
+
+    [Fact]
+    public void Saved_bonuses_are_included_once_in_the_annual_obligation_and_explained()
+    {
+        var when = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        ForecastValue<decimal> Actual(decimal n) => new(n, ForecastStatus.Actual, "Phiếu lương", null, when);
+        var planned = new ForecastValue<decimal>(10_000_000m, ForecastStatus.Planned, "Kế hoạch", null, when);
+        var dependents = new ForecastValue<int>(0, ForecastStatus.Actual, "Tự khai", null, when);
+        var months = Enumerable.Range(1, 12).Select(m => new ForecastMonth(m,
+            Actual(30_000_000m), Actual(0m), dependents, null)).ToArray();
+        var bonuses = new[] { new ForecastBonus("included", 11, Actual(5_000_000m), true),
+            new ForecastBonus("additional", 12, planned, false) };
+
+        var result = AnnualForecastCalculator.Calculate(2026, months, bonuses,
+            TaxRuleSet.CreateVietnam2026CashBonusProvider(InsuranceRegion.I));
+
+        Assert.Equal(12_400_000m, result.Obligation);
+        Assert.Equal(11, result.ActualObligationMonths);
+        Assert.Null(result.Difference);
+        Assert.Equal(370_000_000m, result.Details.GrossIncome);
+        Assert.Equal(10_000_000m, result.Details.BonusTotal);
+        Assert.Equal(5_000_000m, result.Details.BonusAlreadyInGross);
+        Assert.Equal(184_000_000m, result.Details.TaxableIncome);
+    }
+
+    [Fact]
     public void Bonus_scenario_adds_only_new_bonus_without_changing_base_or_double_counting_gross()
     {
         var when = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);

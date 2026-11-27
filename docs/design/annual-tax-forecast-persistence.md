@@ -1,15 +1,15 @@
 # Đề xuất lưu dự báo và migration
 
-Thiết kế ban đầu; chặng 2 đang triển khai và chưa nghiệm thu. Đã bổ sung migration additive cho hồ sơ và snapshot dự báo trong worktree, chỉ dùng synthetic TEMP.
+Chặng 2 đã nghiệm thu kỹ thuật theo bốn tiêu chí của phiếu `01M8BK6R1EC84DFJ05Z8FH31C2`, done và land ngày 26/11/2026, tích hợp tại `f4f3133`, chỉ dùng synthetic TEMP. Hai migration additive `AddForecastDocuments` và `AddForecastSnapshots` đã nằm trên cây chính. Các mục kết quả năm và graph annual/bonus dưới đây là thiết kế cho chặng 3, chưa triển khai; xem [báo cáo đối chiếu](../reviews/2026-11-27-bint-worktrees.md).
 
 - Thêm bảng hồ sơ dự báo riêng với khóa hồ sơ và payload mã hóa, chứa năm, các giá trị theo kỳ, chỉ tiêu, trạng thái, nguồn, ghi chú và ngày nhập; không dùng `MonthlyIncome` cho giá trị dự kiến hoặc giả định.
-- Thêm bảng snapshot dự báo append-only, có định danh lần tính và payload mã hóa chứa đầu vào, kết quả, provenance/rule và thời điểm tính; tạo snapshot mới khi tính lại và giữ nguyên snapshot trước.
+- Bảng snapshot dự báo hiện giữ đầu vào mã hóa theo revision, tạo bản mới khi lưu/cập nhật và giữ nguyên bản trước; chưa chứa kết quả tính năm hay snapshot luật năm. Contract kết quả năm riêng được mô tả bên dưới.
 - Nối pipeline protection và audit hiện có: xác thực khóa khi đọc lại kể cả kết quả trống, mã hóa metadata nhạy cảm, ghi dữ liệu và audit cùng transaction, xử lý rollback; giữ nghĩa ordinary-delete/purge hiện có.
 - Migration additive thêm bảng/chỉ mục cần thiết, cập nhật EF model snapshot; không sửa migration hoặc designer cũ, không đổi bảng/snapshot lịch sử. Giữ guard cho DB legacy và chỉ thử trên SQLite/keys synthetic trong TEMP.
-- Mở rộng graph annual/bonus ở Data bằng contract có kiểm thử, giữ registration theo kỳ và trạng thái căn cứ, giữ cổng References/Official. Không tạo luật từ trí nhớ hoặc fallback khi kỳ/rule không hỗ trợ.
+- Chặng 3 sẽ mở rộng graph annual/bonus ở Data bằng contract có kiểm thử, giữ registration theo kỳ và trạng thái căn cứ, giữ cổng References/Official. Không tạo luật từ trí nhớ hoặc fallback khi kỳ/rule không hỗ trợ.
 - Kiểm chứng bằng SQLite synthetic cho upgrade, context mới, decimal và metadata, khóa sai/thiếu, rollback, audit, confidentiality và bất biến lịch sử; giữ kiểm tra EF pending model changes.
 
-Snapshot hiện lưu đầu vào dự báo theo revision; chưa tạo kết quả năm giả. Bằng chứng kiểm thử và QA cần được kiểm chứng đầy đủ trước khi nghiệm thu.
+Snapshot hiện lưu đầu vào dự báo theo revision; chưa tạo kết quả năm giả. Log `verify-final-full.log` của phiếu ghi Core 205/205, Data 305/305, Web 70/70 và EF không có model changes; review vòng 7 không có phát hiện mới. QA mobile/bàn phím/focus do phiên điều phối trước thực hiện và lưu trong constraints/logs của phiếu; không coi đây là QA mới của lần rà soát worktree.
 
 ## Contract riêng cho kết quả năm ở chặng 3
 

@@ -374,6 +374,9 @@ namespace TaxManager.Data.Migrations
                     b.Property<string>("Version")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AnnualGraph")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("DependentBasisKey")
                         .HasColumnType("TEXT");
 

@@ -1,0 +1,18 @@
+# Independent starting configuration [c], not Lauren's personal config.
+# Schema source: poteto/noodle at 82d2921c52370f23f29086de81ccfb600939c037,
+# docs/reference/configuration.md and docs/concepts/modes.md.
+# Review against your installed Noodle version before copying to .noodle.toml.
+# Provider/model routing uses the installation's configured defaults.
+mode = "supervised"
+
+[skills]
+paths = [".agents/skills"]
+
+[concurrency]
+max_concurrency = 1
+
+[runtime]
+default = "process"
+
+[runtime.process]
+max_concurrent = 1
