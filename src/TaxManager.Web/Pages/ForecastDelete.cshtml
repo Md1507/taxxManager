@@ -1,10 +1,13 @@
 @page
 @model TaxManager.Web.Pages.ForecastDeleteModel
-<!doctype html>
-<html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Xóa hồ sơ</title><link rel="stylesheet" href="/site.css" /></head>
-<body><main><h1>Xóa hồ sơ dự báo?</h1>
+@{
+    ViewData["Title"] = "Xóa hồ sơ";
+    ViewData["ProfileId"] = Model.Id;
+    ViewData["Context"] = "Hồ sơ thuế năm 2026 / xác nhận xóa";
+}
+<h1>Xóa hồ sơ dự báo?</h1>
+<p class="history-id">Hồ sơ @Model.Id, bản lưu @Model.Revision.</p>
 <p>Hồ sơ hiện hành sẽ bị xóa. Lịch sử và nhật ký audit mã hóa vẫn được giữ. Bản sao, WAL và vùng lưu vật lý có thể còn dữ liệu.</p>
-<div asp-validation-summary="All" class="error" role="alert" tabindex="-1"></div>
+<partial name="Shared/_Errors" />
 <form method="post"><input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Revision" />
-<button type="submit">Xác nhận xóa</button> <a asp-page="/Forecast" asp-route-id="@Model.Id">Hủy</a></form>
-</main></body></html>
+<button class="danger" type="submit">Xác nhận xóa</button> <a asp-page="/Forecast" asp-route-id="@Model.Id">Hủy</a></form>

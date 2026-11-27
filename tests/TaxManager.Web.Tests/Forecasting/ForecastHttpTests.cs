@@ -25,21 +25,21 @@ public sealed class ForecastHttpTests
         for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
         using var first = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var firstHtml = WebUtility.HtmlDecode(await first.Content.ReadAsStringAsync());
-        Assert.Contains("02/01/2026 03:04 UTC", firstHtml);
+        Assert.Contains("02/01/2026 10:04 giờ Việt Nam", firstHtml);
         var draft = Regex.Match(firstHtml, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
         Assert.NotEmpty(draft);
         values["DraftToken"] = draft;
         clock.Now = new DateTimeOffset(2026, 1, 2, 4, 5, 0, TimeSpan.Zero);
         using var second = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var secondHtml = WebUtility.HtmlDecode(await second.Content.ReadAsStringAsync());
-        Assert.Contains("02/01/2026 03:04 UTC", secondHtml);
-        Assert.DoesNotContain("02/01/2026 04:05 UTC", secondHtml);
+        Assert.Contains("02/01/2026 10:04 giờ Việt Nam", secondHtml);
+        Assert.DoesNotContain("02/01/2026 11:05 giờ Việt Nam", secondHtml);
         values["DraftToken"] = Regex.Match(secondHtml, "name=\"DraftToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value;
         values["Exceptions[0].InsuranceNote"] = "ghi chú mới";
         using var third = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var thirdHtml = WebUtility.HtmlDecode(await third.Content.ReadAsStringAsync());
-        Assert.Contains("02/01/2026 03:04 UTC", thirdHtml);
-        Assert.Matches("Bảo hiểm tháng 1: 0 đồng[^<]*<span>[^<]*ghi chú mới[^<]*02/01/2026 04:05 UTC", thirdHtml);
+        Assert.Contains("02/01/2026 10:04 giờ Việt Nam", thirdHtml);
+        Assert.Matches("Bảo hiểm tháng 1: 0 đ[^<]*<span>[^<]*ghi chú mới[^<]*02/01/2026 11:05 giờ Việt Nam", thirdHtml);
     }
     [Fact]
     public async Task Removing_earlier_period_preserves_remaining_entry_time()
@@ -63,7 +63,7 @@ public sealed class ForecastHttpTests
         foreach (var field in new[] { "FromMonth", "ToMonth", "Gross" }) { values[$"Periods[0].{field}"] = values[$"Periods[1].{field}"]; values.Remove($"Periods[1].{field}"); }
         using var second = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var result = WebUtility.HtmlDecode(await second.Content.ReadAsStringAsync());
-        Assert.Matches("Tháng 7</th>.*?01/11/2026 00:00 UTC", result);
+        Assert.Matches("(?s)Tháng 7</th>.*?01/11/2026 07:00 giờ Việt Nam", result);
     }
     [Fact]
     public async Task New_host_reopens_synthetic_store_and_saved_form()
@@ -139,8 +139,8 @@ public sealed class ForecastHttpTests
         for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("30.000.000 đồng", html);
-        Assert.Contains("Bảo hiểm tháng 1: 0 đồng", html);
+        Assert.Contains("30.000.000 đ", html);
+        Assert.Contains("Bảo hiểm tháng 1: 0 đ", html);
         Assert.Contains("Bảo hiểm tháng 2: Chưa nhập", html);
         Assert.Contains("data-label=\"Lương\">Chưa nhập", html);
     }
@@ -151,7 +151,7 @@ public sealed class ForecastHttpTests
         using var client = new HttpClient(new HttpClientHandler { UseCookies = true }) { BaseAddress = host.Address };
         var page = await client.GetStringAsync("/Forecast");
         var token = Regex.Match(page, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
-        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "30000000", ["Periods[0].FromMonth"] = "7", ["Periods[0].ToMonth"] = "12", ["Periods[0].Gross"] = "40000000", ["Periods[0].Source"] = "synthetic raise", ["SelectedMonth"] = "1", ["EditingMonth"] = "1", ["Exceptions[0].Gross"] = "0" };
+        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "30000000", ["ToMonth"] = "6", ["Periods[0].FromMonth"] = "7", ["Periods[0].ToMonth"] = "12", ["Periods[0].Gross"] = "40000000", ["Periods[0].Source"] = "synthetic raise", ["SelectedMonth"] = "1", ["EditingMonth"] = "1", ["Exceptions[0].Gross"] = "0" };
         for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
         using var editor = await client.PostAsync("/Forecast?handler=SelectMonth", new FormUrlEncodedContent(values));
         var html = WebUtility.HtmlDecode(await editor.Content.ReadAsStringAsync());
@@ -161,7 +161,7 @@ public sealed class ForecastHttpTests
         Assert.DoesNotContain("formaction=", firstSubmit);
         using var preview = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var result = WebUtility.HtmlDecode(await preview.Content.ReadAsStringAsync());
-        Assert.Contains("40.000.000 đồng", result);
+        Assert.Contains("40.000.000 đ", result);
         Assert.Contains("synthetic raise", result);
         Assert.Contains("Tháng 1 là ngoại lệ và được giữ nguyên", result);
     }
@@ -224,15 +224,15 @@ public sealed class ForecastHttpTests
         using var client = new HttpClient(new HttpClientHandler { UseCookies = true }) { BaseAddress = host.Address };
         var page = await client.GetStringAsync("/Forecast");
         var token = Regex.Match(page, "name=\"__RequestVerificationToken\" type=\"hidden\" value=\"([^\"]+)\"").Groups[1].Value;
-        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "30000000,50", ["Periods[0].FromMonth"] = "2", ["Periods[0].ToMonth"] = "2", ["Periods[0].Gross"] = "40000000,25", ["Exceptions[0].Gross"] = "10000000,75", ["Exceptions[0].Insurance"] = "1000000,50", ["Exceptions[0].Withheld"] = "2000000,50" };
+        var values = new Dictionary<string, string> { ["__RequestVerificationToken"] = token, ["Gross"] = "30000000,50", ["FromMonth"] = "3", ["Periods[0].FromMonth"] = "2", ["Periods[0].ToMonth"] = "2", ["Periods[0].Gross"] = "40000000,25", ["Exceptions[0].Gross"] = "10000000,75", ["Exceptions[0].Insurance"] = "1000000,50", ["Exceptions[0].Withheld"] = "2000000,50" };
         for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("30.000.000,50 đồng", html);
-        Assert.Contains("40.000.000,25 đồng", html);
-        Assert.Contains("10.000.000,75 đồng", html);
-        Assert.Contains("Bảo hiểm tháng 1: 1.000.000,50 đồng", html);
-        Assert.Contains("Khấu trừ tháng 1: 2.000.000,50 đồng", html);
+        Assert.Contains("30.000.000,50 đ", html);
+        Assert.Contains("40.000.000,25 đ", html);
+        Assert.Contains("10.000.000,75 đ", html);
+        Assert.Contains("Bảo hiểm tháng 1: 1.000.000,50 đ", html);
+        Assert.Contains("Khấu trừ tháng 1: 2.000.000,50 đ", html);
     }
 
     [Fact]
@@ -285,8 +285,11 @@ public sealed class ForecastHttpTests
         for (var i = 0; i < 12; i++) values[$"Exceptions[{i}].Month"] = (i + 1).ToString();
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        foreach (var label in new[] { "Lương", "Trạng thái", "Nguồn", "Ghi chú", "Ngày nhập" })
-            Assert.Contains($"data-label=\"{label}\"", html);
+        foreach (var label in new[] { "Lương gross", "Bảo hiểm", "Người phụ thuộc", "Khấu trừ" })
+            Assert.Contains(label, html);
+        Assert.Contains("aria-label=\"Dữ liệu 12 tháng\"", html);
+        Assert.Contains("badge planned", html);
+        Assert.Contains("Nguồn và ghi chú tháng 1", html);
     }
 
     [Fact]
@@ -307,7 +310,7 @@ public sealed class ForecastHttpTests
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
         Assert.Contains("Người phụ thuộc tháng 1: 0", html);
         Assert.Contains("Người phụ thuộc tháng 2: Chưa nhập", html);
-        Assert.Contains("Khấu trừ tháng 1: 0 đồng", html);
+        Assert.Contains("Khấu trừ tháng 1: 0 đ", html);
         Assert.Contains("Khấu trừ tháng 2: Chưa nhập", html);
         Assert.Contains("Nguồn: Phiếu lương", html);
     }
@@ -327,13 +330,13 @@ public sealed class ForecastHttpTests
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         response.EnsureSuccessStatusCode();
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("Bảo hiểm tháng 1: 0 đồng", html);
+        Assert.Contains("Bảo hiểm tháng 1: 0 đ", html);
         Assert.Contains("Nguồn: Phiếu bảo hiểm", html);
         Assert.Contains("Bảo hiểm tháng 2: Chưa nhập", html);
     }
 
     [Fact]
-    public async Task Preview_identifies_months_replaced_by_overlapping_periods()
+    public async Task Overlapping_periods_require_correction_before_preview_or_save()
     {
         await using var host = await DemoHost.StartAsync();
         using var client = new HttpClient(new HttpClientHandler { UseCookies = true }) { BaseAddress = host.Address };
@@ -346,9 +349,14 @@ public sealed class ForecastHttpTests
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         response.EnsureSuccessStatusCode();
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("Tháng 7 được thay bằng giai đoạn nhập sau", html);
-        Assert.Contains("Tháng 8 được thay bằng giai đoạn nhập sau", html);
-        Assert.Contains("30.000.000 đồng", html);
+        Assert.Contains("Hai giai đoạn cùng áp dụng cho tháng 7, 8", html);
+        Assert.Contains("href=\"#Periods_0__FromMonth\"", html);
+        Assert.Contains("value=\"30000000\"", html);
+        Assert.DoesNotContain("id=\"bang-thang\"", html);
+        using var save = await client.PostAsync("/Forecast?handler=Save", new FormUrlEncodedContent(values));
+        Assert.Contains("Sửa khoảng tháng trước khi lưu", WebUtility.HtmlDecode(await save.Content.ReadAsStringAsync()));
+        await using var context = host.Services.GetRequiredService<TaxManager.Web.Demo.SyntheticDatabase>().Open();
+        Assert.Empty(await new TaxManager.Data.Forecasting.ForecastStore(context).ListAsync());
     }
 
     [Fact]
@@ -382,10 +390,10 @@ public sealed class ForecastHttpTests
         using var response = await client.PostAsync("/Forecast?handler=Preview", new FormUrlEncodedContent(values));
         response.EnsureSuccessStatusCode();
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
-        Assert.Contains("20.000.000 đồng", html);
-        Assert.Contains("30.000.000 đồng", html);
+        Assert.Contains("20.000.000 đ", html);
+        Assert.Contains("30.000.000 đ", html);
         var salaryTable = html[html.IndexOf("<table class=\"forecast-preview\">", StringComparison.Ordinal)..html.IndexOf("</table>", StringComparison.Ordinal)];
-        Assert.DoesNotContain("Chưa nhập", salaryTable);
+        Assert.DoesNotContain("Chưa nhập", string.Join("", Regex.Matches(salaryTable, "data-label=\"Lương\">([^<]+)").Select(m => m.Groups[1].Value)));
     }
 
     [Fact]
@@ -425,8 +433,8 @@ public sealed class ForecastHttpTests
         response.EnsureSuccessStatusCode();
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
         Assert.Contains("Tháng 3 là ngoại lệ", html);
-        Assert.Contains("30.000.000 đồng", html);
-        Assert.Contains("0 đồng", html);
+        Assert.Contains("30.000.000 đ", html);
+        Assert.Contains("0 đ", html);
         Assert.Contains("Thực tế", html);
         Assert.Contains("Phiếu lương", html);
         Assert.Contains("Ngày nhập", html);
@@ -438,7 +446,7 @@ public sealed class ForecastHttpTests
         await using var host = await DemoHost.StartAsync();
         using var client = new HttpClient { BaseAddress = host.Address };
         var html = await client.GetStringAsync("/Forecast");
-        Assert.Contains("Dự báo thuế năm 2026", html);
+        Assert.Contains("Hồ sơ thuế năm 2026", html);
         Assert.Contains("Từ tháng", html);
         Assert.Contains("Đến tháng", html);
         Assert.Contains("Xem trước", html);

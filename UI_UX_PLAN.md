@@ -1,9 +1,10 @@
 # Kế hoạch UI/UX TaxManager
 
-Ngày lập: 27/11/2026; đồng bộ ngày 28/11/2026. Phạm vi: kế hoạch thiết kế, chưa triển khai hệ giao diện mới.
+Ngày lập: 27/11/2026; đồng bộ ngày 28/11/2026. Phạm vi: kế hoạch thiết kế và tiến độ triển khai UI trên các luồng hiện có.
 Nguồn trạng thái: [roadmap](docs/product-roadmap.md); kế hoạch kỹ thuật: [PLAN.md](PLAN.md); vận hành: [Web MVP](docs/web-mvp.md).
 Khi tài liệu thiết kế cũ khác trạng thái hiện tại, dùng roadmap và mã hiện tại để đối chiếu; không đánh dấu tính năng đã có chỉ vì có wireframe.
-Nền 3.1/3.1b và chặng 2 đã nghiệm thu; chặng 3 đã có mã tính năm, thưởng, phụ thuộc theo giai đoạn và lịch sử; cổng đầy đủ đã xanh nhưng còn freeze Bint/review lại trước nghiệm thu. Xem [bằng chứng và điều kiện còn lại](docs/reviews/2026-11-27-annual-stage-three.md); đây là đối chiếu hồ sơ hiện có, không phải chạy lại kiểm thử.
+Nền 3.1/3.1b, chặng 2 và chặng 3 đã nghiệm thu kỹ thuật; phiếu chặng 3 đã done. UI Đ1–Đ2 trên các route hiện có đã triển khai, gồm định dạng tiền khi gõ và chú thích gross/net theo phản hồi ngày 28/11. Xem [kiểm chứng UI](docs/reviews/2026-11-28-ui-phases-one-two.md) và [kiểm chứng chặng 3](docs/reviews/2026-11-27-annual-stage-three.md).
+Màn chi tiết tháng đã nối với bản forecast lưu theo ID/tháng/revision, có bước tính, bậc thuế và căn cứ; xem [kiểm chứng màn tháng](docs/reviews/2026-11-28-forecast-month.md). Còn nghiệm thu UX thủ công đầy đủ; dark mode hiện là hướng tham khảo từ ảnh người dùng, chưa triển khai.
 Quy tắc phối hợp: roadmap quyết định phạm vi/thứ tự/tiến độ; PLAN quyết định điều kiện kỹ thuật; file này quyết định bố cục, token và hành vi UI. Khi triển khai, cập nhật cả ba liên kết/trạng thái trong cùng tác vụ, không lấy checkbox UI thay nghiệm thu nghiệp vụ.
 
 ## 1. Mục tiêu và giả định về người dùng
@@ -28,7 +29,7 @@ Quy tắc phối hợp: roadmap quyết định phạm vi/thứ tự/tiến đ�
 
 ## 3. Sơ đồ điều hướng và danh sách màn hình
 
-Đ1 đến Đ6 là đợt UI ở mục 11, không phải đánh số lại chặng nghiệp vụ. `/`, `/Forecast`, `/ForecastDelete`, `/ForecastAnnualHistory` đang có; các route `/ho-so/...` là đề xuất, chưa cần chuyển route khi chỉnh UI.
+Đ1 đến Đ6 là đợt UI ở mục 11, không phải đánh số lại chặng nghiệp vụ. `/`, `/Forecast`, `/ForecastDelete`, `/ForecastAnnualHistory` và `/ho-so/{id}/thang/{month}?revision={revision}` đang có; các route `/ho-so/...` khác vẫn là đề xuất.
 Giữ route hiện có trong Đ1 để giảm chi phí; đường dẫn tiếng Việt không dấu cho màn hình mới dễ nhận biết hơn tên nội bộ.
 
 ```text
@@ -52,13 +53,13 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Nhập theo giai đoạn | `/Forecast?id={id}` | Tạo/sửa lịch lương | Giai đoạn, ngoại lệ, metadata | lưu hồ sơ | Đ1; đã có nền |
 | Bảng 12 tháng | `/Forecast?id={id}#bang-thang` | Rà dữ liệu cả năm | Gross, bảo hiểm, phụ thuộc, khấu trừ, trạng thái | sửa tháng đã chọn | Đ1; mở rộng preview |
 | Công cụ tính tháng | `/` | Giữ công cụ 2025/2026 | Đầu vào 12 tháng, kết quả riêng từng tháng | tính 12 tháng | Đ1; đã có |
-| Chi tiết tháng | `/ho-so/{id}/thang/{month}` | Xem/sửa một tháng | Đầu vào, bước tính, bậc thuế, căn cứ | lưu tháng | Đ1; tách từ luồng hiện có |
+| Chi tiết tháng | `/ho-so/{id}/thang/{month}?revision={revision}` | Đọc một tháng của bản lưu, mở editor hiện có | Đầu vào, bước tính, bậc thuế, căn cứ | sửa tháng | Đ1; đã nối forecast qua service chỉ đọc |
 | Xác nhận xóa hồ sơ | `/ForecastDelete?id={id}` | Xóa có chủ đích | Hồ sơ, phạm vi xóa, phần còn giữ | xóa hồ sơ | Đ1; đã có |
-| Tổng quan năm | `/ho-so/{id}/tong-quan` | Hiểu ước tính và phần thiếu | Nghĩa vụ năm, độ phủ, chênh lệch có điều kiện | tính thuế năm | Đ2; đã có tại `/Forecast`, chờ nghiệm thu |
-| Chi tiết thuế năm | `/ho-so/{id}/tong-quan#cach-tinh` | Kiểm tra phép tính | Các bước, bậc năm, căn cứ đúng phiên bản | xem đầu vào | Đ2; partial kết quả đã có, chờ nghiệm thu |
-| Thưởng và khoản bất thường | `/ho-so/{id}/khoan-thu` | Tránh bỏ sót/cộng trùng | Khoản, tháng nhận, đã gồm gross, nguồn | lưu khoản thu | Đ2; form thưởng trong `/Forecast` đã có, chờ nghiệm thu |
+| Tổng quan năm | `/ho-so/{id}/tong-quan` | Hiểu ước tính và phần thiếu | Nghĩa vụ năm, độ phủ, chênh lệch có điều kiện | tính thuế năm | Đ2; đã chuẩn hóa tại `/Forecast` |
+| Chi tiết thuế năm | `/ho-so/{id}/tong-quan#cach-tinh` | Kiểm tra phép tính | Các bước, bậc năm, căn cứ đúng phiên bản | xem đầu vào | Đ2; partial kết quả đã chuẩn hóa |
+| Thưởng và khoản bất thường | `/ho-so/{id}/khoan-thu` | Tránh bỏ sót/cộng trùng | Khoản, tháng nhận, đã gồm gross, nguồn | lưu khoản thu | Đ2; form thưởng trong `/Forecast` đã chuẩn hóa |
 | Người phụ thuộc | `/ho-so/{id}/nguoi-phu-thuoc` | Quản lý theo thời gian | Khoảng tháng, tự khai/đăng ký, nguồn | lưu người phụ thuộc | Đ2; số theo giai đoạn đã có, hồ sơ đăng ký còn mở rộng |
-| Lịch sử tính | `/ho-so/{id}/lich-su` | Đọc các lần đã tính | Thời điểm, phạm vi, độ phủ, phiên bản luật | tính lại | Đ2; `/ForecastAnnualHistory?id={id}` đã có, chờ nghiệm thu |
+| Lịch sử tính | `/ho-so/{id}/lich-su` | Đọc các lần đã tính | Thời điểm, phạm vi, độ phủ, phiên bản luật | tính lại | Đ2; `/ForecastAnnualHistory?id={id}` đã có và được chuẩn hóa |
 | Chi tiết lần tính | `/ho-so/{id}/lich-su/{recordId}` | Đọc bản đã lưu | Snapshot đầu vào, kết quả, căn cứ cũ | tính lại | Đ2; `record={recordId}` tại route lịch sử đã có |
 | Báo cáo và checklist | `/ho-so/{id}/bao-cao` | Chuẩn bị trao đổi/quyết toán | Báo cáo, nguồn, phần thiếu | xuất báo cáo | Đ3; chưa có |
 | Sao lưu và khôi phục | `/du-lieu` | Tự giữ bản có thể khôi phục | Phạm vi, phiên bản, kết quả kiểm tra bản nhập | tạo bản sao lưu | Đ3; chưa có |
@@ -214,10 +215,30 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 - Hai hướng căn cứ: popover hoặc disclosure trong dòng. Chọn disclosure để dùng với bàn phím, màn hình nhỏ và ít JavaScript; giữ nút `?` có tên truy cập rõ.
 - Khi dữ liệu thay đổi, kết quả cũ ghi `đầu vào đã thay đổi, tính lại để xem kết quả mới`; không để số cũ trông như vừa tính.
 - Trống: `nhập số từ phiếu lương tháng 8 để xem cách tính`; không tự điền tiền.
-- Lỗi: `bảo hiểm phải là số không âm. nhập số không có dấu phân cách hàng nghìn`; giữ chuỗi người dùng nhập.
+- Lỗi: `bảo hiểm phải là số không âm. nhập theo dạng 1.234.567,50`; giữ chuỗi người dùng nhập.
 - Thiếu: liệt kê chỉ tiêu chặn tính; thiếu khấu trừ không chặn phép tính nghĩa vụ tháng nếu engine không cần nó.
 - Chỉ nối tính vào dữ liệu đã lưu qua service phù hợp; Đ1 không mở thêm nhánh engine hoặc ghi kết quả do trình duyệt tính.
 - Công cụ `/` giữ chức năng hiện có; metadata chưa được luồng cũ hỗ trợ thì ghi rõ dữ liệu demo, không tự gắn nhãn thực tế.
+
+#### Triển khai màn tháng từ bản lưu, 28/11/2026
+
+Giữ palette đã chốt: brand `#395B40`, nền `#FAFAFA`, bề mặt `#FFFFFF`, chữ `#1A1F1B`, chữ phụ `#5F5F5F`, viền chức năng `#767676`; Inter 400/500/600 và số tabular. Nội dung căn trái, tiền căn phải. Tái dùng sidebar và header; chỉ thuế năm có khung brand.
+
+```text
+bảng 12 tháng / bản đã lưu             [sửa tháng]
+tháng 6/2026
+[1] [2] [3] [4] [5] [6 chọn] ... [12]
+thuế tháng tạm tính / hoặc chỉ tiêu còn thiếu
+dữ liệu đã lưu và trạng thái từng chỉ tiêu
+nguồn, ghi chú, ngày nhập (mở rộng)
+bước tính / từng bậc / căn cứ (mở rộng)
+```
+
+So với dashboard mặc định, không thêm thẻ KPI trùng số hoặc biểu đồ trang trí. Dùng khoảng trắng gom dữ liệu và kết quả, không có vạch chia dài. Thành phần bổ sung duy nhất là điều hướng 12 tháng bằng liên kết native, có tháng chọn bằng nền tint và `aria-current`, đích URL giữ cả ID/tháng/revision. Nút chính duy nhất là sửa tháng, mở đúng editor hiện có; lưu hồ sơ giữ tháng đang sửa.
+
+Contract `ForecastMonthService.ReadAsync(id, revision, month)` đọc bản hồ sơ, snapshot đầu vào cùng revision và catalog trong một transaction, xác thực khóa kể cả lookup rỗng. Kết quả tính khi đọc, không ghi lịch sử/audit hay tạo hồ sơ demo; UI ghi rõ giới hạn này. Thưởng tháng được tính đúng một lần qua Core, khấu trừ nullable độc lập, không cần các tháng khác đủ đầu vào. Link cũ gặp revision mới bị từ chối và có đường mở lại. Không sửa engine, schema hoặc snapshot đã lưu.
+
+Hai ảnh tham khảo của người dùng ngày 28/11: dùng ảnh sáng để giữ hierarchy/sidebar; ảnh tối để tham khảo nhóm số liệu, khoảng cách và bộ chọn kỳ. Hướng dark mode tương lai: nền than có sắc xanh, surface tối nâng nhẹ, chữ sáng, xanh lá cho trạng thái chọn; cần đo contrast và chốt token riêng trước triển khai. Ảnh không thay palette sáng hiện tại, không yêu cầu thêm donut, avatar, nguồn thu hoặc thông báo chưa có dữ liệu.
 
 ### 4.5. Tổng quan và dự báo năm
 
@@ -241,7 +262,7 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 - Dùng engine năm; không cộng 12 số thuế tháng để thay kết quả năm. Chọn tính theo yêu cầu thay vì tự tính mỗi lần gõ để giữ luồng lưu và lịch sử rõ ràng.
 - Đủ dữ liệu nghĩa vụ nhưng thiếu khấu trừ: vẫn hiện nghĩa vụ, không hiện số nộp thêm/nộp thừa; có liên kết đến tháng thiếu.
 - Có đủ khấu trừ hoặc giả định minh bạch cho cả kỳ mới hiện chênh lệch; số có dấu và chữ chỉ hướng theo mục 7.
-- Trống: `nhập lương và các khoản cần thiết để tính thuế năm`; mã tính năm hiện đã có, chờ nghiệm thu chặng 3 trước khi đổi UI, không ẩn/bỏ chức năng này chỉ để chia đợt.
+- Trống: `nhập lương và các khoản cần thiết để tính thuế năm`; mã tính năm hiện đã có và được chuẩn hóa chặng 3 trước khi đổi UI, không ẩn/bỏ chức năng này chỉ để chia đợt.
 - Lỗi không có luật đúng kỳ: `chưa có bộ quy tắc phù hợp cho kỳ này. chưa thể tính dự báo`; không lấy luật kỳ gần nhất.
 - Thiếu: vẫn đọc/sửa hồ sơ; mỗi phần bị chặn nói rõ chỉ tiêu, kỳ và cách bổ sung.
 - Dữ liệu thay đổi sau lần tính: ghi thời điểm/snapshot của kết quả đang đọc và trạng thái cần tính lại.
@@ -337,15 +358,14 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 
 ### Ô tiền và hợp đồng nhập
 
-- Dùng `type="text"`, `inputmode="numeric"`, label luôn hiện, đơn vị `đ` ngoài value; không dùng input number có nút tăng giảm.
-- Khi đang sửa: chuỗi không phân nhóm; một dấu phẩy hoặc chấm là thập phân, ví dụ `1234,5`; không cho người dùng gõ dấu phân nhóm.
-- Khi rời ô hợp lệ: có thể hiển thị `1.234,50` theo vi-VN. Focus lại phải khôi phục chuỗi nhập không phân nhóm, không tái parse chuỗi đã format như dữ liệu người dùng.
-- Cần một lớp ô tiền dùng chung lưu chuỗi gốc và chuỗi chuẩn để POST, phân biệt chuỗi hiển thị do app tạo; server vẫn xác thực, không tin hidden field.
-- Bản POST lỗi ưu tiên ModelState.AttemptedValue, giữ nguyên chuỗi sai, không blur-format/trim để che lỗi. Tắt JS vẫn nhập chuỗi không phân nhóm và gửi được.
-- Không đổi ForecastAmountBinder sang AllowThousands/NumberStyles.Number; `1.234` vẫn có nghĩa thập phân theo hợp đồng hiện tại, không tự đổi thành 1234.
-- Bàn phím numeric có thể thiếu dấu phẩy: ô tiền có thao tác phụ `chèn dấu phẩy` trên thiết bị cần nó, vẫn cho paste/nhập số lẻ; kiểm máy thật trước chốt.
-- Chọn giữ numeric theo brief và hỗ trợ dấu phẩy bằng điều khiển phụ; hướng thay thế inputmode decimal chỉ áp dụng sau khi ghi ngoại lệ ở mục 10.
-- Format chỉ đổi cách nhìn, không tính toán bằng JS float, không làm tròn/sửa số lưu. Test HTTP hiện có về dấu phẩy, nhóm nghìn và giữ chuỗi lỗi là cổng hồi quy.
+- Dùng `type="text"`, `inputmode="decimal"`, label luôn hiện và đơn vị đồng rõ ràng; không dùng input number có nút tăng giảm cho tiền.
+- Cập nhật theo yêu cầu người dùng ngày 28/11/2026: tự tách hàng nghìn khi nhập `123456789` thành `123.456.789`; nhận số dán có phân nhóm đúng. Phần lẻ dùng dấu phẩy, ví dụ `1.234.567,50`. Focus lại vẫn giữ định dạng này.
+- Lớp tiền dùng chung chỉ xử lý chuỗi, không qua JS Number/float và không làm tròn. Bao gồm trường tiền ẩn của tháng chưa mở để tránh đổi nghĩa khi gửi form.
+- Khi JavaScript định dạng form, gửi dấu định dạng `AmountFormat=vi-VN`; server xác thực nhóm chấm đúng ba chữ số và dấu phẩy thập phân bằng grammar tường minh, không dùng AllowThousands/NumberStyles.Number theo culture.
+- Form cũ hoặc không JavaScript giữ hợp đồng chuỗi không phân nhóm: một dấu phẩy/chấm là thập phân. Chẳng hạn `1.234` trong giao thức cũ vẫn là 1,234 đồng; trong form vi-VN mới là 1.234 đồng. Dữ liệu cũ mở lại được chuyển định dạng từ chuỗi canonical, không đoán nghĩa từ số dấu chấm.
+- POST lỗi ưu tiên ModelState.AttemptedValue và giữ nguyên chuỗi sai. Không định dạng lại bản POST lỗi để che lỗi. Không tự điền 0 cho thiếu dữ liệu.
+- Giải thích gross/net ngay ở phần nhập lương; gross là trước khấu trừ, net là thực nhận. Chỉ biết net thì hướng dẫn kiểm phiếu lương, chưa thêm tính ngược gross/net.
+- Kiểm HTTP và trình duyệt: gõ/dán, phần lẻ, số 10 chữ số, 0, thiếu, nhóm sai, sửa giữa chuỗi, mở lại và gửi trường tháng ẩn. Bàn phím điện thoại thật còn cần thử riêng.
 
 ## 6. Hệ thống trạng thái dữ liệu
 
@@ -404,7 +424,7 @@ Chữ thường đầu câu theo brief, động từ chủ động; tên riêng 
 | Khôi phục | `kiểm tra bản sao lưu`; `khôi phục bản đã kiểm tra`; `đã khôi phục bản đã kiểm tra` |
 | Gợi ý gross | `tìm tổng lương trước khi trừ bảo hiểm và thuế trên phiếu lương` |
 | Gợi ý khấu trừ | `tìm số thuế TNCN công ty đã khấu trừ trên phiếu lương; không dùng số ứng dụng tính` |
-| Tiền sai cú pháp | `số tiền chưa đúng định dạng. nhập 1234,50; không dùng dấu phân cách hàng nghìn` |
+| Tiền sai cú pháp | `số tiền chưa đúng định dạng. dùng dấu chấm cho hàng nghìn và dấu phẩy cho phần lẻ, ví dụ 1.234.567,50` |
 | Tiền âm không hợp lệ | `số tiền phải từ 0 trở lên. sửa số hoặc để trống nếu chưa biết` |
 | Giả định thiếu lý do | `thêm lý do cho giá trị giả định để biết số này được hình thành thế nào` |
 | Chồng giai đoạn | `hai giai đoạn cùng áp dụng cho tháng 7 và 8. sửa khoảng tháng trước khi lưu` |
@@ -446,7 +466,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 
 #### 1. Token trước, giao diện sau
 
-- Định nghĩa token trong `src/TaxManager.Web/wwwroot/css/tokens.css` khi code; tài liệu này chưa tạo file CSS.
+- Định nghĩa token trong `src/TaxManager.Web/wwwroot/css/tokens.css` khi code; file CSS đã được tạo trong đợt triển khai ngày 28/11/2026.
 - Chỉ dùng brand, brand-tint, bg, surface, text, text-muted, border-strong và warning/error/info/success của bộ chốt dưới đây. Token theo vai trò `--surface`, `--text`, không lấy xanh mặc định framework hoặc thêm màu ngoài bộ này.
 - Một họ font Inter hỗ trợ tiếng Việt, thang 13/14/16/20/24/32; 400/500/600, không thêm font mono/serif cho nhãn.
 - Khoảng cách theo bội số 4px; tối đa hai bo góc 4px và 8px; không bóng. Viền 1px để tách vùng, viền input dùng token đủ tương phản.
@@ -457,6 +477,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 
 #### 2. Danh sách cấm
 
+- Hạn chế vạch phân chia, đặc biệt đường ngang kéo dài hết vùng nội dung. Không thêm `hr` hoặc `border-top`/`border-bottom` chỉ để tách các phần, disclosure, thanh trên hay footer; ưu tiên khoảng trắng và tiêu đề. Chỉ giữ viền có chức năng rõ ở ô nhập, bảng dữ liệu, vùng xác nhận/lỗi và focus. Đây là điều chỉnh theo phản hồi trực tiếp ngày 28/11/2026.
 - Không gradient, kính mờ, blob, minh họa có sẵn, emoji làm icon; không thẻ giống nhau phủ kín trang hoặc thẻ lồng thẻ.
 - Không khối liên kết nhanh lấp chỗ trống, nhãn IN HOA nhóm menu, nền hình tròn hoặc avatar minh họa; không dùng danh sách thẻ giống nhau thay bảng.
 - Không hero số lớn/nhãn nhỏ; trang chính là dữ liệu. Không nền kem với serif/đất nung, nền gần đen với neon, bố cục báo giấy hairline/cột dày/bo góc 0.
@@ -488,7 +509,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 #### 6. Form
 
 - Nhãn luôn hiện, placeholder không thay label; có gợi ý tìm chỉ tiêu ở đâu trên phiếu lương.
-- Ô tiền dùng inputmode numeric, đơn vị hiện riêng, tự format khi rời ô hợp lệ theo hợp đồng mục 5; không hỏng nhập decimal hiện có.
+- Ô tiền dùng inputmode decimal, tự tách hàng nghìn ngay khi gõ theo mục 5; không làm đổi nghĩa decimal hoặc trường tiền ẩn của hồ sơ cũ.
 - Lỗi có icon, cạnh ô, mô tả cách sửa; giữ nguyên input. Cảnh báo chồng giai đoạn và thiếu dữ liệu nằm ngay nơi liên quan, có link tới ô sửa.
 
 #### 7. Khả năng truy cập tối thiểu để phát hành
@@ -513,7 +534,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 ### Token CSS mẫu
 
 Các giá trị cứng chỉ được khai báo ở file token. Đây là mẫu kế hoạch, chưa phải CSS đang chạy.
-Chưa có tokens.css trong mã tại lần đối chiếu này; khi triển khai tạo đúng bộ dưới đây, không tự suy có một palette khác. Bốn màu ngữ nghĩa giữ giá trị từ bản plan trước; chỉ các vai trò brand/nền/chữ/viền được thay theo brief mới.
+Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; không tự suy có một palette khác. Bốn màu ngữ nghĩa giữ giá trị từ bản plan trước; chỉ các vai trò brand/nền/chữ/viền được thay theo brief mới.
 
 ```css
 :root {
@@ -601,7 +622,7 @@ Chưa có tokens.css trong mã tại lần đối chiếu này; khi triển khai
 | Tiêu đề và ngữ cảnh | h1, năm, phạm vi, trạng thái lưu, một nút chính | Mọi màn hình |
 | Button/link | Chính, phụ, nguy hiểm; nguy hiểm chỉ làm chính ở màn xác nhận | Lưu, tính, thêm/bỏ, xóa |
 | Field | Label, hint, error, đơn vị; text/select/checkbox/radio native, textarea | Form |
-| Ô tiền | Field text numeric, chuỗi gốc/hiển thị, đơn vị, thao tác chèn dấu phẩy khi cần | Mọi số tiền nhập |
+| Ô tiền | Field text decimal, phân nhóm ngay khi gõ, đơn vị, phần lẻ dấu phẩy | Mọi số tiền nhập |
 | Nhóm giai đoạn | Fieldset khoảng tháng + tiền + trạng thái; thêm/bỏ bằng button | Lịch lương/phụ thuộc |
 | Metadata disclosure | Nguồn, ghi chú, thời điểm; không giấu nhãn trạng thái | Mỗi giá trị/nhóm áp dụng |
 | Bảng dữ liệu | Header/row scope, số phải, tổng, khung cuộn/sticky | 12 tháng, bậc thuế, lịch sử |
@@ -622,22 +643,23 @@ Không thêm toast, wizard, skeleton động hoặc icon library. Biểu đồ c
 
 | Ngoại lệ | Phạm vi, lý do, cách kiểm |
 |---|---|
-| Breakpoint trong media query | CSS var không dùng trực tiếp trong điều kiện @media thông thường. Cho phép literal 48rem/64rem đúng token, chỉ trong layout.css; comment dẫn tên token, kiểm khi sửa token. Không thêm preprocessor chỉ vì việc này. |
+| Breakpoint trong media query | CSS var không dùng trực tiếp trong điều kiện @media thông thường. Cho phép literal 48rem/64rem đúng token, chỉ trong site.css; comment dẫn tên token, kiểm khi sửa token. Không thêm preprocessor chỉ vì việc này. |
 | Giá trị cấu trúc CSS | 0, auto, none, 100%, 1fr là cấu trúc, không phải cỡ thiết kế mới; cỡ nhìn thấy, màu, radius vẫn lấy token. |
+| inputmode decimal | Ô tiền dùng decimal để hỗ trợ phần lẻ dấu phẩy theo yêu cầu định dạng mới; đã thử trình duyệt, chưa khẳng định bàn phím thiết bị thật. |
 | System fallback khi font chưa tải | Tạm dùng system-ui qua token font-family để đọc được; không chốt typography/tabular bằng ảnh fallback. |
 
-Chưa có ngoại lệ khác. Mỗi đề xuất phải ghi màn hình, token bị vượt, lý do, ảnh thử và điều kiện gỡ; không dùng bảng này để hợp thức hóa giá trị tùy ý.
-Rà soát tự phê bình của kế hoạch: đã bỏ ý tưởng dải 12 chấm tiến độ trang trí, giữ văn bản độ phủ và bảng để không lặp thông tin. Chưa code nên chưa tuyên bố đã tự phê bình trên màn hình thật.
+Chưa có ngoại lệ màu hoặc typography khác. Mỗi đề xuất phải ghi màn hình, token bị vượt, lý do, ảnh thử và điều kiện gỡ; không dùng bảng này để hợp thức hóa giá trị tùy ý.
+Rà soát tự phê bình của kế hoạch: đã bỏ ý tưởng dải 12 chấm tiến độ trang trí, giữ văn bản độ phủ và bảng để không lặp thông tin. Đã rà màn hình thật trong đợt UI: bỏ vạch ngang của disclosure, thanh trên, footer và dòng tổng hợp theo phản hồi người dùng; dùng khoảng trắng thay thế. Chứng cứ trong báo cáo UI.
 
 ## 11. Các đợt phát hành UI
 
-Các checklist là phần chuẩn hóa UI chưa làm, không yêu cầu viết lại chức năng hiện có. Mỗi lần chỉ làm một màn hình, tái dùng thành phần đã xong.
-Ưu tiên hiện tại: hoàn tất freeze/review chặng 3 trước khi đổi các tệp UI cùng luồng; không tự sửa freeze hoặc nghiệm thu trong tác vụ thiết kế. Sau đó làm Đ1 rồi Đ2 trên nền năm đã có, không gỡ tính năm/lịch sử để ép về MVP cũ.
+Các checklist theo dõi phần chuẩn hóa UI; không yêu cầu viết lại chức năng hiện có. Mỗi lần chỉ làm một màn hình, tái dùng thành phần đã xong.
+Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết quả tính với hồ sơ forecast đã triển khai. Xem [kiểm chứng màn tháng](docs/reviews/2026-11-28-forecast-month.md). Thông tin định danh/đăng ký người phụ thuộc vẫn cần contract riêng; công cụ demo tháng giữ độc lập.
 
 | Đợt UI | Liên hệ roadmap / PLAN | Trạng thái nền ngày 28/11 và việc UI còn làm |
 |---|---|---|
-| Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã nghiệm thu nền nhập/lưu; chuẩn hóa token/sidebar/form/bảng chưa làm theo plan này. |
-| Đ2 | Chặng 3, bước 3.3 | Tính năm, thưởng, phụ thuộc giai đoạn, lịch sử đã có mã; chờ nghiệm thu. Tái bố trí, không viết lại service. |
+| Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã chuẩn hóa token/sidebar/form/bảng và nối chi tiết tháng từ forecast đã lưu; kiểm thử HTTP, host mới, axe và ba viewport qua. Còn nghiệm thu UX thủ công đầy đủ. |
+| Đ2 | Chặng 3, bước 3.3 | Nền chặng 3 đã done. Đã tái bố trí kết quả năm, thưởng, phụ thuộc theo số lượng và lịch sử; giữ service hiện có. |
 | Đ3 | Chặng 4, bước 4.1/4.2 | Chưa triển khai; cần chặng 3 xong trước xuất/checklist/backup. |
 | Đ4 | Chặng 5 | Chưa triển khai; chỉ bắt đầu sau chặng 4. |
 | Đ5 | Chặng 6 | Chưa triển khai; chỉ bắt đầu sau chặng 5. |
@@ -645,21 +667,21 @@ Các checklist là phần chuẩn hóa UI chưa làm, không yêu cầu viết l
 
 ### Đợt 1. Bản nhỏ nhất dùng được: nhập, lưu, mở và kiểm tháng
 
-- [ ] Tạo tokens.css đúng bộ màu chốt, sidebar/thanh trên/light mode, field tiền, badge, bảng, disclosure, error summary; thử font tiếng Việt và tabular-nums.
-- [ ] Danh sách hồ sơ và trang xác nhận xóa, giữ route hiện có.
-- [ ] Form giai đoạn, nguồn/ghi chú, ngoại lệ và bảng 12 tháng; chỉ một nút lưu chính.
-- [ ] Chi tiết tháng, sửa/lưu dữ liệu và xem bước tính/bậc/căn cứ trong phạm vi backend hiện có.
-- [ ] Công cụ `/` vẫn tính tháng 2025/2026; dữ liệu mẫu tách khỏi hồ sơ đang dùng.
-- [ ] Thử mất thay đổi, xung đột revision, lỗi tiền, chồng giai đoạn, thiếu khác 0 và giữ ngày nhập.
-- [ ] Xong khi: tạo hồ sơ synthetic, nhập một giai đoạn và một ngoại lệ, lưu, mở lại qua host mới cùng kho, sửa tháng và đọc được cách tính; QA mục 10.9 qua.
+- [x] Tạo tokens.css đúng bộ màu chốt, sidebar/thanh trên/light mode, field tiền, badge, bảng, disclosure, error summary; thử font tiếng Việt và tabular-nums.
+- [x] Danh sách hồ sơ và trang xác nhận xóa, giữ route hiện có.
+- [x] Form giai đoạn, nguồn/ghi chú, ngoại lệ và bảng 12 tháng; chỉ một nút lưu chính.
+- [x] Chi tiết tháng gắn hồ sơ forecast qua service chỉ đọc, bước tính/bậc/căn cứ đúng kỳ, xử lý thiếu/0/thưởng, mở editor đúng tháng và lưu chung hồ sơ. Kết quả tính khi mở, chưa lưu lịch sử tháng.
+- [x] Công cụ `/` vẫn tính tháng 2025/2026; dữ liệu mẫu tách khỏi hồ sơ đang dùng.
+- [x] Thử mất thay đổi, xung đột revision, lỗi tiền, chồng giai đoạn, thiếu khác 0 và giữ ngày nhập.
+- [ ] Nghiệm thu UX: luồng tạo/lưu, giai đoạn/ngoại lệ, mở qua host mới, sửa và đọc kết quả đã qua HTTP; ảnh ba kích thước và axe đã qua. Còn hoàn tất kiểm thủ công bàn phím, screenreader và zoom native theo yêu cầu QA, không thay bằng kết quả tự động.
 
 ### Đợt 2. Tổng hợp năm, đầu vào bổ sung và lịch sử
 
-- [ ] Chỉ chuẩn hóa UI sau khi mã contract/engine/lưu snapshot năm hiện có được nghiệm thu chặng 3; đọc lại bằng chứng ở đầu file để cập nhật trạng thái.
-- [ ] Tái dùng form thưởng có tháng nhận/đã gồm gross và số phụ thuộc theo giai đoạn; thông tin từng người/đăng ký là mở rộng cần phiếu và contract riêng, không lén thêm vào việc đổi bố cục.
-- [ ] Tổng quan năm và phần cách tính/bậc năm/căn cứ cùng trang; độ phủ nghĩa vụ và khấu trừ riêng.
-- [ ] Lịch sử/chi tiết snapshot dùng chung kết quả đọc; tính lại tạo bản mới, giữ bản cũ.
-- [ ] Xong khi: đủ dữ liệu ra nghĩa vụ năm đúng engine; thiếu khấu trừ không hiện chênh lệch; số tháng trạng thái đúng; đọc bản cũ không đổi sau cập nhật; QA qua.
+- [x] Chỉ chuẩn hóa UI sau khi mã contract/engine/lưu snapshot năm hiện có được nghiệm thu chặng 3; đọc lại bằng chứng ở đầu file để cập nhật trạng thái.
+- [x] Tái dùng form thưởng có tháng nhận/đã gồm gross và số phụ thuộc theo giai đoạn; thông tin từng người/đăng ký là mở rộng cần phiếu và contract riêng, không lén thêm vào việc đổi bố cục.
+- [x] Tổng quan năm và phần cách tính/bậc năm/căn cứ cùng trang; độ phủ nghĩa vụ và khấu trừ riêng.
+- [x] Lịch sử/chi tiết snapshot dùng chung kết quả đọc; tính lại tạo bản mới, giữ bản cũ.
+- [x] Xong khi: đủ dữ liệu ra nghĩa vụ năm đúng engine; thiếu khấu trừ không hiện chênh lệch; số tháng trạng thái đúng; đọc bản cũ không đổi sau cập nhật; QA qua.
 
 ### Đợt 3. Báo cáo, checklist, sao lưu và khôi phục
 
@@ -751,7 +773,7 @@ Ghi thời gian hoàn thành, chỗ cần trợ giúp, câu diễn giải của 
 | Bảo hiểm có tự tính? | Tự tính hoặc nhập phiếu lương | Nhập tay; không mở rộng luật/đối tượng trong tác vụ UI. |
 | Chồng giai đoạn? | Ghi đè có xác nhận hoặc bắt sửa khoảng | UI đích bắt sửa; khác preview hiện tại nên triển khai như thay đổi có kiểm chứng. |
 | Độ chính xác hiển thị? | Làm tròn đồng hoặc giữ số lẻ | Giữ chính xác, đồng nhất toàn cột; chưa tự thêm rounding policy. |
-| Numeric có nhập số lẻ được? | Numeric có chèn dấu phẩy hoặc decimal | Numeric theo brief; thử máy thật, chỉ đổi decimal sau khi ghi ngoại lệ có lý do. |
+| Bàn phím có nhập số lẻ được? | Decimal theo hợp đồng định dạng mới | Đã ghi ngoại lệ inputmode decimal; vẫn cần thử điện thoại vật lý. |
 | Báo cáo đầu tiên? | CSV tương thích Excel hoặc XLSX/PDF | CSV tham khảo trước; PDF đẹp và XLSX chỉ làm khi có nhu cầu, backup tách biệt. |
 | Nguồn có bắt buộc khi chọn thực tế? | Bắt buộc hoặc khuyến khích | Khuyến khích, có thể lưu chưa ghi nguồn; không gọi là đã xác minh. |
 | Xóa hồ sơ giữ gì? | Xóa thường hoặc purge có mục đích | Dùng đúng service hiện có và nói rõ phạm vi; không hứa xóa WAL/backups hay tự cung cấp purge vận hành. |
@@ -765,4 +787,4 @@ Ghi thời gian hoàn thành, chỗ cần trợ giúp, câu diễn giải của 
 - Chưa khảo sát giao diện các công cụ thuế Việt Nam; không kết luận chúng có hay không có các lỗi bị cấm trong brief.
 - Khuyến nghị font và line-height tiếng Việt là thực hành cần thử; chưa tải/đo file font hoặc chụp UI thì chưa coi là đã kiểm chứng.
 - Token màu là lựa chọn thiết kế; phải đo từng cặp thực dùng, trạng thái focus/lỗi và ảnh render, không suy chất lượng từ bảng màu.
-- Tài liệu này chưa triển khai màn hình, chưa chạy Lighthouse/axe, chưa thử với người dùng; checklist là điều kiện thực hiện, không phải kết quả nghiệm thu.
+- UI các luồng hiện có đã triển khai và chạy axe/QA như báo cáo ngày 28/11/2026; chưa thử với nhóm người dùng độc lập hoặc điện thoại vật lý. Các checkbox còn mở vẫn là điều kiện chưa đạt, không phải kết quả nghiệm thu.

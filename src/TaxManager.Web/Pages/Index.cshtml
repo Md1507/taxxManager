@@ -6,28 +6,29 @@
     string Money(decimal value) => value.ToString("#,0.############################", CultureInfo.GetCultureInfo("vi-VN"));
     string Input(string[] values, int index) => index < values.Length ? values[index] ?? "" : "";
 }
-<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Tính thuế lương</title><link rel="stylesheet" href="/site.css"></head>
-<body><a href="#main">Đến nội dung</a><main id="main"><h1>Tính thuế lương theo tháng</h1><p class="notice">Dữ liệu giả — chỉ dành cho demo.</p>
+@{
+    ViewData["Title"] = "Công cụ tính tháng";
+}
+<h1>Tính thuế lương theo tháng</h1><p class="notice">Dữ liệu giả, chỉ dành cho demo.</p>
 <p>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</p>
 <p><a href="/Forecast">Nhập lương theo giai đoạn</a></p>
 <p><a href="/?handler=Sample">Dùng dữ liệu giả mẫu</a></p>
-@if (Model.Error is not null) { <div role="alert" class="error">@Model.Error</div> }
-<form method="post"><label for="year">Năm</label><select id="year" name="year"><option value="2025" selected="@(Model.Year == 2025)">2025</option><option value="2026" selected="@(Model.Year == 2026)">2026</option></select>
-<p>Nhập số tiền không dùng dấu phân nhóm, dùng dấu phẩy cho phần lẻ.</p>
+<partial name="Shared/_SalaryTerms" />
+@if (Model.Error is not null) { <div role="alert" class="error-summary" tabindex="-1">@Model.Error</div> }
+<form method="post" autocomplete="off"><label for="year">Năm</label><select id="year" name="year"><option value="2025" selected="@(Model.Year == 2025)">2025</option><option value="2026" selected="@(Model.Year == 2026)">2026</option></select>
+<noscript><p>Khi tắt JavaScript, nhập số không phân nhóm như 123456789,50.</p></noscript><p>Số tiền tự tách hàng nghìn như 123.456.789; dùng dấu phẩy cho phần lẻ, ví dụ 1.234.567,50.</p>
 @for (var i = 0; i < 12; i++) { <fieldset class="month"><legend>Tháng @(i + 1)</legend><label>Lương <input name="gross" inputmode="decimal" value="@Input(Model.Gross, i)" required></label><label>Bảo hiểm nhập tay <input name="insurance" inputmode="decimal" value="@Input(Model.Insurance, i)" required></label><label>Thuế đã khấu trừ <input name="withheld" inputmode="decimal" value="@Input(Model.Withheld, i)" required></label></fieldset> }
-<button type="submit">Tính 12 tháng</button></form>
+<button class="primary" type="submit">Tính 12 tháng</button></form>
 @if (Model.Results is not null) {
 <section><h2>Kết quả 12 tháng</h2><p>Kết quả chỉ mang tính tham khảo; dữ liệu giả.</p>
 @foreach (var snapshot in Model.Results) {
-<details><summary>Tháng @snapshot.Month — Thuế @Money(snapshot.Result.TotalTax.Value) đồng</summary>
-<p>Luật @snapshot.Rules.RuleId, phiên bản @snapshot.Rules.Version, kỳ @snapshot.Rules.PeriodFrom – @snapshot.Rules.PeriodTo. Nguồn tham khảo References.</p>
-<table><caption>Các bước tính</caption><tbody>
+<details><summary>Tháng @snapshot.Month, Thuế @Money(snapshot.Result.TotalTax.Value) đ</summary>
+<p>Luật @snapshot.Rules.RuleId, phiên bản @snapshot.Rules.Version, kỳ @snapshot.Rules.PeriodFrom – @snapshot.Rules.PeriodTo. Bộ quy tắc tham khảo.</p>
+<div class="table-scroll" role="region" aria-label="Chi tiết tính tháng" tabindex="0"><table><caption>Các bước tính</caption><tbody>
 @foreach (var row in new (string Label, CalculationAmountSnapshot Amount)[] { ("Lương", snapshot.Result.GrossIncome), ("Bảo hiểm", snapshot.Result.Insurance), ("Giảm trừ bản thân", snapshot.Result.PersonalDeduction), ("Giảm trừ người phụ thuộc", snapshot.Result.DependentDeduction), ("Thu nhập tính thuế trước giới hạn", snapshot.Result.TaxableIncomeBeforeClamp), ("Thu nhập tính thuế", snapshot.Result.PitTaxableIncome), ("Thuế", snapshot.Result.TotalTax) }) {
-<tr><th scope="row">@row.Label</th><td>@Money(row.Amount.Value)</td><td><partial name="_Basis" model="new TaxManager.Web.LegalCitations.BasisView(row.Label, snapshot, row.Amount.Basis)" /></td></tr> }
-</tbody></table><p>Thuế đã khấu trừ: @Money(snapshot.Input.ActualWithheldTax)</p>
-<table class="brackets"><caption>Từng bậc thuế</caption><thead><tr><th>Bậc</th><th>Thu nhập chịu thuế</th><th>Thuế</th><th>Căn cứ</th></tr></thead><tbody>
+<tr><th scope="row">@row.Label</th><td class="money">@Money(row.Amount.Value)</td><td><partial name="_Basis" model="new TaxManager.Web.LegalCitations.BasisView(row.Label, snapshot, row.Amount.Basis)" /></td></tr> }
+</tbody></table></div><p>Thuế đã khấu trừ: @Money(snapshot.Input.ActualWithheldTax)</p>
+<div class="table-scroll" role="region" aria-label="Chi tiết tính tháng" tabindex="0"><table class="brackets"><caption>Từng bậc thuế</caption><thead><tr><th scope="col">Bậc</th><th scope="col" class="money">Thu nhập chịu thuế</th><th scope="col" class="money">Thuế</th><th scope="col">Căn cứ</th></tr></thead><tbody>
 @foreach (var portion in snapshot.Result.Portions) { var basisView = new TaxManager.Web.LegalCitations.BasisView("bậc thuế", snapshot, portion.Basis); <tr><td data-label="Bậc">@Money(portion.LowerBound) – @(portion.UpperBound is null ? "trở lên" : Money(portion.UpperBound.Value)) (@Money(portion.Rate * 100)%)</td><td data-label="Thu nhập chịu thuế">@Money(portion.TaxableAmount)</td><td data-label="Thuế">@Money(portion.Tax)</td><td><partial name="_Basis" model="basisView" /></td></tr> }
-</tbody></table></details> }
+</tbody></table></div></details> }
 </section> }
-</main><script src="/citation.js" defer></script></body></html>

@@ -694,7 +694,7 @@ public sealed class AnnualSavedProfileBlackBoxTests
     {
         var dates = Fields(page.Html).Where(p => Regex.IsMatch(p.Key, "Entered|Nhập|Timestamp", RegexOptions.IgnoreCase))
             .OrderBy(p => p.Key).ToArray();
-        var displayed = Regex.Matches(Text(page.Html), @"\b\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+UTC\b")
+        var displayed = Regex.Matches(Text(page.Html), @"\b\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+giờ Việt Nam\b")
             .Select(m => m.Value).Order().ToArray();
         return dates.Select(p => p.Key + "=" + p.Value).Concat(displayed).Order(StringComparer.Ordinal).ToArray();
     }

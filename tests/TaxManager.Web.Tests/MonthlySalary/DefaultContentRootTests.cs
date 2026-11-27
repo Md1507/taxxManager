@@ -25,7 +25,7 @@ public sealed class DefaultContentRootTests
             await app.StartAsync();
             var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
             using var client = new HttpClient { BaseAddress = new Uri(address) };
-            foreach (var (path, expectedType, content) in new[] { ("/site.css", "text/css", "--accent"), ("/citation.js", "text/javascript", "Escape") })
+            foreach (var (path, expectedType, content) in new[] { ("/site.css", "text/css", "var(--brand)"), ("/citation.js", "text/javascript", "Escape") })
             {
                 using var response = await client.GetAsync(path);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);

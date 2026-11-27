@@ -1,0 +1,7 @@
+@model TaxManager.Core.Forecasting.ForecastStatus
+@using TaxManager.Core.Forecasting
+@{
+    var label = Model switch { ForecastStatus.Actual => "Thực tế", ForecastStatus.Planned => "Dự kiến", _ => "Giả định" };
+    var kind = Model switch { ForecastStatus.Actual => "actual", ForecastStatus.Planned => "planned", _ => "assumed" };
+}
+<span class="badge @kind"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">@if (Model == ForecastStatus.Actual) { <rect x="3" y="3" width="10" height="10" /> } else if (Model == ForecastStatus.Planned) { <circle cx="8" cy="8" r="5" /> } else { <path d="M8 2 L14 14 H2 Z" /> }</svg>@label</span>

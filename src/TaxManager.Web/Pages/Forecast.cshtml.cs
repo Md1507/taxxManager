@@ -23,13 +23,14 @@ public sealed class ForecastAmountBinder : IModelBinder
         context.ModelState.SetModelValue(context.ModelName, input);
         var text = input.FirstValue ?? "";
         if (text.Length == 0) context.Result = ModelBindingResult.Success(null);
-        else if (Regex.IsMatch(text, @"^(0|[1-9][0-9]*)([,.][0-9]{1,28})?$", RegexOptions.CultureInvariant) &&
-            decimal.TryParse(text.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value) &&
-            value.ToString(CultureInfo.InvariantCulture) == text.Replace(',', '.'))
+        else if (MoneyInput.TryParse(text, context.ValueProvider.GetValue("AmountFormat").FirstValue == MoneyInput.GroupedFormat, out var value))
             context.Result = ModelBindingResult.Success(value);
         else
         {
-            context.ModelState.TryAddModelError(context.ModelName, "Nhập số tiền không âm, không dùng dấu phân cách hàng nghìn (ví dụ 30000000,50).");
+            var grouped = context.ValueProvider.GetValue("AmountFormat").FirstValue == MoneyInput.GroupedFormat;
+            context.ModelState.TryAddModelError(context.ModelName, grouped
+                ? "Số tiền chưa đúng định dạng. Dùng dấu chấm phân cách hàng nghìn và dấu phẩy cho phần lẻ, ví dụ 30.000.000,50."
+                : "Nhập số tiền không âm, không dùng dấu phân cách hàng nghìn (ví dụ 30000000,50).");
             context.Result = ModelBindingResult.Success(null);
         }
         return Task.CompletedTask;
@@ -55,6 +56,7 @@ public sealed class ForecastModel : PageModel
     public AnnualCalculationSnapshot? AnnualResult { get; private set; }
     public ForecastCompleteness? Completeness { get; private set; }
     public IReadOnlyList<AnnualCalculationSnapshot> AnnualHistory { get; private set; } = [];
+    public bool SavedInputConfirmed { get; private set; }
     private sealed record SavedDraft(int FromMonth, int ToMonth, decimal? Gross, ForecastStatus Status,
         string? Source, string? Note, List<PeriodInput> Periods, List<ExceptionInput> Exceptions, string Stamps,
         List<BonusInput>? Bonuses = null, List<DependentPeriodInput>? DependentPeriods = null);
@@ -126,7 +128,7 @@ public sealed class ForecastModel : PageModel
     public IReadOnlyList<ForecastDependentPeriod> DependentPeriodPreview { get; private set; } = [];
     public IReadOnlyList<int> ReplacedPeriodMonths { get; private set; } = [];
 
-    public async Task OnGetAsync(Guid? id)
+    public async Task OnGetAsync(Guid? id, int? month)
     {
         try
         {
@@ -143,8 +145,11 @@ public sealed class ForecastModel : PageModel
             DependentPeriods = draft.DependentPeriods is { Count: > 0 } ? draft.DependentPeriods : [new()];
             DraftToken = draftProtector.Protect(draft.Stamps);
             ProfileId = document.Id; Revision = document.Revision;
+            SavedInputConfirmed = true;
             AnnualHistory = await new AnnualForecastService(context).HistoryAsync(document.Id);
             EnsureExceptionSlots();
+            if (month is >= 1 and <= 12) SelectedMonth = month.Value;
+            BuildPreview(requireSeparatePeriods: false);
         }
         catch (Exception ex) when (ex is DataProtectionException or JsonException or DbUpdateException)
         { ModelState.AddModelError(string.Empty, "Không thể mở hồ sơ: kiểm tra khóa bảo vệ và dữ liệu."); }
@@ -162,7 +167,7 @@ public sealed class ForecastModel : PageModel
             var store = new ForecastStore(context);
             var id = ProfileId ?? await store.CreateAsync(payload);
             if (ProfileId is not null) await store.UpdateAsync(id, Revision, payload);
-            return RedirectToPage("/Forecast", new { id });
+            return RedirectToPage("/Forecast", new { id, month = SelectedMonth > 0 ? (int?)SelectedMonth : null });
         }
         catch (Exception ex) when (ex is DataProtectionException or InvalidOperationException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException)
         {
@@ -173,7 +178,7 @@ public sealed class ForecastModel : PageModel
 
     public async Task<IActionResult> OnPostCalculateAsync()
     {
-        OnPostPreview();
+        BuildPreview(requireSeparatePeriods: false);
         if (!ModelState.IsValid || Preview is null) return Page();
         if (ProfileId is null)
         {
@@ -196,6 +201,7 @@ public sealed class ForecastModel : PageModel
                 ModelState.AddModelError(string.Empty, "Bạn có thay đổi chưa lưu. Hãy lưu hồ sơ trước khi tính năm.");
                 return Page();
             }
+            SavedInputConfirmed = true;
             var attempt = await new AnnualForecastService(context).CalculateAsync(ProfileId.Value, Revision);
             Completeness = attempt.Completeness;
             AnnualResult = attempt.Snapshot;
@@ -210,6 +216,28 @@ public sealed class ForecastModel : PageModel
     }
 
     public static string FormatAmount(decimal amount) => amount.ToString("N" + ((decimal.GetBits(amount)[3] >> 16) & 0x7f), CultureInfo.GetCultureInfo("vi-VN"));
+    public static string LocalTime(DateTimeOffset value) => value.ToOffset(TimeSpan.FromHours(7))
+        .ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("vi-VN"));
+
+    public string DescribeMissing(ForecastDocument document)
+    {
+        var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
+        var missing = new List<string>();
+        foreach (var month in Enumerable.Range(1, 12))
+        {
+            var entry = draft.Exceptions.FirstOrDefault(e => e.Month == month);
+            var gross = entry?.Gross ?? draft.Periods.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Gross
+                ?? (draft.FromMonth <= month && draft.ToMonth >= month ? draft.Gross : null);
+            var dependents = entry?.Dependents ?? draft.DependentPeriods?.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Count;
+            var fields = new List<string>();
+            if (gross is null) fields.Add("gross");
+            if (entry?.Insurance is null) fields.Add("bảo hiểm");
+            if (dependents is null) fields.Add("người phụ thuộc");
+            if (entry?.Withheld is null) fields.Add("khấu trừ");
+            if (fields.Count > 0) missing.Add($"Tháng {month}: {string.Join(", ", fields)}");
+        }
+        return missing.Count == 0 ? "Đã nhập đủ bốn chỉ tiêu cho 12 tháng" : string.Join("; ", missing);
+    }
 
     public bool HasMonthData(int index)
     {
@@ -315,8 +343,11 @@ public sealed class ForecastModel : PageModel
         return Page();
     }
 
-    public IActionResult OnPostPreview()
+    public IActionResult OnPostPreview() => BuildPreview(requireSeparatePeriods: true);
+
+    private IActionResult BuildPreview(bool requireSeparatePeriods)
     {
+        EnsureExceptionSlots();
         void ValidatePeriod(string prefix, string label, int from, int to, decimal? gross, ForecastStatus status, string? note)
         {
             if (from is < 1 or > 12) ModelState.AddModelError(prefix + "FromMonth", $"{label}: chọn tháng từ 1 đến 12.");
@@ -332,6 +363,22 @@ public sealed class ForecastModel : PageModel
             var grossKey = $"Periods[{i}].Gross";
             if (p.Gross is null && ModelState[grossKey]?.Errors.Count is not > 0)
                 ModelState.AddModelError(grossKey, $"Giai đoạn thay đổi {i + 1}: hãy nhập lương gross mỗi tháng, hoặc bỏ giai đoạn này.");
+        }
+        if (requireSeparatePeriods)
+        {
+            var occupied = new HashSet<int>();
+            if (Gross is not null && FromMonth is >= 1 and <= 12 && ToMonth >= FromMonth && ToMonth <= 12)
+                occupied.UnionWith(Enumerable.Range(FromMonth, ToMonth - FromMonth + 1));
+            for (var i = 0; i < Periods.Count; i++)
+            {
+                var p = Periods[i];
+                if (p.Gross is null || p.FromMonth is < 1 or > 12 || p.ToMonth < p.FromMonth || p.ToMonth > 12) continue;
+                var months = Enumerable.Range(p.FromMonth, p.ToMonth - p.FromMonth + 1).ToArray();
+                var overlap = months.Where(occupied.Contains).ToArray();
+                if (overlap.Length > 0)
+                    ModelState.AddModelError($"Periods[{i}].FromMonth", $"Hai giai đoạn cùng áp dụng cho tháng {string.Join(", ", overlap)}. Sửa khoảng tháng trước khi lưu.");
+                occupied.UnionWith(months);
+            }
         }
         for (var i = 0; i < Bonuses.Count; i++)
         {

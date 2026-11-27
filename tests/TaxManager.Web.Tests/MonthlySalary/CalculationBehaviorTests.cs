@@ -23,12 +23,12 @@ public sealed class CalculationBehaviorTests
             year == 2025 ? TaxRuleSet.Vietnam2025 : TaxRuleSet.Vietnam2026);
         var expectedSteps = new[] { result.GrossIncome.Value, result.Insurance.Value, result.PersonalDeduction.Value,
             result.DependentDeduction.Value, result.TaxableIncomeBeforeClamp.Value, result.Pit.TaxableIncome.Value, result.Pit.TotalTax.Value };
-        var months = Regex.Split(html, @"<details><summary>Tháng \d+ — Thuế ").Skip(1).ToArray();
+        var months = Regex.Split(html, @"<details><summary>Tháng \d+, Thuế ").Skip(1).ToArray();
         Assert.Equal(12, months.Length);
         foreach (var month in months)
         {
             var stepsTable = month[..month.IndexOf("</table>", StringComparison.Ordinal)];
-            var steps = Regex.Matches(stepsTable, "<tr><th scope=\"row\">.*?</th><td>(.*?)</td>")
+            var steps = Regex.Matches(stepsTable, "<tr><th scope=\"row\">.*?</th><td class=\"money\">(.*?)</td>")
                 .Select(m => WebUtility.HtmlDecode(m.Groups[1].Value)).ToArray();
             Assert.Equal(expectedSteps.Select(Money), steps);
             var bracketTable = month[(month.IndexOf("<table class=\"brackets\">", StringComparison.Ordinal))..];

@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TaxManager.Data.CalculationHistory;
@@ -30,7 +28,7 @@ public sealed class IndexModel(ISalaryCalculator calculator) : PageModel
             return new ContentResult { StatusCode = StatusCodes.Status415UnsupportedMediaType,
                 ContentType = "text/plain; charset=utf-8", Content = "Không hỗ trợ định dạng dữ liệu; vui lòng gửi biểu mẫu." };
         var form = await Request.ReadFormAsync();
-        var allowed = new HashSet<string>(StringComparer.Ordinal) { "year", "gross", "insurance", "withheld", "__RequestVerificationToken" };
+        var allowed = new HashSet<string>(StringComparer.Ordinal) { "year", "gross", "insurance", "withheld", "__RequestVerificationToken", "AmountFormat" };
         if (form.Keys.Any(key => !allowed.Contains(key)) || form["year"].Count != 1 ||
             !int.TryParse(form["year"], out var year) || year is not (2025 or 2026))
         {
@@ -47,12 +45,15 @@ public sealed class IndexModel(ISalaryCalculator calculator) : PageModel
             return Page();
         }
         var months = new List<SalaryInput>();
+        var grouped = form["AmountFormat"] == MoneyInput.GroupedFormat;
         for (var i = 0; i < 12; i++)
         {
-            if (!TryAmount(Gross[i], out var gross) || !TryAmount(Insurance[i], out var insurance) ||
-                !TryAmount(Withheld[i], out var withheld))
+            if (!MoneyInput.TryParse(Gross[i], grouped, out var gross) || !MoneyInput.TryParse(Insurance[i], grouped, out var insurance) ||
+                !MoneyInput.TryParse(Withheld[i], grouped, out var withheld))
             {
-                Error = $"Tháng {i + 1}: nhập số tiền không âm, không dùng dấu phân nhóm và tối đa 28 chữ số thập phân.";
+                Error = grouped
+                    ? $"Tháng {i + 1}: nhập số tiền không âm như 30.000.000,50; dùng dấu phẩy cho phần lẻ (tối đa 28 chữ số)."
+                    : $"Tháng {i + 1}: nhập số tiền không âm, không dùng dấu phân nhóm và tối đa 28 chữ số thập phân.";
                 return Page();
             }
             months.Add(new SalaryInput(gross, insurance, withheld));
@@ -65,11 +66,4 @@ public sealed class IndexModel(ISalaryCalculator calculator) : PageModel
         return Page();
     }
 
-    private static bool TryAmount(string text, out decimal value)
-    {
-        value = 0;
-        return Regex.IsMatch(text, @"^(0|[1-9][0-9]*)([,.][0-9]{1,28})?$", RegexOptions.CultureInvariant) &&
-               decimal.TryParse(text.Replace(',', '.'), NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out value) &&
-               value.ToString(CultureInfo.InvariantCulture) == text.Replace(',', '.');
-    }
 }

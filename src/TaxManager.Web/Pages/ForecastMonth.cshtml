@@ -1,0 +1,92 @@
+@page "/ho-so/{id:guid}/thang/{month:int}"
+@model TaxManager.Web.Pages.ForecastMonthModel
+@using TaxManager.Web.Pages
+@using TaxManager.Core
+@using TaxManager.Core.Forecasting
+@{
+    ViewData["Title"] = Model.Month is { } view ? $"Tháng {view.Input.Month}/{view.Year}" : "Chi tiết tháng";
+    ViewData["ProfileId"] = Model.ProfileId == Guid.Empty ? null : Model.ProfileId;
+    ViewData["Context"] = Model.Month is { } saved ? $"Hồ sơ năm {saved.Year} / bản {saved.Revision}" : "Chi tiết tháng";
+    string Amount(decimal value) => ForecastModel.FormatAmount(value);
+}
+@if (Model.Error is { } error) {
+<h1>Chi tiết tháng</h1><div class="error-summary" role="alert" tabindex="-1"><h2>Chưa mở được tháng</h2><p>@error</p></div>
+<p><a asp-page="/Forecast" asp-route-id="@(Model.ProfileId == Guid.Empty ? null : (Guid?)Model.ProfileId)">@(Model.ProfileId == Guid.Empty ? "Trở lại danh sách hồ sơ" : "Mở lại hồ sơ")</a></p>
+}
+@if (Model.Month is { } month) {
+<p><a asp-page="/Forecast" asp-route-id="@month.DocumentId" asp-fragment="bang-thang">Trở lại bảng 12 tháng</a></p>
+<div class="page-heading"><div><h1>Tháng @month.Input.Month/@month.Year</h1><p>Đọc từ bản lưu @month.Revision. Chỉ dùng dữ liệu mẫu.</p></div>
+<a class="button primary" asp-page="/Forecast" asp-route-id="@month.DocumentId" asp-route-month="@month.Input.Month" asp-fragment="sua-thang">Sửa tháng @month.Input.Month</a></div>
+<nav class="month-navigation" aria-label="Chọn tháng trong hồ sơ">
+@for (var number = 1; number <= 12; number++) {
+<a asp-page="/ForecastMonth" asp-route-id="@month.DocumentId" asp-route-month="@number" asp-route-revision="@month.Revision" aria-current="@(number == month.Input.Month ? "page" : null)"><span class="visually-hidden">Tháng </span>@number</a>
+}
+</nav>
+@if (month.Missing.Count > 0) {
+<section class="empty-state" aria-labelledby="missing-heading"><h2 id="missing-heading">Chưa đủ dữ liệu tính thuế tháng</h2><p>Bổ sung và lưu các chỉ tiêu còn thiếu:</p>
+<ul>@foreach (var field in month.Missing) { <li>@(field switch { ForecastInputKind.Gross => "Lương gross", ForecastInputKind.Insurance => "Bảo hiểm bắt buộc", _ => "Số người phụ thuộc" })</li> }</ul>
+<p>Ô trống là chưa biết; 0 là giá trị đã nhập. Thiếu khấu trừ không chặn tính thuế tháng.</p></section>
+}
+@if (month.Result is { } summary) {
+<section aria-labelledby="month-result-heading"><h2 id="month-result-heading">Thuế tháng tạm tính</h2>
+<p class="month-tax">@Amount(summary.Pit.TotalTax.Value) đ</p><partial name="Shared/_ForecastStatus" model="month.Status!.Value" />
+<p>Tính khi mở từ bản lưu @month.Revision và bộ luật đang lưu; kết quả này chưa lưu vào lịch sử.</p>
+@if (month.Difference is { } difference) { <p>Chênh lệch thuế tạm tính − khấu trừ đã nhập: @(difference > 0 ? "+" : "")@Amount(difference) đ. Đây là đối chiếu tháng, chưa phải kết quả quyết toán hoặc khoản được hoàn.</p> }
+else { <p>Chưa nhập khấu trừ tháng này nên chưa có chênh lệch. Thuế tháng vẫn tính được.</p> }
+</section>
+}
+<section aria-labelledby="month-input-heading"><h2 id="month-input-heading">Dữ liệu đã lưu</h2>
+<dl class="annual-totals">
+@foreach (var row in new[] { ("Lương gross", month.Input.Gross), ("Bảo hiểm bắt buộc nhập tay", month.Input.Insurance), ("Thuế đã hoặc dự kiến khấu trừ", month.Input.Withheld) }) {
+<dt>@row.Item1</dt><dd>@(row.Item2 is { } value ? Amount(value.Value) + " đ" : "Chưa nhập") @if (row.Item2 is { } entry) { <partial name="Shared/_ForecastStatus" model="entry.Status" /> }</dd>
+}
+<dt>Người phụ thuộc</dt><dd>@(month.Input.Dependents is { } dependents ? dependents.Value.ToString() : "Chưa nhập") @if (month.Input.Dependents is { } dependent) { <partial name="Shared/_ForecastStatus" model="dependent.Status" /> }</dd>
+</dl>
+<details><summary>Lương gross và lương net là gì?</summary><partial name="Shared/_SalaryTerms" /></details>
+<details><summary>Nguồn, ghi chú và ngày nhập</summary>
+@foreach (var row in new[] { ("Lương gross", month.Input.Gross), ("Bảo hiểm", month.Input.Insurance), ("Khấu trừ", month.Input.Withheld) }) {
+@if (row.Item2 is { } entry) { <h3>@row.Item1</h3><p>Nguồn: @(entry.Source ?? "Chưa ghi"). Ghi chú: <span class="entry-note">@entry.Note</span></p><p>Ngày nhập: @ForecastModel.LocalTime(entry.EnteredAt) giờ Việt Nam.</p> }
+}
+@if (month.Input.Dependents is { } entryCount) { <h3>Người phụ thuộc</h3><p>Nguồn: @(entryCount.Source ?? "Chưa ghi"). Ghi chú: <span class="entry-note">@entryCount.Note</span></p><p>Ngày nhập: @ForecastModel.LocalTime(entryCount.EnteredAt) giờ Việt Nam. Thông tin tự nhập không xác nhận đăng ký người phụ thuộc.</p> }
+</details>
+@if (month.Bonuses.Count > 0) {
+<details><summary>Thưởng tháng @month.Input.Month (@month.Bonuses.Count khoản)</summary>
+@foreach (var bonus in month.Bonuses) {
+<p>@Amount(bonus.Amount.Value) đ; @(bonus.IncludedInGross ? "đã gồm trong gross, không cộng trùng" : "cộng thêm vào gross"). <partial name="Shared/_ForecastStatus" model="bonus.Amount.Status" /></p>
+<p>Nguồn: @(bonus.Amount.Source ?? "Chưa ghi"). Ghi chú: <span class="entry-note">@bonus.Amount.Note</span></p><p>Ngày nhập: @ForecastModel.LocalTime(bonus.Amount.EnteredAt) giờ Việt Nam.</p>
+}
+</details>
+}
+</section>
+@if (month.Result is { } result) {
+<section aria-labelledby="month-steps-heading"><h2 id="month-steps-heading">Cách tính thuế tháng</h2>
+<p>Trạng thái kết quả tính theo gross, bảo hiểm, người phụ thuộc và thưởng, độc lập với khấu trừ.</p>
+<div class="table-scroll" role="region" aria-label="Các bước tính thuế tháng" tabindex="0"><table><caption>Các bước tính tháng @month.Input.Month</caption><thead><tr><th scope="col">Chỉ tiêu</th><th scope="col" class="money">Số tiền</th></tr></thead><tbody>
+<tr><th scope="row">Gross đã lưu</th><td class="money">@Amount(month.Input.Gross!.Value) đ</td></tr>
+<tr><th scope="row">Thưởng cộng thêm ngoài gross</th><td class="money">@Amount(month.Bonuses.Where(b => !b.IncludedInGross).Sum(b => b.Amount.Value)) đ</td></tr>
+@foreach (var row in new (string Label, decimal Value)[] { ("Tổng gross dùng tính tháng", result.GrossIncome.Value), ("Trừ bảo hiểm", result.Insurance.Value), ("Trừ giảm trừ bản thân", result.PersonalDeduction.Value), ("Trừ giảm trừ người phụ thuộc", result.DependentDeduction.Value), ("Thu nhập tính thuế trước giới hạn", result.TaxableIncomeBeforeClamp.Value), ("Thu nhập tính thuế (tối thiểu 0)", result.TaxableIncome.Value), ("Thuế tháng tạm tính", result.Pit.TotalTax.Value) }) {
+<tr><th scope="row">@row.Label</th><td class="money">@Amount(row.Value) đ</td></tr>
+}
+</tbody></table></div>
+<details><summary>Từng bậc thuế tháng</summary><div class="table-scroll" role="region" aria-label="Bậc thuế tháng" tabindex="0"><table class="forecast-preview"><caption>Biểu thuế tháng, không phải biểu thuế năm</caption><thead><tr><th scope="col">Khoảng thu nhập</th><th scope="col" class="money">Thuế suất</th><th scope="col" class="money">Phần chịu thuế</th><th scope="col" class="money">Tiền thuế</th></tr></thead><tbody>
+@foreach (var portion in result.Pit.Portions) {
+<tr><th scope="row">Trên @Amount(portion.LowerBound) đến @(portion.UpperBound is { } upper ? Amount(upper) + " đ" : "không giới hạn")</th><td class="money">@Amount(portion.Rate * 100)%</td><td class="money">@Amount(portion.TaxableAmount) đ</td><td class="money">@Amount(portion.Tax) đ</td></tr>
+}
+</tbody></table></div></details>
+<p>Thuế năm được tính riêng từ tổng thu nhập và giảm trừ cả năm; không cộng thuế 12 tháng để thay nghĩa vụ năm.</p>
+</section>
+<section aria-labelledby="month-rules-heading"><h2 id="month-rules-heading">Căn cứ áp dụng</h2>
+<p>Luật @month.Registration!.RuleSet.Id, phiên bản @month.Registration.RuleSet.Version. Kỳ áp dụng @month.Registration.PeriodFrom.ToString("dd/MM/yyyy") – @month.Registration.PeriodTo.ToString("dd/MM/yyyy").</p>
+<p>Bộ quy tắc tham khảo; trạng thái nguồn độc lập với trạng thái thực tế/dự kiến/giả định của đầu vào.</p>
+@foreach (var basis in new (string Label, LegalBasis Value)[] { ("Giảm trừ bản thân", result.PersonalDeduction.Basis), ("Giảm trừ người phụ thuộc", result.DependentDeduction.Basis), ("Thu nhập tính thuế", result.TaxableIncome.Basis), ("Biểu thuế tháng", result.Pit.TotalTax.Basis) }) {
+<h3>@basis.Label</h3><partial name="Shared/_ForecastBasis" model="basis.Value" />
+}
+@if (month.Bonuses.Count > 0) {
+<h3>Thưởng chịu thuế và thời điểm ghi nhận</h3>
+<partial name="Shared/_ForecastBasis" model="month.Registration.RuleSet.CashBonusRules!.TaxableBasis" />
+<partial name="Shared/_ForecastBasis" model="month.Registration.RuleSet.CashBonusRules!.TimingBasis" />
+}
+<p>Phạm vi: cá nhân cư trú, một nơi trả lương, thưởng tiền chịu thuế và bảo hiểm nhập tay. Chưa hỗ trợ khoản miễn thuế hoặc thu nhập từ nơi trả khác trong hồ sơ này.</p>
+</section>
+}
+}

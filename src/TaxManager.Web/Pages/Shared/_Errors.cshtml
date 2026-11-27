@@ -1,0 +1,13 @@
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="error-summary" role="alert" tabindex="-1" autofocus="autofocus" aria-labelledby="error-title">
+        <h2 id="error-title">Kiểm tra thông tin trước khi tiếp tục</h2>
+        <ul>
+        @foreach (var entry in ViewData.ModelState.Where(e => e.Value?.Errors.Count > 0)) {
+            @foreach (var error in entry.Value!.Errors) {
+                <li>@if (entry.Key.Length > 0) { <a href="#@entry.Key.Replace(".", "_").Replace("[", "_").Replace("]", "_")">@error.ErrorMessage</a> } else { @error.ErrorMessage }</li>
+            }
+        }
+        </ul>
+    </div>
+}

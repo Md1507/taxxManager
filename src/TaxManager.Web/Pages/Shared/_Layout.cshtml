@@ -1,0 +1,44 @@
+@{
+    var page = ViewContext.RouteData.Values["page"]?.ToString();
+    var profile = ViewData["ProfileId"]?.ToString();
+    var forecast = profile is null ? "/Forecast" : "/Forecast?id=" + profile;
+}
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>@ViewData["Title"] | TaxManager</title>
+    <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/site.css" asp-append-version="true" />
+    <script src="/workspace.js" defer asp-append-version="true"></script>
+    <script src="/citation.js" defer></script>
+</head>
+<body data-amount-format="@(ViewContext.HttpContext.Request.HasFormContentType && ViewContext.HttpContext.Request.Form["AmountFormat"] == TaxManager.Web.MoneyInput.GroupedFormat ? TaxManager.Web.MoneyInput.GroupedFormat : "canonical")">
+<a class="skip-link" href="#main">Đến nội dung</a>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="wordmark" href="/Forecast">TaxManager</a>
+        <p class="sidebar-caption">Thuế thu nhập cá nhân</p>
+        <nav aria-label="Điều hướng chính">
+            <a href="/Forecast" aria-current="@(page == "/Forecast" && profile is null ? "page" : null)">Hồ sơ thuế</a>
+            <a href="@(forecast + "#du-lieu")" aria-current="@((page == "/Forecast" && profile is not null) || page == "/ForecastMonth" ? "page" : null)">Dữ liệu 12 tháng</a>
+            <a href="@(forecast + "#tong-quan")">Tổng quan năm</a>
+            <a href="@(forecast + "#nguoi-phu-thuoc")">Người phụ thuộc</a>
+            @if (profile is not null) {
+                <a href="/ForecastAnnualHistory?id=@profile" aria-current="@(page == "/ForecastAnnualHistory" ? "page" : null)">Lịch sử tính</a>
+            }
+            <a href="/" aria-current="@(page == "/Index" ? "page" : null)">Công cụ tính tháng</a>
+        </nav>
+        <p class="local-note">Dữ liệu mẫu trên máy này.<br />Không nhập dữ liệu cá nhân thật.</p>
+    </aside>
+    <div class="workspace">
+        <header class="topbar"><span>@(ViewData["Context"] ?? "Không gian thuế cá nhân")</span><span class="environment">Demo local</span></header>
+        <main id="main" tabindex="-1">@RenderBody()</main>
+        <footer>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</footer>
+    </div>
+</div>
+</body>
+</html>

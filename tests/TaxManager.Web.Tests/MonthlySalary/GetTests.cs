@@ -77,6 +77,6 @@ public class GetTests
         using var client = new HttpClient { BaseAddress = host.Address };
         using var response = await client.GetAsync("/site.css");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("--accent", await response.Content.ReadAsStringAsync());
+        Assert.Contains("var(--brand)", await response.Content.ReadAsStringAsync());
     }
 }

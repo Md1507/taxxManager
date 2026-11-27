@@ -80,3 +80,8 @@ mobile vật lý; chưa kiểm screenreader hay zoom native 200%. Review vòng 3
 hiện đường `dotnet run` chuẩn trả 404 cho CSS/JS; sau sửa, HTTP GET `/`, `/site.css`
 và `/citation.js` đều trả 200 với nội dung. Root đã smoke lại đường chạy chuẩn ngày
 24/11/2026; bằng chứng chi tiết nằm trong lịch sử browser-qa của phiếu Bint.
+
+
+UI cập nhật ngày 28/11/2026: các route hiện có dùng layout/sidebar, Inter tự host và bộ token trong `wwwroot/css/tokens.css`. Ô tiền tự tách hàng nghìn ngay khi gõ, ví dụ `12344556` thành `12.344.556`; phần lẻ dùng dấu phẩy. Form JS gửi dấu định dạng vi-VN để server xác thực nhóm chấm đúng ba chữ số; form cũ/không JS giữ giao thức không phân nhóm, không đổi nghĩa dữ liệu đã lưu. Đã bổ sung chú thích gross/net, giảm vạch chia phần và giữ phân biệt thiếu với 0. Xem [báo cáo UI và giới hạn](reviews/2026-11-28-ui-phases-one-two.md).
+
+Tại bảng 12 tháng của hồ sơ đã lưu, chọn **Chi tiết tháng … từ bản đã lưu** để đọc thuế tháng, thưởng, đầu vào và căn cứ. Route `/ho-so/{id}/thang/{month}?revision={revision}` dùng bản lưu tường minh; hồ sơ đổi revision thì mở lại qua bảng. **Sửa tháng** quay về editor đúng tháng; lưu vẫn dùng nút Lưu hồ sơ. Kết quả tháng tính khi mở, chưa lưu vào lịch sử; lịch sử năm giữ nguyên. Thiếu khấu trừ không chặn nghĩa vụ nhưng không có chênh lệch; không cộng thuế tháng để thay nghĩa vụ năm. Xem [contract và kiểm chứng màn tháng](reviews/2026-11-28-forecast-month.md).

@@ -1,11 +1,17 @@
 @page
 @model TaxManager.Web.Pages.ForecastAnnualHistoryModel
-<!doctype html>
-<html lang="vi"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Lịch sử tính năm</title><link rel="stylesheet" href="/site.css" /></head>
-<body><main><h1>Lịch sử tính thuế năm</h1>
+@{
+    ViewData["Title"] = "Lịch sử tính thuế năm";
+    ViewData["ProfileId"] = Model.Id;
+}
+<h1>Lịch sử tính thuế năm</h1>
 <p>Demo dữ liệu giả. Mỗi kết quả giữ bản dữ liệu và căn cứ tại lần tính. Xóa hồ sơ hiện hành vẫn giữ các kết quả này.</p>
-<p><a asp-page="/Forecast" asp-route-id="@Model.Id">Mở hồ sơ</a> · <a asp-page="/Forecast">Danh sách hồ sơ</a></p>
+<p>@if (Model.ProfileExists) { <a asp-page="/Forecast" asp-route-id="@Model.Id">Mở hồ sơ</a> } else { <span>Hồ sơ hiện hành đã xóa; bản tính vẫn được giữ.</span> } <a asp-page="/Forecast">Danh sách hồ sơ</a></p>
 @if (Model.History.Count == 0) { <p>Chưa có kết quả năm được lưu cho hồ sơ này.</p> }
-@foreach (var record in Model.History) { <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.Id" asp-route-record="@record.HistoryId">@record.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss 'UTC'") — bản dữ liệu @record.InputRevision</a></p> }
+@if (Model.History.Count > 0) {
+<div class="table-scroll" role="region" aria-label="Các lần tính đã lưu" tabindex="0"><table><thead><tr><th scope="col">Lần tính (giờ Việt Nam)</th><th scope="col">Năm / bản dữ liệu</th><th scope="col">Độ phủ thực tế</th><th scope="col">Phiên bản luật</th><th scope="col">Thao tác</th></tr></thead><tbody>
+@foreach (var record in Model.History) { <tr><th scope="row">@TaxManager.Web.Pages.ForecastModel.LocalTime(record.CreatedAtUtc)<div class="history-id">@record.HistoryId</div></th><td>@record.Year / @record.InputRevision</td><td>Nghĩa vụ @record.Result.ActualObligationMonths/12; khấu trừ @record.Result.ActualWithholdingMonths/12</td><td>@string.Join(", ", record.Rules.Select(r => TaxManager.Data.TaxRules.AnnualRuleGraphCodec.Decode(r.Graph).Version).Distinct())</td><td><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.Id" asp-route-record="@record.HistoryId">Mở lần tính</a></td></tr> }
+</tbody></table></div>
+}
+@if (Model.ProfileExists) { <p><a class="button primary" asp-page="/Forecast" asp-route-id="@Model.Id" asp-fragment="tong-quan">Tính lại từ hồ sơ đã lưu</a></p> }
 @if (Model.Selected is not null) { <partial name="Shared/_AnnualResult" model="Model.Selected" /> }
-</main></body></html>

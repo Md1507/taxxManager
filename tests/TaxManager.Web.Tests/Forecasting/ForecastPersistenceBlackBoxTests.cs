@@ -239,13 +239,13 @@ public sealed class ForecastPersistenceBlackBoxTests
         var rows = Regex.Matches(after.Html, @"<tr\b[^>]*>[\s\S]*?</tr>", RegexOptions.IgnoreCase)
             .Select(m => Text(m.Value)).ToArray();
         var march = Assert.Single(rows.Where(r => Regex.IsMatch(r, @"Tháng\s+3\b")));
-        Assert.Matches(@"Tháng\s+3\s+0\s+đồng", march);
+        Assert.Matches(@"Tháng\s+3\s+0\s+đ", march);
         var december = Assert.Single(rows.Where(r => Regex.IsMatch(r, @"Tháng\s+12\b")));
         Assert.Contains("Chưa nhập", december);
         Assert.Contains("51.975.318,9876543210987654321", Text(after.Html));
         Assert.Contains("62.864.197,3210987654321098765", Text(after.Html));
 
-        var editor = await third.Submit(updated, "Mở tháng đã chọn", new() { ["SelectedMonth"] = "3" });
+        var editor = await third.Submit(updated, "Sửa tháng đã chọn", new() { ["SelectedMonth"] = "3" });
         input["Exceptions[2].Insurance"] = "0";
         await Save(third, editor, new() { ["Exceptions[2].Insurance"] = "0" });
         using var fourth = new Browser(host.Address);
@@ -540,7 +540,7 @@ public sealed class ForecastPersistenceBlackBoxTests
     {
         var dates = Fields(page.Html).Where(p => Regex.IsMatch(p.Key, "Entered|Nhập|Timestamp", RegexOptions.IgnoreCase))
             .OrderBy(p => p.Key).ToArray();
-        var displayed = Regex.Matches(Text(page.Html), @"\b\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+UTC\b")
+        var displayed = Regex.Matches(Text(page.Html), @"\b\d{2}/\d{2}/\d{4}\s+\d{2}:\d{2}(?::\d{2})?\s+giờ Việt Nam\b")
             .Select(m => m.Value).Order().ToArray();
         return dates.Select(p => p.Key + "=" + p.Value).Concat(displayed).Order(StringComparer.Ordinal).ToArray();
     }

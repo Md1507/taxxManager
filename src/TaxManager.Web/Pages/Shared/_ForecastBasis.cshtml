@@ -1,0 +1,8 @@
+@model TaxManager.Core.LegalBasis
+<details><summary>Xem căn cứ</summary>
+<p>Trạng thái: @Model.Status. @Model.Summary</p>
+<p>Văn bản @Model.DocumentNumber; điều @Model.Article, khoản @Model.Clause, điểm @Model.Point. Kỳ @Model.Period; mã @Model.Id, phiên bản @Model.Version.</p>
+@if (Uri.TryCreate(Model.SourceUrl, UriKind.Absolute, out var source) && source.Scheme == "https") {
+<p><a href="@source.AbsoluteUri" rel="noopener noreferrer">Mở nguồn căn cứ</a></p>
+}
+</details>
