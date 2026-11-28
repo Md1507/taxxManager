@@ -15,7 +15,7 @@ public sealed class RegisterModel(UserManager<LocalUser> users, LocalIdentityDb 
 {
     [BindProperty, Required(ErrorMessage = "Nhập tên đăng nhập."), RegularExpression("[A-Za-z0-9._-]{3,64}", ErrorMessage = "Dùng 3–64 chữ cái không dấu, chữ số, dấu chấm, gạch dưới hoặc gạch ngang.")]
     public string? Username { get; set; }
-    [BindProperty, Required(ErrorMessage = "Nhập mật khẩu."), StringLength(128, MinimumLength = 12, ErrorMessage = "Dùng mật khẩu từ 12 đến 128 ký tự.")]
+    [BindProperty, Required(ErrorMessage = "Nhập mật khẩu."), StringLength(128, MinimumLength = 8, ErrorMessage = "Dùng mật khẩu từ 8 đến 128 ký tự.")]
     public string? Password { get; set; }
     [BindProperty, Required(ErrorMessage = "Nhập lại mật khẩu."), Compare(nameof(Password), ErrorMessage = "Hai mật khẩu chưa khớp. Nhập lại để xác nhận.")]
     public string? ConfirmPassword { get; set; }

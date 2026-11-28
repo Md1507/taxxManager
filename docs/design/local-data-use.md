@@ -6,7 +6,9 @@
 
 Giữ hệ xanh/Inter/panel trắng. Đăng ký có phần giải thích ngắn trong form trước nút chính, checkbox không chọn sẵn. Tài khoản cũ thiếu xác nhận thấy màn “Dữ liệu thử của bạn”: nội dung dễ đọc, checkbox, một nút chính “Đồng ý và tiếp tục”, thao tác phụ đăng xuất. Không thêm divider/dropdown hoặc icon thay câu đồng ý.
 
-Nội dung phiên bản `local-demo-2026-11-28`: chỉ nhập dữ liệu giả; tên đăng nhập và mật khẩu được dùng để xác thực, mật khẩu lưu dạng hash; số lương/nguồn/ghi chú/lịch sử được lưu local để mở lại/tính thuế; đăng xuất không xóa dữ liệu; tệp đã tải và bản sao bên ngoài ứng dụng không tự biến mất. Nêu xuất/xóa toàn bộ tài khoản chưa có, không dựng quyền hoặc thao tác giả. Không gọi đây là chính sách pháp lý đã thẩm định.
+Nội dung phiên bản đầu `local-demo-2026-11-28`: chỉ nhập dữ liệu giả; tên đăng nhập và mật khẩu được dùng để xác thực, mật khẩu lưu dạng hash; số lương/nguồn/ghi chú/lịch sử được lưu local để mở lại/tính thuế; đăng xuất không xóa dữ liệu; tệp đã tải và bản sao bên ngoài ứng dụng không tự biến mất. Phiên bản đầu nêu xuất/xóa toàn bộ tài khoản chưa có. Không gọi đây là chính sách pháp lý đã thẩm định.
+
+Đ6c dùng phiên bản `local-demo-2026-11-28-v2`: đã có tải JSON đọc được từ kho gốc tài khoản, không mã hóa, khác bản sao khôi phục; xóa toàn bộ tài khoản vẫn chưa có. Giữ claim cũ, yêu cầu xác nhận rõ phiên bản mới trước route dữ liệu, không nâng claim tự động. Trang xuất vẫn mở cho chủ chưa xác nhận; xem [contract xuất](account-data-export.md).
 
 ## Contract
 

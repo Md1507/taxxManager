@@ -52,7 +52,8 @@ public sealed class GroupedMoneyHttpTests
         var descriptions = Regex.Match(gross, "aria-describedby=\"([^\"]+)\"").Groups[1].Value.Split(' ');
         Assert.Contains("salary-terms", descriptions);
         Assert.Contains("error-Gross", descriptions);
-        Assert.Contains("money-Gross-hint", descriptions);
+        Assert.Contains("money-format-help", descriptions);
+        Assert.Single(Regex.Matches(html, "id=\"money-format-help\""));
         Assert.Contains("id=\"error-Gross\"", html);
         Assert.Contains("href=\"#Gross\"", html);
         await using var context = host.Services.GetRequiredService<SyntheticDatabase>().Open();

@@ -1,6 +1,52 @@
 [
   {
     "date": "2026-11-28",
+    "mode": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Check registration password conditions live; minimum 8; prevent sticky calculation button painting over mobile navigation.",
+    "signature": "Immediate icon/text feedback and navigation safely above the form actions",
+    "review": "In-thread small polish review with actual 320/375 mobile menu hit tests and 1440 desktop check. Registration mirror tested with real typing and input events; form axe 0 violations, menu axe 0 violations and color-contrast incomplete for covered content.",
+    "verification": "docs/reviews/2026-11-28-password-menu.md",
+    "lint": "Static shared sticky gate 56 remains separate scroll contexts; 0 WARN. Render unavailable without puppeteer-core. Final full verification: 732 tests and EF pass."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Replace the monthly legal basis wall of text with scannable citations and explicit verification states.",
+    "signature": "Four grouped source rows with Vietnamese icon-and-text status and one shared provenance disclosure",
+    "review": "Fresh-context finish review: ship; no findings, original metadata accessible. User before screenshot and 320/375/1440 actual HTTP app captures compared.",
+    "verification": "docs/reviews/2026-11-28-monthly-bases.md",
+    "lint": "Static gate 56 on separate sidebar/table scroll contexts; 0 WARN. Render unavailable without puppeteer-core. Actual app axe: 0 violations, 0 incomplete. Final full verification: 726 tests and EF pass."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Redesign forecast deletion confirmation: readable saved identity, plain consequences, clear action hierarchy.",
+    "signature": "Actual saved year and revision with one destructive confirmation action",
+    "review": "Fresh-context finish reviewer: one orphan-line finding resolved. Follow-up typography polish per user screenshot: heading 20px/600, all panel copy 16px/400 with same text color; computed styles and 320/375/1440 captures checked in-thread. Axe 0 violations. User before screenshot available for typography follow-up.",
+    "verification": "docs/reviews/2026-11-28-forecast-delete.md",
+    "lint": "Final static: 1 FAIL gate 56 on shared sidebar and table headers, not applicable to this table-free screen; 0 WARN. Render unavailable without puppeteer-core; separate Orca captures and axe have no violations. Full verification: 725 tests and EF pass."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "depth": "full inside existing shell",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Reduce repeated monthly salary forms and manual typing; complete original-account export.",
+    "signature": "Enter shared figures once for a month range, edit one month, undo without losing manual corrections",
+    "waived": [],
+    "review": "Fresh-context Hallmark finish reviewer found stale result P2; fixed and browser verified Apply/Undo stale notice and clean successful POST. Existing palette, Inter and server wiring retained.",
+    "verification": "docs/reviews/2026-11-28-monthly-entry.md and docs/reviews/2026-11-28-account-export.md",
+    "lint": "Static FAIL 56 separate sticky scroll contexts and WARN F7 shared native controls remain explained; native render unavailable without puppeteer-core. Orca viewport captures 320/375/1440 and axe 0 violations/0 incomplete."
+  },
+  {
+    "date": "2026-11-28",
     "mode": "redesign",
     "depth": "polish",
     "scope": "app",

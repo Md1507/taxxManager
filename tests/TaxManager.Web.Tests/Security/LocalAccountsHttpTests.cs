@@ -17,6 +17,29 @@ public sealed class LocalAccountsHttpTests
     private const string LoginPath = "/tai-khoan/dang-nhap";
     private const string RegisterPath = "/tai-khoan/dang-ky";
 
+    [Theory]
+    [InlineData(7, false, false, false)]
+    [InlineData(8, false, false, true)]
+    [InlineData(128, false, false, true)]
+    [InlineData(129, false, false, false)]
+    [InlineData(8, true, false, false)]
+    [InlineData(8, false, true, false)]
+    public async Task Registration_password_bounds_and_confirmation_are_enforced_without_javascript(int length, bool whitespace, bool mismatch, bool accepted)
+    {
+        await using var host = await DemoHost.StartAsync(accounts: true);
+        using var client = host.AccountClient();
+        var page = await client.GetStringAsync(RegisterPath);
+        Assert.Contains("minlength=\"8\"", page);
+        Assert.Contains("data-password-registration", page);
+        var password = new string(whitespace ? ' ' : 'a', length);
+        using var response = await client.PostAsync(RegisterPath, Form(Token(page),
+            ("Username", "passwordbounds"), ("Password", password), ("ConfirmPassword", mismatch ? new string('b', length) : password), ("AcceptDataUse", "true")));
+        Assert.Equal(accepted ? HttpStatusCode.Redirect : HttpStatusCode.OK, response.StatusCode);
+        using var scope = host.Services.CreateScope();
+        Assert.Equal(accepted, await scope.ServiceProvider.GetRequiredService<LocalIdentityDb>().Users.AnyAsync());
+        if (!accepted && !whitespace) Assert.DoesNotContain(password, await response.Content.ReadAsStringAsync());
+    }
+
     [Fact]
     public async Task Anonymous_cannot_open_or_post_data_and_account_routes_are_opt_in()
     {

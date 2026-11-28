@@ -148,8 +148,8 @@ public sealed class LocalDataUseHttpTests
 
     [Theory]
     [InlineData("old-version|2026-01-01T00:00:00.0000000+00:00")]
-    [InlineData("local-demo-2026-11-28|invalid")]
-    [InlineData("local-demo-2026-11-28|2099-01-01T00:00:00.0000000+00:00")]
+    [InlineData("local-demo-2026-11-28-v2|invalid")]
+    [InlineData("local-demo-2026-11-28-v2|2099-01-01T00:00:00.0000000+00:00")]
     public async Task Malformed_old_or_future_claim_is_not_acceptance(string value)
     {
         await using var host = await DemoHost.StartAsync(accounts: true);

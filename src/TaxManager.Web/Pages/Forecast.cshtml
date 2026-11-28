@@ -8,23 +8,21 @@
     var unsaved = posted && !Model.SavedInputConfirmed;
 }
 <p><a asp-page="/ForecastProfiles">Trở lại hồ sơ</a></p>
-<div class="page-heading"><div><h1>Hồ sơ thuế năm 2026</h1><p>Cá nhân cư trú, một nơi trả lương.</p></div></div>
+<div class="page-heading forecast-heading"><div><h1>Hồ sơ thuế năm 2026</h1><p class="hint">Cá nhân cư trú, một nơi trả lương. <span class="save-state" data-save-state role="status">@(unsaved ? "Bản xem trước chưa lưu. Lưu hồ sơ để giữ thay đổi." : Model.ProfileId is null ? "Hồ sơ mới, chưa lưu." : $"Đã mở bản lưu {Model.Revision}. Xem trước không lưu hồ sơ.")</span></p></div></div>
 <form method="post" asp-page-handler="Preview" id="forecast-form" data-forecast-form autocomplete="off" data-unsaved="@(unsaved ? "true" : "false")">
 <input type="hidden" asp-for="DraftToken" />
 <input type="hidden" asp-for="ProfileId" /><input type="hidden" asp-for="Revision" />
 @* Enter previews even when the visible action bar follows the row-removal buttons. *@
 <button type="submit" hidden tabindex="-1" aria-hidden="true">Xem trước 12 tháng</button>
 <partial name="Shared/_Errors" />
-<div id="du-lieu" class="page-heading"><div><h2>Nhập lương theo giai đoạn</h2>
-<p class="save-state" data-save-state role="status">@(unsaved ? "Bản xem trước chưa lưu. Lưu hồ sơ để giữ thay đổi." : Model.ProfileId is null ? "Hồ sơ mới, chưa lưu." : $"Đã mở bản lưu {Model.Revision}. Xem trước không lưu hồ sơ.")</p></div>
-</div>
+<div id="du-lieu" class="page-heading"><h2>Nhập lương theo giai đoạn</h2></div>
 <noscript><p>Để nhập khi tắt JavaScript, dùng số không phân nhóm như 123456789,50.</p></noscript>
-<fieldset class="form-region"><legend class="visually-hidden">Dữ liệu dự báo</legend><fieldset><legend>Giai đoạn lương</legend>
+<fieldset class="form-region"><legend class="visually-hidden">Dữ liệu dự báo</legend><fieldset><legend class="visually-hidden">Giai đoạn lương</legend>
 <div class="form-grid salary-period-grid"><div><label asp-for="FromMonth">Từ tháng</label><input asp-for="FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="FromMonth"></span></div><div><label asp-for="ToMonth">Đến tháng</label><input asp-for="ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="ToMonth"></span></div><div><label asp-for="Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Gross" type="text" inputmode="decimal" aria-describedby="salary-terms" /><span class="error" asp-validation-for="Gross"></span></div></div>
 
 
 <partial name="Shared/_SalaryTerms" />
-<p class="hint">Để trống khi chưa biết lương gross; không điền 0 để thay số chưa biết.</p>
+<partial name="Shared/_MoneyFormatHelp" />
 <label asp-for="Status">Trạng thái</label><select asp-for="Status"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState["Note"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin lương giai đoạn</summary>
 <label asp-for="Source">Nguồn</label><input asp-for="Source" />
 <label asp-for="Note">Ghi chú hoặc lý do giả định</label><input asp-for="Note" /><span class="error" asp-validation-for="Note"></span></details></fieldset>

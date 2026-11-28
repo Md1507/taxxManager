@@ -21,7 +21,7 @@
 <div class="app-shell">
     <aside class="sidebar">
         <div class="sidebar-heading"><a class="wordmark" asp-page="/ForecastProfiles"><svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect x="1" y="1" width="26" height="26" rx="5" fill="currentColor" /><path d="M7 8h14M14 8v13M7 14h3M7 19h3M18 14h3M18 19h3" /></svg><span>TaxManager</span></a>
-        <button class="navigation-toggle" data-navigation-toggle aria-controls="primary-navigation" aria-expanded="true" hidden>Menu</button></div>
+        <button class="navigation-toggle" data-navigation-toggle aria-controls="primary-navigation" aria-expanded="true" aria-label="Đóng menu" title="Đóng menu" hidden><span class="visually-hidden" data-navigation-label>Đóng menu</span><span data-navigation-open hidden><partial name="Shared/_Icon" model='@("menu")' /></span><span data-navigation-close><partial name="Shared/_Icon" model='@("close")' /></span></button></div>
         <p class="sidebar-caption">Thuế thu nhập cá nhân</p>
         <nav id="primary-navigation" aria-label="Điều hướng chính">
             <a asp-page="/ForecastProfiles" aria-current="@(page == "/ForecastProfiles" ? "page" : null)"><partial name="Shared/_Icon" model='@("profiles")' />Hồ sơ thuế</a>
@@ -38,7 +38,7 @@
         </nav>
     </aside>
     <div class="workspace">
-        <header class="topbar">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <a asp-page="/Backup" class="environment">Đang dùng kho khôi phục</a> }<span class="environment">Demo local (dữ liệu mẫu)</span>@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Accounts.AccountMode>().Enabled) { <a asp-page="/Accounts/Index">Tài khoản</a> }</header>
+        <header class="topbar">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <span class="environment">Đang dùng kho khôi phục</span> }<span class="environment">Demo local (dữ liệu mẫu)</span>@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Accounts.AccountMode>().Enabled) { <a asp-page="/Accounts/Index">Tài khoản</a> }</header>
         <main id="main" tabindex="-1">@RenderBody()</main>
         <footer>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</footer>
     </div>

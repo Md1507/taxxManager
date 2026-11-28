@@ -4,7 +4,7 @@
 
 ## Ranh giới và dữ liệu
 
-- ASP.NET Core Identity/EF lưu tên đăng nhập và password hash trong SQLite riêng dưới kho synthetic gốc; không thu email, CCCD hoặc MST. Không tự viết hash hay xác thực cookie. Mật khẩu 12–128 ký tự, cho paste/password manager, không phục hồi mật khẩu trong bản thử này.
+- ASP.NET Core Identity/EF lưu tên đăng nhập và password hash trong SQLite riêng dưới kho synthetic gốc; không thu email, CCCD hoặc MST. Không tự viết hash hay xác thực cookie. Mật khẩu 8–128 ký tự (đổi min từ 12 xuống 8 theo yêu cầu ngày 28/11/2026), không chỉ gồm khoảng trắng; cho paste/password manager, không phục hồi mật khẩu trong bản thử này. Form đăng ký kiểm điều kiện và khớp mật khẩu ngay khi nhập; máy chủ vẫn kiểm độc lập. Không áp dụng độ dài mới cho bước đăng nhập tài khoản đã có hoặc mật khẩu bảo vệ tệp sao lưu.
 - Mỗi Identity user giữ đường dẫn kho synthetic riêng do server tạo. Tài khoản mới không nhận hồ sơ trong kho demo cũ. Các màn hồ sơ, tháng, lịch sử, báo cáo/CSV, kịch bản, đối chiếu và backup đều resolve kho từ subject đã xác thực; ID trong URL/form không chọn chủ sở hữu hoặc root.
 - Không thêm owner giả vào mỗi query rồi bỏ sót route: dùng kho và khóa riêng cho tài khoản trong bước thử local. Không đổi migration thuế cũ. Không có admin, chia sẻ hoặc chuyển chủ sở hữu. Đây là quyết định cho prototype; triển khai qua mạng cần thiết kế vận hành và review riêng.
 - Selection/preview khôi phục được định danh bằng subject + cookie trình duyệt. Token form ghim subject và generation; đổi tài khoản hoặc đổi kho không được gửi form cũ. Backup chỉ gồm kho thuế của tài khoản hiện tại, không gồm registry Identity, hash mật khẩu hoặc dữ liệu người khác. Nhập backup là người dùng chủ động đưa dữ liệu vào kho riêng; không merge vào kho khác.

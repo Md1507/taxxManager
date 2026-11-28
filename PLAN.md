@@ -301,6 +301,7 @@ Quy ước phối hợp tài liệu, cập nhật 28/11/2026: roadmap giữ ti�
 #### Bước 4.1 – Quyền dữ liệu và xuất báo cáo
 - Xuất Excel/PDF **tham khảo** (chưa phải tờ khai chính thức).
 - Chức năng đồng ý xử lý dữ liệu, xuất dữ liệu cá nhân, xóa tài khoản và dữ liệu.
+- Prototype Đ6c: đã có xuất JSON kho gốc tài khoản synthetic sau kiểm lại mật khẩu, theo [contract](docs/design/account-data-export.md) và [bằng chứng](docs/reviews/2026-11-28-account-export.md). JSON không mã hóa, không dùng khôi phục; xóa toàn bộ tài khoản và nghiệm thu dữ liệu thật vẫn mở.
 
 #### Bước 4.2 – CI, sao lưu, deploy
 - GitHub Actions chạy `dotnet test` mỗi lần push.

@@ -11,12 +11,13 @@ internal static class AccountServices
     {
         services.AddSingleton<LocalAccountStores>();
         services.AddScoped<LocalDataUse>();
+        services.AddScoped<AccountDataExport>();
         services.AddDbContext<LocalIdentityDb>((provider, options) =>
             options.UseSqlite(provider.GetRequiredService<LocalAccountStores>().IdentityConnection));
         services.AddIdentity<LocalUser, IdentityRole>(options =>
         {
             options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-";
-            options.Password.RequiredLength = 12;
+            options.Password.RequiredLength = 8;
             options.Password.RequireDigit = false;
             options.Password.RequireUppercase = false;
             options.Password.RequireLowercase = false;

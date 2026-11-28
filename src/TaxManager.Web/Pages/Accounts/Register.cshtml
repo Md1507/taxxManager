@@ -2,17 +2,19 @@
 @model TaxManager.Web.Pages.Accounts.RegisterModel
 @{ ViewData["Title"] = "Tạo tài khoản thử"; }
 <div class="page-heading"><div><h1>Tạo tài khoản thử</h1><p>Bắt đầu với kho dữ liệu thử riêng, chưa có hồ sơ.</p></div></div>
-<form method="post" class="input-panel" data-password-fields>
+<form method="post" class="input-panel" data-password-fields data-password-registration>
     <partial name="Shared/_AccountErrors" />
     <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" aria-describedby="username-help" />
     <p class="hint" id="username-help">3–64 chữ cái không dấu, chữ số, dấu chấm, gạch dưới hoặc gạch ngang. Không cần email.</p>
     <span class="error" id="error-Username" asp-validation-for="Username"></span>
     <label asp-for="Password">Mật khẩu</label>
-    <div class="password-input"><input asp-for="Password" type="password" autocomplete="new-password" maxlength="128" aria-describedby="password-help" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
-    <p class="hint" id="password-help">12–128 ký tự. Có thể dán hoặc dùng trình quản lý mật khẩu. Lưu mật khẩu ở nơi riêng; bản thử chưa hỗ trợ phục hồi.</p>
+    <div class="password-input"><input asp-for="Password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required aria-describedby="password-condition password-help" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+    <p class="password-condition" id="password-condition" data-password-condition aria-live="polite" aria-atomic="true"><span data-condition-idle><partial name="Shared/_Icon" model='@("password-condition")' /></span><span data-condition-valid hidden><partial name="Shared/_Icon" model='@("check-circle")' /></span><span data-condition-invalid hidden><partial name="Shared/_Icon" model='@("warning")' /></span><span data-condition-message>8–128 ký tự, không chỉ gồm khoảng trắng.</span></p>
+    <p class="hint" id="password-help">Có thể dán hoặc dùng trình quản lý mật khẩu. Lưu mật khẩu ở nơi riêng; bản thử chưa hỗ trợ phục hồi.</p>
     <span class="error" id="error-Password" asp-validation-for="Password"></span>
     <label asp-for="ConfirmPassword">Nhập lại mật khẩu</label>
-    <div class="password-input"><input asp-for="ConfirmPassword" type="password" autocomplete="new-password" maxlength="128" /><partial name="Shared/_PasswordToggle" model='@("ConfirmPassword")' /></div>
+    <div class="password-input"><input asp-for="ConfirmPassword" type="password" autocomplete="new-password" maxlength="128" required aria-describedby="password-match" /><partial name="Shared/_PasswordToggle" model='@("ConfirmPassword")' /></div>
+    <p class="password-condition" id="password-match" data-password-match aria-live="polite" aria-atomic="true"><span data-condition-idle><partial name="Shared/_Icon" model='@("password-condition")' /></span><span data-condition-valid hidden><partial name="Shared/_Icon" model='@("check-circle")' /></span><span data-condition-invalid hidden><partial name="Shared/_Icon" model='@("warning")' /></span><span data-condition-message>Nhập lại mật khẩu để xác nhận.</span></p>
     <span class="error" id="error-ConfirmPassword" asp-validation-for="ConfirmPassword"></span>
     <partial name="Shared/_LocalDataUseNotice" />
     <label class="consent-choice" asp-for="AcceptDataUse"><input asp-for="AcceptDataUse" aria-describedby="data-use-notice error-AcceptDataUse" />Tôi đồng ý dùng dữ liệu thử theo nội dung trên.</label>

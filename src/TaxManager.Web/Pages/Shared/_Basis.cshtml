@@ -1,5 +1,26 @@
 @model TaxManager.Web.LegalCitations.BasisView
-<details class="basis"><summary aria-label="Căn cứ @Model.Label, tháng @Model.Snapshot.Month">?</summary>
-<p>Trạng thái nguồn: @Model.Basis.Status; luật @Model.Snapshot.Rules.RuleId, phiên bản @Model.Snapshot.Rules.Version, kỳ tính tháng @Model.Snapshot.Month/@Model.Snapshot.Year. @(Model.Basis.Summary ?? "Chưa có mô tả nguồn cho kết quả này.")</p>
-<p>Căn cứ: @(Model.Basis.Id ?? "chưa có mã"), phiên bản @(Model.Basis.Version ?? "chưa có"), kỳ @(Model.Basis.Period ?? "chưa có"); văn bản @(Model.Basis.DocumentNumber ?? "chưa có"), điều @(Model.Basis.Article ?? "chưa có"), khoản @(Model.Basis.Clause ?? "chưa có"). @if (Model.SafeUrl is null) { <span>Chưa có liên kết nguồn an toàn.</span> }</p>
-</details>
+@using TaxManager.Core
+@{
+    var verified = Model.Basis.Status == VerificationStatus.Verified;
+    var missing = Model.Basis.Status == VerificationStatus.Missing;
+    var hasCitation = !string.IsNullOrWhiteSpace(Model.Basis.DocumentNumber) || !string.IsNullOrWhiteSpace(Model.Basis.Article) || !string.IsNullOrWhiteSpace(Model.Basis.Clause) || !string.IsNullOrWhiteSpace(Model.Basis.Point);
+}
+<div class="basis">
+    <div class="basis-heading">
+        <strong>@Model.Heading</strong>
+        <span class="basis-status @(verified ? "basis-status-verified" : "basis-status-unverified")" data-verification="@Model.Basis.Status">
+            <partial name="Shared/_Icon" model='@(verified ? "check-circle" : "warning")' />
+            @(verified ? "Đã xác minh" : missing ? "Thiếu nguồn" : "Chưa xác minh")
+        </span>
+    </div>
+    @if (hasCitation) {
+        <dl class="basis-reference">
+            @if (!string.IsNullOrWhiteSpace(Model.Basis.DocumentNumber)) { <div><dt>Văn bản</dt><dd>@Model.Basis.DocumentNumber</dd></div> }
+            @if (!string.IsNullOrWhiteSpace(Model.Basis.Article)) { <div><dt>Điều</dt><dd>@Model.Basis.Article</dd></div> }
+            @if (!string.IsNullOrWhiteSpace(Model.Basis.Clause)) { <div><dt>Khoản</dt><dd>@Model.Basis.Clause</dd></div> }
+            @if (!string.IsNullOrWhiteSpace(Model.Basis.Point)) { <div><dt>Điểm</dt><dd>@Model.Basis.Point</dd></div> }
+        </dl>
+    } else {
+        <p>Chưa có thông tin văn bản cho phần tính này.</p>
+    }
+</div>

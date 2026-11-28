@@ -8,7 +8,18 @@
     "spacing": "Existing --space-* scale, capped content, sticky sidebar; tokens.css",
     "framework": "ASP.NET Core 10 Razor Pages; DemoApplication.cs"
   },
-  "preserve": ["palette", "Vietnamese voice", "Inter", "sidebar destinations and order", "form wiring", "nullable money"],
-  "introduce": ["Hallmark app-screen polish and finish review"],
-  "scope": "Monthly preview table, backup/restore, forecast scenario, manual source reconciliation, local account forms, inline error summary/password controls, and versioned synthetic data-use acknowledgement; existing project system takes precedence over theme dealing"
+  "preserve": [
+    "palette",
+    "Vietnamese voice",
+    "Inter",
+    "sidebar destinations and order",
+    "form wiring",
+    "nullable money",
+    "delete confirmation uses saved revision and keeps history"
+  ],
+  "introduce": [
+    "Hallmark app-screen polish and finish review",
+    "compact monthly basis references with unchanged verification state and original provenance"
+  ],
+  "scope": "Monthly preview table, backup/restore, forecast scenario, manual source reconciliation, local account forms, inline error summary/password controls, and versioned synthetic data-use acknowledgement; existing project system takes precedence over theme dealing; monthly calculator common-range input and single-month editing; original-account readable JSON export"
 }

@@ -43,6 +43,7 @@
             </select><span class="error" id="error-Metric" asp-validation-for="Metric"></span></div>
             <div><label asp-for="Amount">Số tiền từ nguồn</label><input asp-for="Amount" type="text" inputmode="decimal" placeholder="Ví dụ: 1.500.000" /><span class="error" id="error-Amount" asp-validation-for="Amount"></span></div>
         </div>
+        <partial name="Shared/_MoneyFormatHelp" />
         <p class="hint" id="metric-help">Gross là lương trước khấu trừ đã nhập, gồm thưởng đã nằm trong gross; chưa cộng thưởng ngoài gross. Thuế đã khấu trừ là số nguồn ghi, khác nghĩa vụ thuế ứng dụng tính.</p>
         <fieldset class="choice-field"><legend>Trạng thái số nguồn</legend><div class="choice-row">
         @foreach (var status in Enum.GetValues<ForecastStatus>()) {

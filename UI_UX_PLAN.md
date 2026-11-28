@@ -67,10 +67,10 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Xem trước khôi phục | `/du-lieu/khoi-phuc` | Kiểm tra trước khi ghi | Hồ sơ sẽ thêm, trùng, lỗi, phiên bản | khôi phục bản đã kiểm tra | Đ3; chưa có |
 | Hai kịch bản | `/ho-so/{id}/kich-ban` | Thử thêm thưởng giả định | Cơ sở, khoản bổ sung, hai kết quả | so sánh kịch bản | Đ4; đã triển khai local synthetic |
 | Đối chiếu nguồn | `/ho-so/{id}/doi-chieu` | So số cùng nghĩa và kỳ | Hồ sơ, công ty/eTax, chênh lệch | đối chiếu số liệu | Đ5; đã có nhập thủ công, không lưu phép đối chiếu |
-| Đăng ký | `/tai-khoan/dang-ky` | Tạo tài khoản | Trường tài khoản, điều kiện xử lý | tạo tài khoản | Đ6; chưa có |
-| Đăng nhập | `/tai-khoan/dang-nhap` | Mở dữ liệu của mình | Trường xác thực, lỗi có hướng sửa | đăng nhập | Đ6; chưa có |
+| Đăng ký | `/tai-khoan/dang-ky` | Tạo tài khoản | Trường tài khoản, điều kiện dữ liệu thử | tạo tài khoản | Đ6a/b local synthetic đã có |
+| Đăng nhập | `/tai-khoan/dang-nhap` | Mở dữ liệu của mình | Trường xác thực, lỗi có hướng sửa | đăng nhập | Đ6a local synthetic đã có |
 | Quyền dữ liệu | `/tai-khoan/du-lieu` | Kiểm soát dữ liệu cá nhân | Lựa chọn đồng ý, phạm vi xuất/xóa | lưu lựa chọn dữ liệu | Đ6; chưa có |
-| Xuất dữ liệu cá nhân | `/tai-khoan/du-lieu/xuat` | Lấy bản dữ liệu cá nhân | Phạm vi, loại dữ liệu | xuất dữ liệu cá nhân | Đ6; chưa có |
+| Xuất dữ liệu cá nhân | `/tai-khoan/xuat-du-lieu` | Lấy dữ liệu kho gốc | Phạm vi, JSON không mã hóa, mật khẩu hiện tại | tải dữ liệu tài khoản | Đ6c local synthetic đã có; chưa nghiệm thu dữ liệu thật |
 | Xóa tài khoản và dữ liệu | `/tai-khoan/xoa` | Xác nhận hành động không thể hoàn tác | Phạm vi xóa, lịch sử, giới hạn bản sao | xóa tài khoản và dữ liệu | Đ6; chưa có |
 
 Lựa chọn điều hướng: thanh ngang hoặc sidebar. Chọn thanh bên dọc theo brief mới; thứ tự hiện có là hồ sơ, dữ liệu 12 tháng, người phụ thuộc, tổng quan năm, lịch sử, báo cáo, công cụ tháng. Các phần của editor cùng thứ tự sidebar; dữ liệu riêng tháng và bảng xem trước nằm trọn trước người phụ thuộc, không xen kẽ làm mục chọn quay ngược. Đối chiếu, dữ liệu và tài khoản chỉ thêm khi có chức năng.
@@ -716,6 +716,7 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 
 - [x] Đ6a local synthetic: đăng ký/đăng nhập bằng Identity, cookie Secure/HttpOnly, CSRF, lockout, kho/khóa riêng theo tài khoản; kiểm URL/POST/backup/restore và host mới bằng hai tài khoản. Xem [contract](docs/design/local-accounts.md) và [kiểm chứng, giới hạn](docs/reviews/2026-11-28-local-accounts.md).
 - [x] Đ6b local synthetic: thông báo phạm vi và checkbox không chọn sẵn khi đăng ký; ghi phiên bản/thời gian ở server, tài khoản cũ xác nhận trước route dữ liệu. Có màn đọc lại nội dung và trạng thái ở tài khoản. [Contract](docs/design/local-data-use.md), [711 test và visual QA](docs/reviews/2026-11-28-local-data-use.md); chưa thay nghiệm thu pháp lý/quyền dữ liệu toàn bộ ở dưới.
+- [x] Đ6c local synthetic: xuất JSON kho gốc có kiểm lại mật khẩu, không lẫn kho khôi phục; gồm lịch sử/phiên bản/audit còn giữ, không có khóa hoặc trường bảo mật Identity. [Contract](docs/design/account-data-export.md), [kiểm chứng](docs/reviews/2026-11-28-account-export.md). Thông báo dữ liệu thử v2 yêu cầu xác nhận lại, xóa tài khoản còn mở.
 - [ ] Đăng ký/đăng nhập dùng Identity, kiểm hai tài khoản không truy cập chéo hồ sơ hoặc lịch sử bằng URL/POST.
 - [ ] Cho paste và password manager; không tự xây captcha hoặc cơ chế xác thực mới trong thiết kế.
 - [ ] Đồng ý xử lý dữ liệu, xuất dữ liệu cá nhân, xác nhận xóa tài khoản/dữ liệu và mô tả giới hạn bản sao.
@@ -723,6 +724,8 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 - [ ] Số đợt không phải quyền public deploy: nếu cần nhiều người qua mạng sớm, đưa điều kiện Đ6 lên trước; demo local vẫn dùng synthetic cho tới khi đủ điều kiện dữ liệu thật.
 
 Phản hồi visual 28/11: bộ chọn dữ liệu tháng trong editor dùng lưới 12 nút ngắn (6 cột desktop, 3 cột mobile), trạng thái đang sửa/đã nhập/chưa nhập bằng chữ, không lặp dropdown và 12 nút dài. Dropdown là fallback khi không có JavaScript; giữ đường submit Preview mặc định. Chênh lệch đối chiếu dùng xanh cho dương, đỏ trầm cho âm, trung tính cho 0; luôn giữ dấu và hướng bằng chữ, màu không kết luận nguồn đúng/sai.
+
+Phản hồi công cụ tháng `/`: không bày 12 form lặp khi JavaScript hoạt động. Nhập chung theo khoảng tháng, xem thay đổi trước ghi đè, hoàn tác giữ sửa riêng; chọn một tháng để chỉnh. Không suy bảo hiểm/khấu trừ từ gross và không tự lấp 0. Kết quả trước phải được đánh dấu cũ sau sửa; giữ 36 input enabled/marker vi-VN khi POST. [Thiết kế](docs/design/monthly-entry-redesign.md), [bằng chứng](docs/reviews/2026-11-28-monthly-entry.md).
 
 Summary lỗi không trình bày thành menu hyperlink: không khung đỏ đậm, không bullet hoặc gạch chân thường trực; heading gọn dùng màu lỗi, câu lỗi màu chữ thường. Giữ link đến trường để sửa nhanh bằng chuột/bàn phím; hover/focus mới gạch chân, có focus ring. Lỗi inline và aria-invalid vẫn chỉ đúng trường cần sửa.
 
@@ -951,3 +954,27 @@ Sao của `anthropics/skills` và `vercel-labs/agent-skills` là toàn bộ coll
 - Ưu tiên diff sửa tính đúng, truy cập và hành vi. Ví dụ mới: UI UX Pro Max ngày 27/11 đã sửa nhận định WCAG large-text/contrast trong brand skills; tiếp tục đo theo W3C và giữ ngưỡng chữ 4,5:1 hiện có của dự án.
 - Hướng dẫn nền tảng cũ vẫn dùng được nếu điều kiện còn đúng; ghi rõ cũ/mới/chưa rõ ngày xuất bản. Không gọi “mới nhất” khi chỉ thấy ngày search index.
 - Bảng sao/commit là snapshot của lượt này, không tự cập nhật. Khi chưa đọc được nguồn hoặc diff, ghi chưa xác minh; không điền ngày/số từ suy đoán.
+
+### 15.10. Màn xác nhận xóa hồ sơ
+
+- Một panel có chiều rộng giới hạn: năm và phiên bản thực đã lưu, thông tin nhận diện hữu ích, hậu quả rồi hành động. UUID chỉ dùng trong giao thức, không trình bày cho người dùng.
+- Typography trong panel chỉ có hai cấp: tiêu đề 20 px/600, toàn bộ nội dung 16 px/400 cùng màu chữ chính, gồm phiên bản, nhãn, số liệu và giải thích. Không xen nhãn 14 px mờ, số liệu đậm hoặc một cụm bôi đậm giữa đoạn; thứ bậc dùng vị trí và khoảng cách. Nút giữ weight 500 theo hệ điều khiển chung. Quy tắc này theo phản hồi trực tiếp ngày 28/11 về chữ lúc to lúc nhỏ, lúc mờ lúc rõ.
+- “Giữ hồ sơ” là hành động phụ; nút xác nhận xóa là primary đỏ duy nhất, có chữ và icon. Mobile xếp dọc, vùng chạm tối thiểu 44 px.
+- Nói rõ dữ liệu nào còn giữ bằng từ ngữ thông thường; không đưa tên bảng, audit, WAL hoặc giải thích lưu trữ kỹ thuật lên UI. Không mô tả ordinary delete như xóa sạch thiết bị.
+- GET thiếu phiên bản có thể đọc phiên bản hiện tại; POST phiên bản cũ phải dừng và mời mở lại. Không tự cập nhật phiên bản POST để xóa dữ liệu vừa thay đổi.
+- Kiểm chữ Việt thật ở 320/375 px, tránh một từ rơi riêng cuối đoạn khi trình duyệt hỗ trợ `text-wrap: pretty`. Bằng chứng: [review màn xóa](docs/reviews/2026-11-28-forecast-delete.md).
+
+### 15.11. Trình bày căn cứ tính tháng
+
+- Danh sách nhóm trong một panel, mỗi nhóm: tên ngắn, trạng thái chữ Việt kèm icon/màu, rồi văn bản–điều–khoản–điểm. Không đổi trạng thái xác minh thực tế; không chỉ dùng màu.
+- Không nối các bậc thuế vào tiêu đề; dùng bảng bậc đã có và nhãn căn cứ “Biểu thuế tháng”. Gom theo toàn bộ căn cứ, không gom chỉ theo URL làm mất khoản khác nhau.
+- Mô tả gốc, mã và phiên bản/kỳ đặt trong một mục tra cứu chung cho mỗi tháng, không thêm dropdown ở từng nhóm. Liên kết nguồn an toàn xuất hiện một lần mỗi URL trong cùng tháng.
+- Không lặp câu “chưa có” cho từng trường thiếu. Giữ thông báo thiếu ngắn, metadata có thật vẫn truy cập được; mọi nội dung nguồn phải được encode.
+- Theo phản hồi “wall of text” ngày 28/11: dùng cỡ chữ nhất quán và khoảng cách, hạn chế viền và đoạn đậm dài. Bằng chứng: [review căn cứ tháng](docs/reviews/2026-11-28-monthly-bases.md).
+
+### 15.12. Mật khẩu trực tiếp và lớp menu mobile
+
+- Đăng ký: mật khẩu 8–128 ký tự, không chỉ gồm khoảng trắng, không thêm điều kiện chữ hoa/số/ký tự đặc biệt. Điều kiện và khớp nhập lại cập nhật ngay bằng chữ + icon + màu, aria-live chỉ đổi khi thông điệp đổi, không đọc hoặc lưu giá trị mật khẩu. Đổi mật khẩu chính phải tính lại khớp; cho paste, autofill và password manager. Server vẫn kiểm độc lập; không vô hiệu nút gửi để che nguyên nhân lỗi.
+- Không áp điều kiện mật khẩu mới vào đăng nhập/xác nhận mật khẩu của tài khoản cũ, hoặc đổi chính sách mật khẩu tệp sao lưu theo điều kiện tài khoản.
+- Menu phải cao hơn mọi thanh hành động hoặc header bảng trong nội dung. `.workspace` tạo stacking context ở layer base; sidebar ở layer intersection. Không chỉ so hai con số z-index khi chúng nằm trong những stacking context khác nhau. Kiểm hit-test thật tại vị trí nút tính bị che bởi menu, cả lúc đã cuộn.
+- Nút menu dùng icon mở/đóng, tên truy cập rõ, vùng chạm 44 px; không để “Đóng menu” xuống dòng ép logo trên mobile. Bằng chứng: [review mật khẩu/menu](docs/reviews/2026-11-28-password-menu.md).

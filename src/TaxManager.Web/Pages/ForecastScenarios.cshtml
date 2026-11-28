@@ -41,6 +41,7 @@
             <div><label asp-for="BonusAmount">Số tiền thưởng</label><input asp-for="BonusAmount" type="text" inputmode="decimal" placeholder="Ví dụ: 10.000.000" />
             <span class="error" id="error-BonusAmount" asp-validation-for="BonusAmount"></span></div>
         </div>
+        <partial name="Shared/_MoneyFormatHelp" />
         <noscript><p class="hint">Khi tắt JavaScript, nhập số không phân nhóm như 10000000,50.</p></noscript>
         <div class="actions"><button type="submit" class="primary">So sánh</button></div>
     </form>
@@ -67,11 +68,15 @@
             var change = results.WithBonus.Obligation - results.Base.Obligation;
             <p class="notice">@(change == 0 ? "Nghĩa vụ thuế không đổi:" : change > 0 ? "Thuế tăng thêm:" : "Thuế giảm:") <span id="scenario-tax-change">@Money(Math.Abs(change))</span></p>
         } else { <p>Chưa nhập khoản thưởng muốn thử. Nhập tháng và số tiền phía trên để tạo kịch bản thứ hai.</p> }
+        <div class="scenario-notes" aria-label="Dữ liệu và khấu trừ">
         <p class="hint">Một tháng chỉ là thực tế khi gross, bảo hiểm, người phụ thuộc và mọi khoản thưởng của tháng đều là thực tế.</p>
         <p>Khấu trừ trong hồ sơ cơ sở: @view.Completeness.WithholdingMonths/12 tháng đã nhập.
         @if (view.Completeness.MissingWithholdingMonths.Count > 0) { <span>Còn thiếu tháng @string.Join(", ", view.Completeness.MissingWithholdingMonths).</span> }</p>
+        </div>
+        <div class="scenario-notes" aria-label="Phạm vi và thời điểm tính">
         <p class="hint">Chỉ so sánh nghĩa vụ thuế. Chưa ước tính nộp thêm hoặc nộp thừa cho thưởng giả định vì chưa có khấu trừ tương ứng. Hai kịch bản không tạo khoảng bảo đảm hoặc xác suất.</p>
         <p class="hint">Tính lúc @ForecastModel.LocalTime(view.CalculatedAt) giờ Việt Nam, từ cùng phiên bản dữ liệu và cùng bộ luật.</p>
+        </div>
         </section>
         @if (view.AdditionalBonus is not null) {
             <section aria-labelledby="scenario-steps"><h2 id="scenario-steps">Bước tính so sánh</h2>

@@ -24,6 +24,44 @@
             });
         });
     });
+    document.querySelectorAll('[data-password-registration]').forEach(form => {
+        const password = form.querySelector('input[name="Password"]');
+        const confirmation = form.querySelector('input[name="ConfirmPassword"]');
+        const condition = form.querySelector('[data-password-condition]');
+        const match = form.querySelector('[data-password-match]');
+        if (!password || !confirmation || !condition || !match) return;
+        const showCondition = (element, state, message) => {
+            element.dataset.conditionState = state;
+            element.querySelector('[data-condition-idle]').hidden = state !== 'idle';
+            element.querySelector('[data-condition-valid]').hidden = state !== 'valid';
+            element.querySelector('[data-condition-invalid]').hidden = state !== 'invalid';
+            const text = element.querySelector('[data-condition-message]');
+            // Announce changes of condition, not every keystroke or the secret itself.
+            if (text.textContent !== message) text.textContent = message;
+        };
+        const updateConditions = () => {
+            const value = password.value;
+            // Match .NET Required's whitespace semantics; keep the entered value untouched.
+            const onlyWhitespace = /^[\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]*$/.test(value);
+            const validLength = value.length >= password.minLength && value.length <= password.maxLength;
+            const passwordError = !value ? '' : onlyWhitespace ? 'Không chỉ nhập khoảng trắng.'
+                : !validLength ? `Dùng mật khẩu từ ${password.minLength} đến ${password.maxLength} ký tự.` : '';
+            password.setCustomValidity(passwordError);
+            showCondition(condition, !value ? 'idle' : passwordError ? 'invalid' : 'valid',
+                !value ? `${password.minLength}–${password.maxLength} ký tự, không chỉ gồm khoảng trắng.` : passwordError || 'Đạt điều kiện mật khẩu.');
+            const confirmationError = !confirmation.value ? '' : !value ? 'Nhập mật khẩu ở trên trước.'
+                : confirmation.value !== value ? 'Hai mật khẩu chưa khớp.' : '';
+            confirmation.setCustomValidity(confirmationError);
+            showCondition(match, !confirmation.value ? 'idle' : confirmationError ? 'invalid' : 'valid',
+                !confirmation.value ? 'Nhập lại mật khẩu để xác nhận.' : confirmationError || 'Hai mật khẩu đã khớp.');
+        };
+        [password, confirmation].forEach(input => {
+            input.addEventListener('input', updateConditions);
+            input.addEventListener('change', updateConditions);
+        });
+        window.addEventListener('pageshow', updateConditions);
+        updateConditions();
+    });
     const navigation = document.getElementById('primary-navigation');
     const toggle = document.querySelector('[data-navigation-toggle]');
     if (navigation && toggle) {
@@ -41,7 +79,12 @@
         const setNavigation = expanded => {
             navigation.hidden = !expanded;
             toggle.setAttribute('aria-expanded', String(expanded));
-            toggle.textContent = expanded ? 'Đóng menu' : 'Menu';
+            const label = expanded ? 'Đóng menu' : 'Mở menu';
+            toggle.setAttribute('aria-label', label);
+            toggle.title = label;
+            toggle.querySelector('[data-navigation-label]').textContent = label;
+            toggle.querySelector('[data-navigation-open]').hidden = expanded;
+            toggle.querySelector('[data-navigation-close]').hidden = !expanded;
         };
         const syncNavigation = () => {
             const active = document.activeElement;
@@ -161,6 +204,111 @@
             });
         });
     });
+    const monthly = document.querySelector('[data-monthly-calculator]');
+    if (monthly) {
+        const markStale = () => {
+            const notice = document.querySelector('[data-monthly-stale]');
+            if (notice) notice.hidden = false;
+        };
+        const groups = [...monthly.querySelectorAll('[data-month-inputs]')];
+        const choices = [...monthly.querySelectorAll('[data-monthly-select]')];
+        const common = [...monthly.querySelectorAll('[data-monthly-common]')];
+        const feedback = monthly.querySelector('[data-monthly-feedback]');
+        const confirmation = monthly.querySelector('[data-monthly-confirm]');
+        const apply = monthly.querySelector('[data-monthly-apply]');
+        const undo = monthly.querySelector('[data-monthly-undo]');
+        const from = monthly.querySelector('[data-monthly-from]');
+        const to = monthly.querySelector('[data-monthly-to]');
+        let pending = [], previous = [], selected = 0;
+        const fields = group => [...group.querySelectorAll('input[name]')];
+        const update = () => choices.forEach((choice, i) => {
+            const count = fields(groups[i]).filter(input => input.value.trim() !== '').length;
+            choice.querySelector('[data-monthly-state]').textContent = count === 0 ? 'Chưa nhập' : `${count}/3 ô đã nhập`;
+            choice.classList.toggle('has-data', count > 0);
+            if (i === selected) choice.setAttribute('aria-current', 'true');
+            else choice.removeAttribute('aria-current');
+        });
+        const select = index => {
+            selected = index;
+            groups.forEach((group, i) => group.hidden = i !== index);
+            update();
+        };
+        const cancelPending = () => { pending = []; confirmation.hidden = true; };
+        const review = monthly.querySelector('[data-monthly-review]');
+        choices.forEach((choice, i) => choice.addEventListener('click', () => select(i)));
+        review.addEventListener('click', () => {
+            cancelPending();
+            const start = Number(from.value), end = Number(to.value);
+            if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > 12 || start > end) {
+                feedback.textContent = 'Nhập khoảng tháng từ 1 đến 12, tháng cuối không trước tháng đầu.';
+                from.focus(); return;
+            }
+            const entered = common.filter(input => input.value.trim() !== '');
+            if (!entered.length) { feedback.textContent = 'Nhập ít nhất một khoản muốn dùng chung.'; common[0].focus(); return; }
+            const invalid = entered.find(input => !/^(?:0|[1-9]\d{0,2}(?:\.\d{3})*|[1-9]\d*)(?:,\d{1,28})?$/.test(input.value));
+            if (invalid) { feedback.textContent = 'Kiểm tra số tiền, ví dụ 30.000.000 hoặc 1.234,50.'; invalid.focus(); return; }
+            for (let i = start - 1; i < end; i++) entered.forEach(source => {
+                const field = groups[i].querySelector(`input[name="${source.dataset.monthlyCommon}"]`);
+                if (field.value !== source.value) pending.push({ field, before: field.value, after: source.value });
+            });
+            if (!pending.length) { feedback.textContent = 'Các tháng trong khoảng này đã có đúng số vừa nhập.'; return; }
+            const existing = pending.filter(change => change.before !== '').length;
+            feedback.textContent = `Sẽ đổi ${pending.length} ô từ tháng ${start} đến ${end}${existing ? `, gồm ${existing} ô đang có số` : ''}. Các khoản để trống giữ nguyên.`;
+            apply.textContent = `Áp dụng từ tháng ${start} đến ${end}`;
+            confirmation.hidden = false;
+        });
+        monthly.querySelector('[data-monthly-cancel]').addEventListener('click', () => {
+            cancelPending(); feedback.textContent = 'Đã hủy, số từng tháng vẫn được giữ.';
+            review.focus();
+        });
+        apply.addEventListener('click', () => {
+            previous = pending;
+            previous.forEach(change => change.field.value = change.after);
+            if (previous.length) markStale();
+            cancelPending(); update(); undo.hidden = false;
+            feedback.textContent = `Đã áp dụng ${previous.length} ô. Có thể sửa riêng từng tháng hoặc hoàn tác.`;
+            choices[selected].focus();
+        });
+        undo.addEventListener('click', () => {
+            let restored = 0;
+            previous.forEach(change => { if (change.field.value === change.after) { change.field.value = change.before; restored++; } });
+            if (restored) markStale();
+            previous = []; undo.hidden = true; cancelPending(); update();
+            feedback.textContent = `Đã hoàn tác ${restored} ô; giữ các ô bạn đã sửa riêng sau khi áp dụng.`;
+            choices[selected].focus();
+        });
+        [...common, from, to].forEach(input => input.addEventListener('keydown', event => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            review.click();
+        }));
+        monthly.addEventListener('submit', event => {
+            if (!pending.length) return;
+            event.preventDefault();
+            feedback.textContent = 'Chưa áp dụng thay đổi chung. Chọn Áp dụng hoặc Hủy trước khi tính.';
+            apply.focus();
+        });
+        [...common, from, to].forEach(input => input.addEventListener('input', () => {
+            if (!pending.length) return;
+            cancelPending(); feedback.textContent = 'Thông số chung đã đổi. Chọn Xem thay đổi để kiểm tra lại.';
+        }));
+        groups.forEach(group => group.addEventListener('input', () => {
+            markStale();
+            if (pending.length) feedback.textContent = 'Số từng tháng đã đổi. Chọn Xem thay đổi để kiểm tra lại.';
+            cancelPending(); update();
+        }));
+        monthly.querySelector('[name="year"]').addEventListener('change', markStale);
+        monthly.addEventListener('invalid', () => {
+            const first = monthly.querySelector('[data-month-inputs] input:invalid');
+            const index = groups.indexOf(first?.closest('[data-month-inputs]'));
+            if (index >= 0) select(index);
+        }, true);
+        monthly.querySelector('[data-monthly-bulk]').hidden = false;
+        monthly.querySelector('[data-monthly-navigation]').hidden = false;
+        monthly.dataset.monthlyReady = '';
+        const errorMonth = Number(monthly.dataset.errorMonth);
+        select(errorMonth >= 1 && errorMonth <= 12 ? errorMonth - 1 : 0);
+    }
     document.querySelector('[data-scenario-form]')?.addEventListener('input', () => {
         const stale = document.querySelector('[data-stale-comparison]');
         if (stale) stale.hidden = false;

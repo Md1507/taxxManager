@@ -1,0 +1,15 @@
+@page "/tai-khoan/xuat-du-lieu"
+@model TaxManager.Web.Pages.Accounts.ExportModel
+@{ ViewData["Title"] = "Xuất dữ liệu tài khoản"; }
+<div class="page-heading"><div><h1>Xuất dữ liệu tài khoản</h1><p>Tải dữ liệu của bạn để đọc và tự lưu giữ.</p></div></div>
+<form method="post" class="input-panel" data-password-fields>
+    <partial name="Shared/_AccountErrors" />
+    <p>Tệp JSON gồm tên đăng nhập, xác nhận dùng dữ liệu thử, hồ sơ, các phiên bản, kết quả đã tính và nhật ký còn giữ trong kho gốc của tài khoản.</p>
+    <p>Tệp không có mật khẩu bảo vệ. Ai có tệp đều đọc được nội dung; hãy tự cất giữ hoặc xóa khi không cần. Tệp này dùng để đọc, không dùng khôi phục tài khoản.</p>
+    <label asp-for="Password">Mật khẩu hiện tại</label>
+    <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" aria-describedby="error-Password" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+    <span class="error" id="error-Password" asp-validation-for="Password"></span>
+    <div class="actions"><button type="submit" class="primary"><partial name="Shared/_Icon" model='@("download")' />Tải dữ liệu tài khoản</button></div>
+</form>
+<p class="hint">Kho khôi phục đang mở không nằm trong tệp này. Dùng <a asp-page="/Backup">Sao lưu</a> để giữ một bản có mật khẩu của kho đang mở.</p>
+<p><a asp-page="/Accounts/Index">Trở lại tài khoản</a></p>

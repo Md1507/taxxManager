@@ -1,13 +1,35 @@
 @page
+@using System.Globalization
 @model TaxManager.Web.Pages.ForecastDeleteModel
+@functions {
+    string Money(decimal value) => value.ToString("#,0.############################", CultureInfo.GetCultureInfo("vi-VN"));
+}
 @{
     ViewData["Title"] = "Xóa hồ sơ";
-    ViewData["ProfileId"] = Model.Id;
-    ViewData["Context"] = "Hồ sơ thuế năm 2026 / xác nhận xóa";
+    if (Model.Year is not null) { ViewData["ProfileId"] = Model.Id; }
 }
-<h1>Xóa hồ sơ dự báo?</h1>
-<p class="history-id">Hồ sơ @Model.Id, bản lưu @Model.Revision.</p>
-<p>Hồ sơ hiện hành sẽ bị xóa. Lịch sử và nhật ký audit mã hóa vẫn được giữ. Bản sao, WAL và vùng lưu vật lý có thể còn dữ liệu.</p>
-<partial name="Shared/_Errors" />
-<form method="post"><input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Revision" />
-<button class="danger" type="submit">Xác nhận xóa</button> <a asp-page="/Forecast" asp-route-id="@Model.Id">Hủy</a></form>
+<div class="delete-screen">
+    <div class="page-heading"><div><h1>@(Model.CanDelete ? "Xóa hồ sơ dự báo?" : "Chưa thể xóa hồ sơ")</h1><p>Kiểm tra đúng hồ sơ trước khi xác nhận.</p></div></div>
+    <section class="input-panel delete-confirmation" aria-labelledby="delete-profile-heading">
+        <partial name="Shared/_Errors" />
+        @if (Model.Year is { } year) {
+            <h2 id="delete-profile-heading">Hồ sơ năm @year</h2>
+            <p class="hint">Phiên bản @Model.SavedRevision</p>
+            <dl class="delete-profile-summary">
+                <div><dt>Lương gross mỗi tháng</dt><dd>@if (Model.MinimumGross is { } minimum) {<span>@Money(minimum)@(Model.MaximumGross != minimum ? $" – {Money(Model.MaximumGross!.Value)}" : "") đ</span>} else {<span>Chưa nhập</span>}</dd></div>
+                <div><dt>Tháng đã nhập gross</dt><dd>@Model.MonthsWithGross/12 tháng</dd></div>
+            </dl>
+        } else { <h2 id="delete-profile-heading">Kiểm tra lại hồ sơ</h2> }
+        @if (Model.CanDelete) {
+            <p>Hồ sơ sẽ được gỡ khỏi danh sách. Bạn sẽ không thể tiếp tục chỉnh sửa hồ sơ này.</p>
+            <p><strong>Vẫn được giữ:</strong> các phiên bản đã lưu, lịch sử tính và nhật ký thay đổi.</p>
+            <p class="hint">Tệp sao lưu đã tải về không thay đổi. Thao tác này không xóa sạch mọi bản dữ liệu trên thiết bị.</p>
+            <form method="post" class="delete-actions"><input type="hidden" asp-for="Id" /><input type="hidden" asp-for="Revision" />
+                <a class="button" asp-page="/Forecast" asp-route-id="@Model.Id">Giữ hồ sơ</a>
+                <button class="primary danger" type="submit"><partial name="Shared/_Icon" model='@("delete")' />Xác nhận xóa hồ sơ</button>
+            </form>
+        } else {
+            <div class="actions">@if (Model.Year is not null) { <a class="button primary" asp-page="/Forecast" asp-route-id="@Model.Id">Mở lại hồ sơ</a> } else { <a class="button primary" asp-page="/ForecastProfiles">Trở lại danh sách hồ sơ</a> }</div>
+        }
+    </section>
+</div>

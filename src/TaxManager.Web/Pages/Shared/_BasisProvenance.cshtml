@@ -1,0 +1,20 @@
+@model IEnumerable<TaxManager.Web.LegalCitations.BasisView>
+<details class="basis-provenance">
+    <summary>Mô tả và phiên bản nguồn</summary>
+    <p>Mô tả gốc và thông tin nguồn được lưu cùng kết quả tính.</p>
+    @foreach (var item in Model) {
+        <div class="basis-source-record">
+            <strong>@item.Label</strong>
+            <dl class="basis-source-fields">
+                <div><dt>Mô tả gốc</dt><dd>@(item.Basis.Summary ?? "Chưa có mô tả nguồn.")</dd></div>
+                @if (!string.IsNullOrWhiteSpace(item.Basis.Id)) { <div><dt>Mã nguồn</dt><dd>@item.Basis.Id</dd></div> }
+                @if (!string.IsNullOrWhiteSpace(item.Basis.Version)) { <div><dt>Phiên bản</dt><dd>@item.Basis.Version</dd></div> }
+                @if (!string.IsNullOrWhiteSpace(item.Basis.Period)) { <div><dt>Kỳ áp dụng</dt><dd>@item.Basis.Period</dd></div> }
+                @if (item.Basis.EffectiveFrom is { } from) { <div><dt>Hiệu lực từ</dt><dd>@from.ToString("dd/MM/yyyy")</dd></div> }
+                @if (item.Basis.EffectiveTo is { } to) { <div><dt>Hiệu lực đến</dt><dd>@to.ToString("dd/MM/yyyy")</dd></div> }
+                @if (item.Basis.VerifiedOn is { } date) { <div><dt>Ngày xác minh</dt><dd>@date.ToString("dd/MM/yyyy")</dd></div> }
+                @if (item.SafeUrl is null) { <div><dt>Liên kết nguồn</dt><dd>Chưa có liên kết nguồn an toàn.</dd></div> }
+            </dl>
+        </div>
+    }
+</details>

@@ -62,6 +62,16 @@ trên loopback trong môi trường Development với opt-in trên; không tri�
 
 Đ6a có chế độ thử tài khoản riêng: thêm `--SyntheticAccounts=true` cùng `--SyntheticDemo=true`. App chỉ lắng nghe HTTPS loopback, mặc định `https://localhost:5088`, cần chứng chỉ development hợp lệ và được trình duyệt tin cậy. Agent không tự thay trust store. Mở `/tai-khoan/dang-ky`, tạo tên đăng nhập/mật khẩu thử rồi đăng nhập. Kho mỗi tài khoản bắt đầu trống; không tự nhận hồ sơ demo cũ. Để mở lại tài khoản ở lần chạy sau, giữ nguyên root đã in cùng `--SyntheticStore`, thư mục `accounts` và các kho/khóa riêng.
 
+**Khi bàn giao bản thử toàn bộ tính năng, dùng chế độ tài khoản này.** Sau phần chuẩn bị môi trường ở trên, chạy:
+
+```powershell
+dotnet run --project src/TaxManager.Web -- --SyntheticDemo=true --SyntheticAccounts=true
+```
+
+Không đưa link demo chỉ có `SyntheticDemo=true` như bản thử đầy đủ: chế độ đó cố ý ẩn các route tài khoản và không thể kiểm đăng ký/đăng nhập, thông báo dữ liệu thử hoặc xuất dữ liệu tài khoản. Trước bàn giao, kiểm chuyển tới đăng nhập khi chưa xác thực, vào hồ sơ sau đăng nhập, liên kết Tài khoản và form Xuất dữ liệu tài khoản; đồng thời kiểm thay đổi UI mới trên chính host HTTPS đó. Nếu công cụ browser chưa tin chứng chỉ local, ghi rõ trở ngại này, không thay bằng ảnh mirror rồi gọi đó là bản ứng dụng đầy đủ chạy được. Bản mirror chỉ dùng kiểm visual.
+
+Đ6c đã có `/tai-khoan/xuat-du-lieu`: chủ tài khoản xác nhận lại mật khẩu để tải JSON đọc được từ kho gốc; kho khôi phục và tệp sao lưu có mật khẩu là luồng riêng. Xóa toàn bộ tài khoản vẫn chưa có. [Contract và phạm vi](design/account-data-export.md).
+
 Cookie phiên hết hạn sau 30 phút hoặc khi app khởi động lại. Đăng xuất ở `/tai-khoan` không xóa dữ liệu. Backup thuế chỉ chứa kho đang dùng của tài khoản, không chứa registry/tên đăng nhập/hash mật khẩu; chưa phải bản sao toàn bộ hệ thống tài khoản. Không có reset mật khẩu, email, MFA, xuất/xóa toàn bộ tài khoản hoặc triển khai qua mạng ở bước này. [Contract](design/local-accounts.md), [kiểm chứng và giới hạn](reviews/2026-11-28-local-accounts.md).
 
 Đăng ký yêu cầu đọc và chọn đồng ý dùng dữ liệu thử; checkbox không chọn sẵn. Tài khoản cũ chưa xác nhận được chuyển tới `/tai-khoan/du-lieu-thu` trước khi mở hồ sơ; form dữ liệu gửi trước xác nhận bị chặn. Phiên bản/thời gian xác nhận lưu ở server, có thể đọc lại từ trang tài khoản. Đây là thông báo cho bản thử local, chưa phải nghiệm thu pháp lý cho dữ liệu thật. [Contract Đ6b](design/local-data-use.md).

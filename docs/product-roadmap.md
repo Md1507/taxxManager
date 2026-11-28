@@ -103,9 +103,11 @@ Quyền riêng tư áp dụng xuyên suốt cả sáu chặng: chỉ thu dữ li
 
 ## Làm song song và việc để sau
 
-Sau sáu chặng local, bước đang triển khai là UI Đ6a / PLAN 3.2: Identity opt-in và kho synthetic riêng mỗi tài khoản, không nhập tự động kho demo cũ. Có đăng ký/đăng nhập/đăng xuất qua HTTPS, kiểm cách ly URL/POST/bản sao/khôi phục và host mới; [contract](design/local-accounts.md), [kiểm chứng](reviews/2026-11-28-local-accounts.md). Đồng ý xử lý, xuất/xóa tài khoản, review bảo mật và vận hành qua mạng còn mở. Đây chưa phải hoàn tất Đ6 hoặc quyền dùng dữ liệu thật.
+Sau sáu chặng local, đã có UI Đ6a / PLAN 3.2: Identity opt-in và kho synthetic riêng mỗi tài khoản, không nhập tự động kho demo cũ. Có đăng ký/đăng nhập/đăng xuất qua HTTPS, kiểm cách ly URL/POST/bản sao/khôi phục và host mới; [contract](design/local-accounts.md), [kiểm chứng](reviews/2026-11-28-local-accounts.md). Đồng ý xử lý dữ liệu thật, xóa tài khoản, review bảo mật và vận hành qua mạng còn mở. Đây chưa phải hoàn tất Đ6 hoặc quyền dùng dữ liệu thật.
 
-Tiếp Đ6b: đã triển khai thông báo và ghi nhận đồng ý **dùng dữ liệu thử**, có phiên bản/thời gian server và gate cho tài khoản cũ theo [contract](design/local-data-use.md). Đây là luồng prototype, không xác nhận đồng ý xử lý dữ liệu thật đã được thẩm định pháp lý. Xuất/xóa toàn bộ tài khoản, nghiệm thu UX và review bảo mật độc lập vẫn là phần tiếp theo.
+Đ6b: đã triển khai thông báo và ghi nhận đồng ý **dùng dữ liệu thử**, có phiên bản/thời gian server và gate cho tài khoản cũ theo [contract](design/local-data-use.md). Đây là luồng prototype, không xác nhận đồng ý xử lý dữ liệu thật đã được thẩm định pháp lý. Xóa toàn bộ tài khoản, nghiệm thu UX và review bảo mật độc lập vẫn mở; xuất kho gốc đã có ở Đ6c dưới đây.
+
+Đ6c đã triển khai tải JSON đọc được của kho gốc tài khoản, có kiểm lại mật khẩu và không lẫn kho khôi phục; [contract](design/account-data-export.md), [kiểm chứng và giới hạn](reviews/2026-11-28-account-export.md). Thông báo dữ liệu thử chuyển v2, giữ xác nhận cũ và yêu cầu xác nhận nội dung mới. Xóa toàn bộ tài khoản, nghiệm thu UX/bảo mật và vận hành qua mạng vẫn mở. Song song, công cụ tháng `/` có [nhập chung theo khoảng tháng và sửa từng tháng](reviews/2026-11-28-monthly-entry.md), giữ nguyên luồng tính/snapshot.
 
 Có thể chuẩn bị yêu cầu, thiết kế, ví dụ và rà phụ thuộc cho chặng sau trong khi chặng trước đang thực hiện. Chỉ bắt đầu **triển khai** từng chặng khi điều kiện bắt đầu ở trên đã đạt; phối hợp theo tiến độ không làm thay đổi scope của phiếu 3.1b. Mỗi chặng cần phiếu và kiểm chứng riêng theo phạm vi thực tế.
 
