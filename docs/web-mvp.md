@@ -15,7 +15,19 @@ Tại `/Forecast`, nhập lương và các khoản bảo hiểm/người phụ t
 
 Bấm **Lưu hồ sơ**, rồi **Tính thuế năm**. Thay đổi chưa lưu cần lưu trước khi tính. Thiếu gross, bảo hiểm hoặc người phụ thuộc sẽ hiện tháng/chỉ tiêu cần bổ sung và không lưu kết quả giả. Thiếu khấu trừ vẫn tính nghĩa vụ nhưng chưa có chênh lệch. Kết quả có bước tính năm, bậc thuế, dữ liệu thực tế/dự kiến/giả định, X/12 tháng đầy đủ thực tế và độ phủ khấu trừ riêng. Nguồn luật giữ trạng thái hiện có; nộp thừa ước tính không bảo đảm được hoàn.
 
-Mỗi lần tính tạo kết quả mới. **Mở lịch sử tính năm** đọc snapshot đã lưu, kể cả sau khi xóa hồ sơ thông thường nếu giữ liên kết lịch sử. Lịch sử không bị tính lại theo catalog hay hồ sơ mới. Chỉ kho synthetic hợp lệ được mở lại/nâng cấp; khóa hoặc sentinel sai/thiếu gây lỗi, không tạo lại tự động. Chưa triển khai kịch bản thưởng giả định, xuất/checklist, sao lưu/khôi phục hay đối chiếu.
+Mỗi lần tính tạo kết quả mới. **Mở lịch sử tính năm** đọc snapshot đã lưu, kể cả sau khi xóa hồ sơ thông thường nếu giữ liên kết lịch sử. Lịch sử không bị tính lại theo catalog hay hồ sơ mới. Chỉ kho synthetic hợp lệ được mở lại/nâng cấp; khóa hoặc sentinel sai/thiếu gây lỗi, không tạo lại tự động. Báo cáo/checklist, sao lưu/khôi phục và kịch bản thưởng đã có cho local synthetic; đối chiếu nhập tay theo nguồn/kỳ đã có, chưa lưu phép đối chiếu.
+
+## Hai kịch bản — chặng 5
+
+Trong **Tổng quan năm** của hồ sơ đã lưu, chọn **So sánh khi thêm thưởng giả định**. Tại `/ho-so/{id}/kich-ban`, nhập tháng nhận và số tiền thưởng muốn thử, rồi chọn **So sánh**. Phép thử thêm một khoản thưởng tiền chịu thuế ngoài gross, giữ các khoản đã lưu và không cộng lại thưởng đã gồm trong gross. Hai kết quả dùng cùng revision và catalog; revision đổi thì mở lại bản mới trước khi so sánh.
+
+Ô trống chưa tạo kịch bản thứ hai; nhập 0 hợp lệ và có thể cho nghĩa vụ không đổi. Thiếu gross/bảo hiểm/người phụ thuộc sẽ hiện chỉ tiêu/tháng cần bổ sung. Thiếu khấu trừ không chặn nghĩa vụ; không suy số nộp thêm/nộp thừa cho thưởng giả định. Phép thử không lưu vào hồ sơ hoặc lịch sử. Khi sửa khoản thưởng sau khi so sánh, nhãn nhắc cập nhật kết quả sẽ hiện. Xem [contract](design/forecast-scenarios.md), [kiểm chứng và giới hạn](reviews/2026-11-28-forecast-scenarios.md).
+
+## Đối chiếu nguồn — chặng 6
+
+Từ **Tổng quan năm**, chọn **Đối chiếu với số công ty hoặc eTax**, hoặc mở **Đối chiếu nguồn** ở sidebar của hồ sơ đã lưu. Nhập nguồn/tài liệu, năm, tháng đầu/cuối, chỉ tiêu, số tiền và trạng thái rồi chọn **Đối chiếu số liệu**. Nhập cùng tháng đầu/cuối để so một tháng; 1–12 để so cả năm. Số nguồn cần cùng nghĩa với chỉ tiêu: gross đã nhập không cộng thưởng ngoài gross; khấu trừ không phải thuế ứng dụng tính.
+
+Kết quả dùng số nguồn trừ số hồ sơ; dấu + là nguồn cao hơn, dấu − là thấp hơn. Thiếu tháng hoặc khác năm không tạo chênh lệch giả. Nguồn không quyết định trạng thái Thực tế/Dự kiến/Giả định; số giả định cần ghi chú. Phép đối chiếu giữ metadata trong kết quả đang mở và không lưu số nguồn vào hồ sơ/lịch sử. Không kết luận công ty hoặc eTax sai hoặc coi chênh lệch là tiền hoàn/nộp thêm. Xem [contract](design/forecast-reconciliation.md) và [kiểm chứng](reviews/2026-11-28-forecast-reconciliation.md).
 
 ## Bước 3.1 đã nghiệm thu
 
@@ -45,12 +57,18 @@ trang `/Forecast`, terminal in đường dẫn kho. Để mở lại kho đó tr
 `--SyntheticStore="<đường dẫn kho synthetic dưới TEMP>"` sau `--SyntheticDemo=true`;
 giữ nguyên file khóa và marker, không tự tạo lại khóa bị mất. App không
 mở `taxmanager.local.db`, không tự provision khóa vận hành hoặc nâng cấp DB thật.
-Không có đăng nhập/Identity; ID nội bộ không phải xác thực hay phân quyền. Chỉ dùng
+Chế độ mặc định không có đăng nhập; ID nội bộ không phải xác thực hay phân quyền. Chỉ dùng
 trên loopback trong môi trường Development với opt-in trên; không triển khai công khai.
+
+Đ6a có chế độ thử tài khoản riêng: thêm `--SyntheticAccounts=true` cùng `--SyntheticDemo=true`. App chỉ lắng nghe HTTPS loopback, mặc định `https://localhost:5088`, cần chứng chỉ development hợp lệ và được trình duyệt tin cậy. Agent không tự thay trust store. Mở `/tai-khoan/dang-ky`, tạo tên đăng nhập/mật khẩu thử rồi đăng nhập. Kho mỗi tài khoản bắt đầu trống; không tự nhận hồ sơ demo cũ. Để mở lại tài khoản ở lần chạy sau, giữ nguyên root đã in cùng `--SyntheticStore`, thư mục `accounts` và các kho/khóa riêng.
+
+Cookie phiên hết hạn sau 30 phút hoặc khi app khởi động lại. Đăng xuất ở `/tai-khoan` không xóa dữ liệu. Backup thuế chỉ chứa kho đang dùng của tài khoản, không chứa registry/tên đăng nhập/hash mật khẩu; chưa phải bản sao toàn bộ hệ thống tài khoản. Không có reset mật khẩu, email, MFA, xuất/xóa toàn bộ tài khoản hoặc triển khai qua mạng ở bước này. [Contract](design/local-accounts.md), [kiểm chứng và giới hạn](reviews/2026-11-28-local-accounts.md).
+
+Đăng ký yêu cầu đọc và chọn đồng ý dùng dữ liệu thử; checkbox không chọn sẵn. Tài khoản cũ chưa xác nhận được chuyển tới `/tai-khoan/du-lieu-thu` trước khi mở hồ sơ; form dữ liệu gửi trước xác nhận bị chặn. Phiên bản/thời gian xác nhận lưu ở server, có thể đọc lại từ trang tài khoản. Đây là thông báo cho bản thử local, chưa phải nghiệm thu pháp lý cho dữ liệu thật. [Contract Đ6b](design/local-data-use.md).
 
 Nguồn References giữ nguyên Missing/Unverified/Verified và không khẳng định đã kiểm
 chứng pháp lý. Link chỉ lấy từ metadata HTTPS hợp lệ; kỳ không có luật được hỗ trợ
-không fallback. Trang tính tháng `/` giữ phạm vi cũ; trang `/Forecast` hỗ trợ lương/thưởng tiền một nơi trả, bảo hiểm nhập tay và người phụ thuộc theo tháng/giai đoạn. Không hỗ trợ nhiều nguồn lương, so sánh kịch bản hay tự cập nhật luật bằng AI. Không nhập
+không fallback. Trang tính tháng `/` giữ phạm vi cũ; trang `/Forecast` hỗ trợ lương/thưởng tiền một nơi trả, bảo hiểm nhập tay và người phụ thuộc theo tháng/giai đoạn. Kịch bản thưởng và đối chiếu nhập tay đã có trên hồ sơ đã lưu. Không hỗ trợ nhiều nguồn lương hay tự cập nhật luật bằng AI. Không nhập
 CCCD/MST. Tiền được parse và tính bằng decimal phía server, không tính bằng JS float.
 
 Kiểm thử mục tiêu trong quá trình phát triển, sau restore cache:

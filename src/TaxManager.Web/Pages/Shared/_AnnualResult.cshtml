@@ -76,9 +76,9 @@ else
 @foreach (var basis in bases)
 {
     <p>Trạng thái: @basis.Status; văn bản @basis.DocumentNumber, điều @basis.Article, khoản @basis.Clause, điểm @basis.Point; kỳ @basis.Period; mã @basis.Id, phiên bản @basis.Version. @basis.Summary
-    @if (Uri.TryCreate(basis.SourceUrl, UriKind.Absolute, out var source) && source.Scheme == "https") { <a href="@source.AbsoluteUri" rel="noopener noreferrer">Mở nguồn căn cứ</a> }
     </p>
 }
+<partial name="Shared/_LegalSources" model="bases" />
 <p>Chỉ hỗ trợ lương và thưởng tiền chịu thuế tại một nơi trả, bảo hiểm nhập tay và giảm trừ người phụ thuộc theo tháng. Chưa hỗ trợ khoản miễn thuế, từ thiện, hưu trí tự nguyện hoặc thu nhập từ nơi trả khác trong hồ sơ này.</p>
 </details>
 </section>

@@ -111,3 +111,7 @@ Khi làm việc với `src/TaxManager.Web/Pages/Forecast*`:
 - **Khi chuyển thanh hành động xuống cuối form forecast, phải giữ submit mặc định là Preview đứng trước các nút bỏ giai đoạ…** [k:01M8G33DP7ZSB0MXMQ9PV1A68A]
   Khi chuyển thanh hành động xuống cuối form forecast, phải giữ submit mặc định là Preview đứng trước các nút bỏ giai đoạn/xóa tháng. Enter trong ô nhập có thể kích hoạt submit đầu tiên dù form action là Preview. Giữ test Default_submit_previews_without_removing_a_period và kiểm Enter trong trình duyệt; chỉ kiểm nhấp Lưu/Xem trước không phát hiện lỗi này.
 <!-- bint:end -->
+
+## Cách trình bày
+
+- **Dùng hyperlink có chủ đích, tránh lạm dụng.** Áp dụng cho giao diện, tài liệu và phản hồi của agent. Ưu tiên văn bản thường; chỉ gắn liên kết khi người đọc cần điều hướng, mở tài nguyên hoặc kiểm chứng nguồn. Đặt nhãn rõ đích đến, mỗi đích chỉ liên kết một lần trong cùng ngữ cảnh. Không gắn link trang trí, phủ link lên mọi tên tệp/thuật ngữ, hoặc lặp cùng liên kết ở nhiều câu liền nhau. Giữ các trích dẫn nguồn bắt buộc.

@@ -39,5 +39,7 @@
 </tbody></table></div><p>Thuế đã khấu trừ: @Money(snapshot.Input.ActualWithheldTax)</p>
 <div class="table-scroll" role="region" aria-label="Chi tiết tính tháng" tabindex="0"><table class="brackets"><caption>Từng bậc thuế</caption><thead><tr><th scope="col">Bậc</th><th scope="col" class="money">Thu nhập chịu thuế</th><th scope="col" class="money">Thuế</th><th scope="col">Căn cứ</th></tr></thead><tbody>
 @foreach (var portion in snapshot.Result.Portions) { var basisView = new TaxManager.Web.LegalCitations.BasisView("bậc thuế", snapshot, portion.Basis); <tr><td data-label="Bậc">@Money(portion.LowerBound) – @(portion.UpperBound is null ? "trở lên" : Money(portion.UpperBound.Value)) (@Money(portion.Rate * 100)%)</td><td data-label="Thu nhập chịu thuế">@Money(portion.TaxableAmount)</td><td data-label="Thuế">@Money(portion.Tax)</td><td><partial name="_Basis" model="basisView" /></td></tr> }
-</tbody></table></div></details> }
+</tbody></table></div>
+<partial name="Shared/_LegalSources" model="@(new[] { snapshot.Result.GrossIncome.Basis, snapshot.Result.Insurance.Basis, snapshot.Result.PersonalDeduction.Basis, snapshot.Result.DependentDeduction.Basis, snapshot.Result.TaxableIncomeBeforeClamp.Basis, snapshot.Result.PitTaxableIncome.Basis, snapshot.Result.TotalTax.Basis }.Concat(snapshot.Result.Portions.Select(portion => portion.Basis)))" />
+</details> }
 </section> }

@@ -27,17 +27,18 @@
             <a asp-page="/ForecastProfiles" aria-current="@(page == "/ForecastProfiles" ? "page" : null)"><partial name="Shared/_Icon" model='@("profiles")' />Hồ sơ thuế</a>
             <a href="@(forecast + "#du-lieu")" data-section-link aria-current="@(page == "/Forecast" ? "location" : page == "/ForecastMonth" ? "page" : null)"><partial name="Shared/_Icon" model='@("calendar")' />Dữ liệu 12 tháng</a>
             <a href="@(forecast + "#nguoi-phu-thuoc")" data-section-link><partial name="Shared/_Icon" model='@("people")' />Người phụ thuộc</a>
-            <a href="@(forecast + "#tong-quan")" data-section-link><partial name="Shared/_Icon" model='@("annual")' />Tổng quan năm</a>
+            <a href="@(forecast + "#tong-quan")" data-section-link aria-current="@(page == "/ForecastScenarios" ? "page" : null)"><partial name="Shared/_Icon" model='@("annual")' />Tổng quan năm</a>
             @if (profile is not null) {
                 <a href="/ForecastAnnualHistory?id=@profile" aria-current="@(page == "/ForecastAnnualHistory" ? "page" : null)"><partial name="Shared/_Icon" model='@("history")' />Lịch sử tính</a>
                 <a asp-page="/ForecastReport" asp-route-id="@profile" aria-current="@(page == "/ForecastReport" ? "page" : null)"><partial name="Shared/_Icon" model='@("report")' />Báo cáo và checklist</a>
+                <a asp-page="/ForecastReconciliation" asp-route-id="@profile" aria-current="@(page == "/ForecastReconciliation" ? "page" : null)"><partial name="Shared/_Icon" model='@("compare")' />Đối chiếu nguồn</a>
             }
             <a href="/" aria-current="@(page == "/Index" ? "page" : null)"><partial name="Shared/_Icon" model='@("calculator")' />Công cụ tính tháng</a>
             <a asp-page="/Backup" aria-current="@(page is "/Backup" or "/Restore" or "/RestorePreview" ? "page" : null)"><partial name="Shared/_Icon" model='@("backup")' />Sao lưu và khôi phục</a>
         </nav>
     </aside>
     <div class="workspace">
-        <header class="topbar">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <a asp-page="/Backup" class="environment">Đang dùng kho khôi phục</a> }<span class="environment">Demo local (dữ liệu mẫu)</span></header>
+        <header class="topbar">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <a asp-page="/Backup" class="environment">Đang dùng kho khôi phục</a> }<span class="environment">Demo local (dữ liệu mẫu)</span>@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Accounts.AccountMode>().Enabled) { <a asp-page="/Accounts/Index">Tài khoản</a> }</header>
         <main id="main" tabindex="-1">@RenderBody()</main>
         <footer>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</footer>
     </div>

@@ -5,6 +5,32 @@
     "depth": "polish",
     "scope": "app",
     "theme": "project green (user named)",
+    "prompt": "Continue account roadmap with a clear local synthetic data-use notice, explicit checkbox, and a readable confirmation screen.",
+    "signature": "One readable notice and explicit choice before opening salary profiles",
+    "waived": [],
+    "review": "In-thread Codex finish review; actual HTTPS response mirrors at 320/375/1440 and keyboard checks. No independent review or browser authentication claim.",
+    "verification": "docs/reviews/2026-11-28-local-data-use.md",
+    "lint": "Static 56 (separate sidebar/table scroll contexts) and F7 (native controls shared recipe) remain documented; native render unavailable because puppeteer-core is missing. Orca captures checked, primary body text 16 px."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Reduce clutter in month selection and profile utilities; design local account forms and compact inline errors; replace password reveal text with familiar eye icons.",
+    "signature": "Compact account form with inline error guidance and one primary action",
+    "waived": [],
+    "review": "In-thread Codex finish review of real server HTML captures at 320/375/1440, with Orca keyboard checks. No independent reviewer claim.",
+    "verification": "docs/reviews/2026-11-28-local-accounts.md and docs/reviews/2026-11-28-forecast-visual-followup.md",
+    "lint": "Static gate 56 reports sidebar and table header as overlapping despite separate scroll contexts; F7 warns shared native controls. Native render unavailable (puppeteer-core missing); Orca captures used. Account HTTPS certificate rejected by Orca: account visuals use inert mirrors of actual HTTPS responses; authentication covered separately by pinned-TLS HTTP tests."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
     "prompt": "Reduce visual clutter in the 12-month salary preview; preserve green palette and Vietnamese voice. Apply Hallmark alongside frontend-design and ui-ux-pro-max.",
     "signature": "Monthly salary ledger, with exact amounts and factual input statuses",
     "waived": [],
@@ -24,5 +50,29 @@
     "review": "In-thread Codex finish review of desktop/mobile captures; aligned inputs and even density; no independent reviewer claim.",
     "verification": "docs/reviews/2026-11-28-protected-backup.md#sửa-lệch-form-công-cụ-tính-tháng-theo-ảnh-phản-hồi",
     "lint": "Unchanged static findings 56/37/F7, explanations in linked review. Native render tier unavailable; Orca captures and geometry probes at 320–1920 px used."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "build",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Saved-profile annual tax comparison with one hypothetical bonus; preserve green palette and Vietnamese voice.",
+    "signature": "One comparison sheet for a saved base and an isolated bonus assumption",
+    "waived": [],
+    "review": "In-thread Codex finish review, actual browser captures and measurements recorded in linked review; not an independent audit.",
+    "verification": "docs/reviews/2026-11-28-forecast-scenarios.md",
+    "lint": "Static findings 56/37/F7 checked and explained in linked review; native render unavailable (puppeteer-core missing). Orca desktop/mobile captures, seven viewport widths and axe 0 violations/0 incomplete used. Full gate: 680 tests and EF passed."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "build",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Reconcile a saved forecast with manually entered company or eTax figures for the same metric and period.",
+    "signature": "A comparison ledger with source-minus-profile difference and explicit missing values",
+    "waived": [],
+    "review": "In-thread Codex finish review; follow-up verifies error order and return-to-input Enter/Tab sequence with preserved values and visible radio focus. Full keyboard, screenreader, native zoom and user acceptance remain open; evidence in linked report.",
+    "verification": "docs/reviews/2026-11-28-forecast-reconciliation.md",
+    "lint": "Static 56/37/F7 findings checked and explained; native render unavailable (puppeteer-core missing). Orca final desktop/mobile captures; axe 0 violations, 1 incomplete manually checked, secondary contrast >6:1. Full gate 688 tests and EF passed."
   }
 ]

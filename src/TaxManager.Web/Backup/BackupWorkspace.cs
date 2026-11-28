@@ -2,6 +2,9 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.DataProtection;
 using TaxManager.Web.Demo;
+using TaxManager.Web.Accounts;
+using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace TaxManager.Web.Backup;
 
@@ -92,7 +95,8 @@ public sealed class SelectedDatabase
     public string Stamp => Owner + ":" + State.Generation;
     public TaxManager.Data.Infrastructure.TaxManagerDbContext Open() => Database.Open();
 
-    public SelectedDatabase(SyntheticDatabase original, BackupWorkspaces workspaces, IHttpContextAccessor accessor, IDataProtectionProvider protection)
+    public SelectedDatabase(SyntheticDatabase original, BackupWorkspaces workspaces, IHttpContextAccessor accessor, IDataProtectionProvider protection,
+        AccountMode mode, IServiceProvider services)
     {
         this.original = original;
         var http = accessor.HttpContext ?? throw new InvalidOperationException("A request is required.");
@@ -105,8 +109,19 @@ public sealed class SelectedDatabase
                 if (Guid.TryParseExact(decoded, "N", out _)) owner = decoded;
             }
             catch (CryptographicException) { }
-        Owner = owner ?? Guid.NewGuid().ToString("N");
-        if (owner is null) http.Response.Cookies.Append(CookieName, protector.Protect(Owner), new CookieOptions
+        var browser = owner ?? Guid.NewGuid().ToString("N");
+        if (mode.Enabled)
+        {
+            var id = http.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (http.User.Identity?.IsAuthenticated != true || id is null)
+                throw new InvalidOperationException("Cần đăng nhập trước khi mở kho.");
+            var account = services.GetRequiredService<LocalIdentityDb>().Users.AsNoTracking().SingleOrDefault(user => user.Id == id)
+                ?? throw new InvalidOperationException("Không còn tài khoản.");
+            this.original = services.GetRequiredService<LocalAccountStores>().Get(account.Id, account.StoreRoot);
+            Owner = id + ":" + browser;
+        }
+        else Owner = browser;
+        if (owner is null) http.Response.Cookies.Append(CookieName, protector.Protect(browser), new CookieOptions
         {
             HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = http.Request.IsHttps, IsEssential = true, Path = "/"
         });
@@ -115,10 +130,12 @@ public sealed class SelectedDatabase
 }
 
 /// <summary>Old tabs cannot submit a form against a newly selected store with matching entity IDs.</summary>
-public sealed class WorkspaceAntiforgery(IHttpContextAccessor accessor) : IAntiforgeryAdditionalDataProvider
+public sealed class WorkspaceAntiforgery(IHttpContextAccessor accessor, AccountMode mode) : IAntiforgeryAdditionalDataProvider
 {
-    public string GetAdditionalData(HttpContext context) => Current(context).Stamp;
-    public bool ValidateAdditionalData(HttpContext context, string additionalData) => Current(context).Stamp == additionalData;
+    private string Stamp(HttpContext context) => mode.Enabled && context.Request.Path.StartsWithSegments("/tai-khoan")
+        ? "accounts:" + (context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous") : Current(context).Stamp;
+    public string GetAdditionalData(HttpContext context) => Stamp(context);
+    public bool ValidateAdditionalData(HttpContext context, string additionalData) => Stamp(context) == additionalData;
     private SelectedDatabase Current(HttpContext context) =>
         (accessor.HttpContext ?? context).RequestServices.GetRequiredService<SelectedDatabase>();
 }

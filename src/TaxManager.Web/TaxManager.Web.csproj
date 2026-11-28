@@ -4,5 +4,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="../TaxManager.Data/TaxManager.Data.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../TaxManager.Data/TaxManager.Data.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
+  </ItemGroup>
 </Project>

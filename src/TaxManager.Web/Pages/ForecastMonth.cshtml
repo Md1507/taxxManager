@@ -78,14 +78,18 @@ else { <p>Chưa nhập khấu trừ tháng này nên chưa có chênh lệch. Th
 <p>Luật @month.Registration!.RuleSet.Id, phiên bản @month.Registration.RuleSet.Version. Kỳ áp dụng @month.Registration.PeriodFrom.ToString("dd/MM/yyyy") – @month.Registration.PeriodTo.ToString("dd/MM/yyyy").</p>
 <p>Bộ quy tắc tham khảo; trạng thái nguồn độc lập với trạng thái thực tế/dự kiến/giả định của đầu vào.</p>
 <details><summary>Văn bản và trạng thái xác minh</summary>
+@{ var sourceBases = new List<LegalBasis> { result.PersonalDeduction.Basis, result.DependentDeduction.Basis, result.TaxableIncome.Basis, result.Pit.TotalTax.Basis }; }
 @foreach (var basis in new (string Label, LegalBasis Value)[] { ("Giảm trừ bản thân", result.PersonalDeduction.Basis), ("Giảm trừ người phụ thuộc", result.DependentDeduction.Basis), ("Thu nhập tính thuế", result.TaxableIncome.Basis), ("Biểu thuế tháng", result.Pit.TotalTax.Basis) }) {
 <h3>@basis.Label</h3><partial name="Shared/_ForecastBasis" model="basis.Value" />
 }
 @if (month.Bonuses.Count > 0) {
+sourceBases.Add(month.Registration.RuleSet.CashBonusRules!.TaxableBasis);
+sourceBases.Add(month.Registration.RuleSet.CashBonusRules!.TimingBasis);
 <h3>Thưởng chịu thuế và thời điểm ghi nhận</h3>
 <partial name="Shared/_ForecastBasis" model="month.Registration.RuleSet.CashBonusRules!.TaxableBasis" />
 <partial name="Shared/_ForecastBasis" model="month.Registration.RuleSet.CashBonusRules!.TimingBasis" />
 }
+<partial name="Shared/_LegalSources" model="sourceBases" />
 </details>
 <p>Phạm vi: cá nhân cư trú, một nơi trả lương, thưởng tiền chịu thuế và bảo hiểm nhập tay. Chưa hỗ trợ khoản miễn thuế hoặc thu nhập từ nơi trả khác trong hồ sơ này.</p>
 </section>

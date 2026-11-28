@@ -6,6 +6,7 @@ Khi tài liệu thiết kế cũ khác trạng thái hiện tại, dùng roadmap
 Nền 3.1/3.1b, chặng 2 và chặng 3 đã nghiệm thu kỹ thuật; phiếu chặng 3 đã done. UI Đ1–Đ2 trên các route hiện có đã triển khai, gồm định dạng tiền khi gõ và chú thích gross/net theo phản hồi ngày 28/11. Xem [kiểm chứng UI](docs/reviews/2026-11-28-ui-phases-one-two.md) và [kiểm chứng chặng 3](docs/reviews/2026-11-27-annual-stage-three.md).
 Màn chi tiết tháng đã nối với bản forecast lưu theo ID/tháng/revision, có bước tính, bậc thuế và căn cứ; xem [kiểm chứng màn tháng](docs/reviews/2026-11-28-forecast-month.md). Đã bổ sung menu thu gọn và liên kết lỗi với ô nhập; thao tác phím, lưu tháng và reflow đã kiểm từng phần tại [báo cáo khả năng truy cập](docs/reviews/2026-11-28-ui-accessibility.md). Còn nghiệm thu UX thủ công đầy đủ; dark mode hiện là hướng tham khảo từ ảnh người dùng, chưa triển khai.
 Quy tắc phối hợp: roadmap quyết định phạm vi/thứ tự/tiến độ; PLAN quyết định điều kiện kỹ thuật; file này quyết định bố cục, token và hành vi UI. Khi triển khai, cập nhật cả ba liên kết/trạng thái trong cùng tác vụ, không lấy checkbox UI thay nghiệm thu nghiệp vụ.
+Bổ sung nghiên cứu anti AI slop ngày 28/11/2026 tại [mục 15](#15-nghiên-cứu-anti-ai-slop-và-tiêu-chí-áp-dụng): nguồn web/GitHub, quyết định tiếp thu và cổng review; chưa phải nghiệm thu UI.
 
 ## 1. Mục tiêu và giả định về người dùng
 
@@ -64,8 +65,8 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Báo cáo và checklist | `/ho-so/{id}/bao-cao` | Chuẩn bị trao đổi/quyết toán | Báo cáo bản lưu, nguồn, phần thiếu | xuất CSV | Đ3; đã có bản đầu, backup chưa có |
 | Sao lưu và khôi phục | `/sao-luu`, `/khoi-phuc`, `/khoi-phuc/xem-truoc` | Tự giữ bản có thể khôi phục | Ngày, số hồ sơ/phiên bản/lịch sử, ID trùng, mở kho riêng | Tải bản sao / Kiểm tra / Mở kho khôi phục theo màn | Đ3; đã có, local synthetic |
 | Xem trước khôi phục | `/du-lieu/khoi-phuc` | Kiểm tra trước khi ghi | Hồ sơ sẽ thêm, trùng, lỗi, phiên bản | khôi phục bản đã kiểm tra | Đ3; chưa có |
-| Hai kịch bản | `/ho-so/{id}/kich-ban` | Thử thêm thưởng giả định | Cơ sở, khoản bổ sung, hai kết quả | so sánh kịch bản | Đ4; chưa có |
-| Đối chiếu nguồn | `/ho-so/{id}/doi-chieu` | So số cùng nghĩa và kỳ | Hồ sơ, công ty/eTax, chênh lệch | đối chiếu số liệu | Đ5; nhập thủ công |
+| Hai kịch bản | `/ho-so/{id}/kich-ban` | Thử thêm thưởng giả định | Cơ sở, khoản bổ sung, hai kết quả | so sánh kịch bản | Đ4; đã triển khai local synthetic |
+| Đối chiếu nguồn | `/ho-so/{id}/doi-chieu` | So số cùng nghĩa và kỳ | Hồ sơ, công ty/eTax, chênh lệch | đối chiếu số liệu | Đ5; đã có nhập thủ công, không lưu phép đối chiếu |
 | Đăng ký | `/tai-khoan/dang-ky` | Tạo tài khoản | Trường tài khoản, điều kiện xử lý | tạo tài khoản | Đ6; chưa có |
 | Đăng nhập | `/tai-khoan/dang-nhap` | Mở dữ liệu của mình | Trường xác thực, lỗi có hướng sửa | đăng nhập | Đ6; chưa có |
 | Quyền dữ liệu | `/tai-khoan/du-lieu` | Kiểm soát dữ liệu cá nhân | Lựa chọn đồng ý, phạm vi xuất/xóa | lưu lựa chọn dữ liệu | Đ6; chưa có |
@@ -84,7 +85,7 @@ Trang xem trước khôi phục/xóa là ngữ cảnh riêng, không tranh hành
 Palette nền/chữ: nền trang `#F3F6F3`, bề mặt `#FFFFFF`, chữ chính `#1A1F1B`, chữ phụ `#526057`, viền mạnh `#76867B`.
 Màu thương hiệu `#395B40`, nền chọn `#E7FFEC`; giữ bốn màu ngữ nghĩa đã định nghĩa ở mục 10. Đây là bộ chốt thay palette cũ, không tạo màu mới.
 Font: Inter tự host, một họ cho tiêu đề, nội dung, bảng và trường nhập; độ đậm 400/500/600, số dùng tabular-nums.
-Bố cục: sidebar 224px có logo nhỏ và icon nét đồng bộ; thanh trên chỉ chứa huy hiệu Demo local. Danh sách và editor là hai màn riêng, mỗi màn một nút chính; editor đặt thanh thao tác dính cuối form. Nội dung sáng một cột, tối đa 1100px; văn bản 72ch, lề 16/24/32px theo thiết bị. Chỉ chế độ sáng, CSS theo vai trò để thêm dark mode sau.
+Bố cục: sidebar 224px có logo nhỏ và icon nét đồng bộ; thanh trên chỉ chứa huy hiệu Demo local. Danh sách và editor là hai màn riêng, mỗi màn một nút chính; editor đặt thanh thao tác ở cuối form theo luồng trang, không dùng sticky footer che nội dung. Nội dung sáng một cột, tối đa 1100px; văn bản 72ch, lề 16/24/32px theo thiết bị. Chỉ chế độ sáng, CSS theo vai trò để thêm dark mode sau.
 Chữ, nhãn và tiêu đề căn trái; tiền căn phải; vùng nội dung nằm giữa viewport nhưng không căn giữa đoạn chữ.
 
 ```text
@@ -470,7 +471,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 - Chỉ dùng brand, brand-tint, bg, surface, text, text-muted, border-strong và warning/error/info/success của bộ chốt dưới đây. Token theo vai trò `--surface`, `--text`, không lấy xanh mặc định framework hoặc thêm màu ngoài bộ này.
 - Một họ font Inter hỗ trợ tiếng Việt, thang 13/14/16/20/24/32; 400/500/600, không thêm font mono/serif cho nhãn.
 - Khoảng cách theo bội số 4px; tối đa hai bo góc 4px và 8px; không bóng. Tách vùng bằng nền và khoảng cách; viền input mảnh đủ tương phản, bảng danh sách chỉ có đường ngang mảnh.
-- Mỗi màn hình đúng một hành động chính, một thông tin quan trọng nhất; không thêm thành phần ngoài danh sách ở dưới.
+- Mỗi trạng thái màn hình có một hành động chính và một thông tin ưu tiên; các hành động phụ vẫn hiện tại nơi cần dùng. Lưu là hành động chính của editor, Preview là submit mặc định an toàn khi nhấn Enter; thứ tự DOM và độ nổi thị giác phục vụ hai yêu cầu khác nhau. Không thêm thành phần ngoài danh sách ở dưới.
 - Các lựa chọn màu, cỡ, khoảng cách, bo góc chỉ xuất hiện tại token; CSS thành phần chỉ tham chiếu var(), không chép hex/px ra từng màn hình.
 - Chỉ chế độ sáng; dark mode để sau và chỉ thay token theo vai trò. Sidebar chọn dùng brand-tint, chữ đậm 600, viền trái 3px brand, aria-current; giữ sẵn chỗ viền ở các mục khác để không nhảy bố cục.
 - Thanh trên chứa huy hiệu Demo local; hành động chính theo từng màn hình. Sidebar 6 đến 8 mục khi đủ chức năng, dính theo viewport và cuộn riêng nếu cửa sổ thấp. Mỗi mục chuyển tới đúng phần, mục hiện tại tự cập nhật theo nội dung khi cuộn tay (aria-current=location). Liên kết trong editor chỉ đổi fragment, giữ form chưa lưu và query POST. Mobile giữ thanh Menu dính; menu mở phủ lên nội dung, đóng trước khi cuộn tới phần, không che tiêu đề đích. Chỉ khung thuế năm ước tính dùng nền brand; không xen kẽ khung đậm/nhạt để trang trí.
@@ -481,7 +482,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 - Không dùng accordion/dropdown làm bố cục mặc định. Hiện trực tiếp các phần nhập chính, khoản thưởng, giải thích gross/net và bảng bậc thuế; chỉ thu gọn nguồn, ghi chú hoặc nội dung tra cứu dài theo nhóm. Không lặp mũi tên tam giác/chevron trước từng tiêu đề, từng dòng hoặc từng căn cứ; trigger còn lại dùng chữ gạch chân, giữ ngữ nghĩa native và bàn phím. Không thay mũi tên bằng chuỗi dấu cộng hay icon trang trí khác. Đây là điều chỉnh visual theo phản hồi người dùng ngày 28/11/2026.
 - Không gradient, kính mờ, blob, minh họa có sẵn, emoji làm icon; không thẻ giống nhau phủ kín trang hoặc thẻ lồng thẻ.
 - Không khối liên kết nhanh lấp chỗ trống, nhãn IN HOA nhóm menu, nền hình tròn hoặc avatar minh họa; không dùng danh sách thẻ giống nhau thay bảng.
-- Không hero số lớn/nhãn nhỏ; trang chính là dữ liệu. Không nền kem với serif/đất nung, nền gần đen với neon, bố cục báo giấy hairline/cột dày/bo góc 0.
+- Không dùng hero số lớn/nhãn nhỏ để đẩy công việc chính xuống dưới. Tổng thuế năm vẫn được nhấn theo mục 4.5, kèm kỳ, trạng thái và căn cứ. Không tự đổi hệ xanh đã chốt sang nền kem với serif/đất nung, nền gần đen với neon hoặc bố cục báo giấy chỉ để tạo vẻ khác lạ.
 - Không nhãn IN HOA giãn chữ, đánh số 01/02/03 cho nội dung không phải trình tự; không đổi màu/nghiêng riêng một từ tiêu đề.
 - Không trượt khi cuộn, nảy hover, thẻ nhấc lên; chỉ chuyển động phục vụ mở/đóng/xác nhận, tối đa 150ms, tôn trọng prefers-reduced-motion.
 - Không gạch ngang dài trong nội dung UI, chuỗi nối dấu chấm giữa, mũi tên gắn vào mọi nút, font mono cho nhãn hoặc đen tinted #0B0B0B/#111.
@@ -529,7 +530,8 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 - Chụp và tự xem ảnh ở 375px, 768px, 1280px; dữ liệu gồm số 10 chữ số, 0, tháng thiếu, tên hồ sơ dài và nhiều cảnh báo.
 - Chạy Lighthouse hoặc axe bản miễn phí, đo tương phản, thử cả luồng chỉ bằng bàn phím; ghi lỗi và ảnh trước/sau sửa.
 - Kiểm trực tiếp: có bỏ được chi tiết trang trí nào không, có giá trị ngoài token không, có chỉ một hành động chính không?
-- Sau khi code, bỏ ít nhất một chi tiết trang trí không giúp thao tác/đọc số và ghi thứ đã bỏ cùng lý do; không xóa trợ giúp hoặc tín hiệu trạng thái để đủ thủ tục.
+- Sau khi code, rà từng chi tiết trang trí theo tác dụng với thao tác/đọc số; bỏ chi tiết không có tác dụng và ghi lý do. Nếu không có gì thừa, ghi rõ kết luận; không bắt buộc xóa một chi tiết hoặc làm mất trợ giúp/trạng thái để đủ thủ tục.
+- Áp dụng ma trận trạng thái và điều kiện chặn tại mục 15.4; ảnh đẹp ở trạng thái đủ dữ liệu chưa đủ để kết thúc review.
 - Ghi mọi ngoại lệ token vào `Ngoại lệ có chủ ý` bên dưới; chưa chụp/chưa thử thì ghi chưa kiểm, không suy từ CSS là đã đạt.
 
 ### Token CSS mẫu
@@ -667,9 +669,9 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 | Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã chuẩn hóa token/sidebar/form/bảng và nối chi tiết tháng từ forecast đã lưu; HTTP, host mới, menu/lỗi bằng phím và reflow đã kiểm. Còn luồng bàn phím đầy đủ, focus khi cửa sổ hoạt động, screenreader và zoom native. |
 | Đ2 | Chặng 3, bước 3.3 | Nền chặng 3 đã done. Đã tái bố trí kết quả năm, thưởng, phụ thuộc theo số lượng và lịch sử; giữ service hiện có. |
 | Đ3 | Chặng 4, bước 4.1/4.2 | Đã có báo cáo/checklist dữ liệu, CSV và backup/khôi phục có mật khẩu vào kho riêng theo [contract](docs/design/protected-backup.md), xem [kiểm chứng](docs/reviews/2026-11-28-protected-backup.md). Nghiệm thu UX tổng thể vẫn còn mở. |
-| Đ4 | Chặng 5 | Chưa triển khai; chỉ bắt đầu sau chặng 4. |
-| Đ5 | Chặng 6 | Chưa triển khai; chỉ bắt đầu sau chặng 5. |
-| Đ6 | Bước 3.2 và quyền dữ liệu 4.1 | Chưa triển khai; điều kiện trước phục vụ nhiều người qua mạng, không phải chặng sản phẩm 6. |
+| Đ4 | Chặng 5 | Đã triển khai màn hai kịch bản sau kiểm chứng chặng 4; [contract](docs/design/forecast-scenarios.md), [kiểm chứng](docs/reviews/2026-11-28-forecast-scenarios.md). Nghiệm thu UX tổng thể còn mở. |
+| Đ5 | Chặng 6 | Đã triển khai đối chiếu nhập tay chỉ đọc; [contract](docs/design/forecast-reconciliation.md), [kiểm chứng](docs/reviews/2026-11-28-forecast-reconciliation.md). Nghiệm thu UX tổng thể còn mở. |
+| Đ6 | Bước 3.2 và quyền dữ liệu 4.1 | Đ6a đã có Identity opt-in, HTTPS và kho synthetic riêng mỗi tài khoản; [contract](docs/design/local-accounts.md). Đồng ý/xuất/xóa tài khoản và review bảo mật còn mở; chưa cho phục vụ qua mạng, không phải chặng sản phẩm 6. |
 
 ### Đợt 1. Bản nhỏ nhất dùng được: nhập, lưu, mở và kiểm tháng
 
@@ -700,22 +702,33 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 
 ### Đợt 4. Hai kịch bản
 
-- [ ] Một màn hình cơ sở và thêm thưởng giả định có tiền/tháng; không thêm nhiều thanh trượt.
-- [ ] Dùng chung dòng kết quả, độ phủ và cách tính; trạng thái khoản giả định không ghi ngược vào hồ sơ thực tế.
+- [x] Một màn hình cơ sở và thêm thưởng giả định có tiền/tháng; không thêm nhiều thanh trượt. Route `/ho-so/{id}/kich-ban`, mở từ Tổng quan năm.
+- [x] Dùng chung dòng kết quả, độ phủ và cách tính; trạng thái khoản giả định không ghi ngược vào hồ sơ thực tế. Giữ thưởng đã lưu, phần đã gồm gross; không tạo bản lịch sử từ phép thử.
 - [ ] Xong khi: hai kết quả đọc riêng được, không cộng trùng gross, kết quả bằng nhau không tạo khoảng giả, không gọi khoảng là bảo đảm; QA qua.
 
 ### Đợt 5. Đối chiếu nguồn
 
-- [ ] Form nguồn/kỳ/chỉ tiêu/metadata và bảng đối chiếu; không tích hợp tài khoản eTax.
+- [x] Form nguồn/kỳ/chỉ tiêu/metadata và bảng đối chiếu; không tích hợp tài khoản eTax. Bản đầu chỉ đọc hồ sơ, không lưu số đối chiếu.
+- [x] Summary lỗi theo thứ tự form; từ kết quả có “Sửa số nguồn” giữ dữ liệu, focus đầu form rồi Tab tới nguồn. Đã kiểm đoạn thao tác này ở mobile; [bằng chứng và giới hạn](docs/reviews/2026-11-28-forecast-reconciliation.md#bổ-sung-luồng-sửa-số-và-bàn-phím).
 - [ ] Xong khi: so cùng nghĩa/kỳ, thiếu không thành 0, có dấu và hướng chênh lệch, người thử không hiểu là kết luận công ty sai; QA qua.
 
 ### Đợt 6. Tài khoản và quyền dữ liệu trước phục vụ qua mạng
 
+- [x] Đ6a local synthetic: đăng ký/đăng nhập bằng Identity, cookie Secure/HttpOnly, CSRF, lockout, kho/khóa riêng theo tài khoản; kiểm URL/POST/backup/restore và host mới bằng hai tài khoản. Xem [contract](docs/design/local-accounts.md) và [kiểm chứng, giới hạn](docs/reviews/2026-11-28-local-accounts.md).
+- [x] Đ6b local synthetic: thông báo phạm vi và checkbox không chọn sẵn khi đăng ký; ghi phiên bản/thời gian ở server, tài khoản cũ xác nhận trước route dữ liệu. Có màn đọc lại nội dung và trạng thái ở tài khoản. [Contract](docs/design/local-data-use.md), [711 test và visual QA](docs/reviews/2026-11-28-local-data-use.md); chưa thay nghiệm thu pháp lý/quyền dữ liệu toàn bộ ở dưới.
 - [ ] Đăng ký/đăng nhập dùng Identity, kiểm hai tài khoản không truy cập chéo hồ sơ hoặc lịch sử bằng URL/POST.
 - [ ] Cho paste và password manager; không tự xây captcha hoặc cơ chế xác thực mới trong thiết kế.
 - [ ] Đồng ý xử lý dữ liệu, xuất dữ liệu cá nhân, xác nhận xóa tài khoản/dữ liệu và mô tả giới hạn bản sao.
 - [ ] Xong khi: kiểm cách ly quyền ở server, các luồng xuất/xóa đúng phạm vi, cookie/HTTPS/CSRF và review bảo mật cần thiết đã hoàn thành; QA qua.
 - [ ] Số đợt không phải quyền public deploy: nếu cần nhiều người qua mạng sớm, đưa điều kiện Đ6 lên trước; demo local vẫn dùng synthetic cho tới khi đủ điều kiện dữ liệu thật.
+
+Phản hồi visual 28/11: bộ chọn dữ liệu tháng trong editor dùng lưới 12 nút ngắn (6 cột desktop, 3 cột mobile), trạng thái đang sửa/đã nhập/chưa nhập bằng chữ, không lặp dropdown và 12 nút dài. Dropdown là fallback khi không có JavaScript; giữ đường submit Preview mặc định. Chênh lệch đối chiếu dùng xanh cho dương, đỏ trầm cho âm, trung tính cho 0; luôn giữ dấu và hướng bằng chữ, màu không kết luận nguồn đúng/sai.
+
+Summary lỗi không trình bày thành menu hyperlink: không khung đỏ đậm, không bullet hoặc gạch chân thường trực; heading gọn dùng màu lỗi, câu lỗi màu chữ thường. Giữ link đến trường để sửa nhanh bằng chuột/bàn phím; hover/focus mới gạch chân, có focus ring. Lỗi inline và aria-invalid vẫn chỉ đúng trường cần sửa.
+
+Form tài khoản gọn đặt summary ngay trong panel nhập: icon cảnh báo, tiêu đề ngắn và câu lỗi thuần chữ theo thứ tự trường. Chỉ một hành động “Sửa thông tin” đưa focus về ô lỗi đầu; không biến từng câu lỗi thành hyperlink. Giữ focus summary sau POST lỗi và thông báo ngay dưới trường.
+
+Thao tác quen thuộc có vị trí rõ như hiện/ẩn mật khẩu dùng icon mắt trong từng ô, không thêm hàng nút chữ. Icon-only phải có accessible name, phản ánh trạng thái, focus rõ và vùng bấm ít nhất 44 × 44 px. Giữ chữ cho hành động nghiệp vụ, điều hướng và sửa lỗi khi icon đơn lẻ dễ gây nhầm; không đổi toàn bộ nút thành icon.
 
 ### Gộp hoặc cắt để một người làm được
 
@@ -740,14 +753,14 @@ Ngày 28/11/2026: dùng thêm [Hallmark v2](https://github.com/nutlope/hallmark/
 - Đọc roadmap và trạng thái đầu file trước mỗi lượt; không khôi phục nhận định cũ chưa có tính năm/lịch sử. Sidebar, brand xanh, tiền đầy đủ `đ` theo bản 28/11; không quay về palette tím/thanh ngang cũ.
 - Dùng chung Razor layout, partial field/error/badge/bảng/disclosure; không copy CSS khác nhau cho cùng hành vi.
 - Chỉ dùng thành phần trong mục 10; muốn thêm thì sửa kế hoạch và nêu lý do trước, không tự thêm tính năng ngoài file này.
-- Trước code mỗi màn hình, ghi palette/font/layout, ASCII và căn lề; đối chiếu mặc định rồi chỉnh. Chỉ code sau khi bước đối chiếu đã xong.
+- Trước code mỗi màn hình, ghi tác vụ, dữ liệu, palette/font/layout, ASCII và căn lề; dùng nguồn và quy trình mục 15. Chỉ so phương án bố cục khi còn quyết định chưa rõ; không tạo lại theme hoặc nhiều biến thể cho thay đổi nhỏ. Chỉ code sau khi bước đối chiếu đã xong.
 - Giữ nguồn trạng thái theo mục 6 ở tất cả số; không tự mặc định thực tế, 0, khấu trừ, bảo hiểm hoặc số người phụ thuộc.
 - Không bịa số liệu luật, căn cứ, kỳ áp dụng hoặc trạng thái Verified; nhận từ rule/snapshot của service, không hardcode phép tính trong Razor/JS.
 - Giữ hợp đồng ForecastAmountBinder, ModelState và metadata; format hiển thị không được đổi nghĩa chuỗi hoặc reset ngày nhập.
 - Chỉ hỗ trợ nhánh nghiệp vụ backend đã có contract/kiểm chứng; optional graph/catalog cần mở rộng riêng, không giả lập dữ liệu để UI trông hoạt động.
 - POST sai giữ input và mở phần có lỗi; Enter không xóa; lưu/tính lại đúng transaction/service và snapshot bất biến hiện có.
 - Không dùng ID route làm phân quyền, không bỏ guard synthetic để chạy demo; không đụng migration cũ, DB thật hay khóa thật trong tác vụ UI.
-- Sau code, tự nhìn ảnh ba kích thước theo mục 10.9, bỏ một chi tiết trang trí thừa, kiểm token và ghi bằng chứng; nếu chưa chạy được browser thì báo chưa kiểm.
+- Sau code, tự nhìn ảnh ba kích thước theo mục 10.9, rà chi tiết thừa, kiểm token và các trạng thái theo mục 15.4, ghi bằng chứng; nếu chưa chạy được browser thì báo chưa kiểm. Không lấy điểm tự chấm hoặc số lỗi scanner làm bằng chứng UI đạt.
 - Chạy kiểm tra phù hợp và `bint test affected --run` sau sửa mã ngoài tác vụ Bint; nếu chạm script/csproj/global.json thì chạy đầy đủ cổng Web MVP theo quy tắc repo.
 - Với tài liệu kế hoạch hiện tại chỉ kiểm cấu trúc/nội dung, không đánh dấu checkbox triển khai hoặc báo UI đã qua QA.
 
@@ -797,3 +810,144 @@ Ghi thời gian hoàn thành, chỗ cần trợ giúp, câu diễn giải của 
 - Khuyến nghị font và line-height tiếng Việt là thực hành cần thử; chưa tải/đo file font hoặc chụp UI thì chưa coi là đã kiểm chứng.
 - Token màu là lựa chọn thiết kế; phải đo từng cặp thực dùng, trạng thái focus/lỗi và ảnh render, không suy chất lượng từ bảng màu.
 - UI các luồng hiện có đã triển khai và chạy axe/QA như báo cáo ngày 28/11/2026; chưa thử với nhóm người dùng độc lập hoặc điện thoại vật lý. Các checkbox còn mở vẫn là điều kiện chưa đạt, không phải kết quả nghiệm thu.
+
+## 15. Nghiên cứu anti AI slop và tiêu chí áp dụng
+
+Ngày tra cứu: 28/11/2026. “AI slop” ở đây là giao diện lặp khuôn, trang trí thiếu mục đích hoặc trông hoàn chỉnh nhưng không giúp hoàn thành tác vụ. Đây không phải tiêu chuẩn có thể xác định chỉ bằng font, màu hay một điểm số. Các quy tắc dưới là tổng hợp và quyết định áp dụng riêng cho TaxManager.
+
+### 15.1. Nguồn đã đọc, gồm repo GitHub gốc
+
+| Mã / nguồn | Tiếp thu | Giới hạn khi áp dụng |
+|---|---|---|
+| S1. [Anthropic frontend-design](https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md) | Xuất phát từ đối tượng, công việc và nội dung; cấu trúc phải mang nghĩa; thiết kế rồi tự phê bình. | Tránh mặc định thẩm mỹ không đồng nghĩa luôn cần font lạ hoặc bố cục phá cách. |
+| S2. [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | Rà card lồng nhau, icon tile lặp, thứ bậc yếu; tách critique, audit, harden và polish. | Detector chỉ gợi ý lỗi; cần kiểm màn hình và thao tác thực. |
+| S3. [Studio-Groei/anti-slop](https://github.com/Studio-Groei/anti-slop) | Ghi thẩm mỹ, tham chiếu, ý định, ràng buộc; so phương án có khác biệt cấu trúc; review cả câu chữ. | Không bê quy trình nhiều agent/5 biến thể hay công cụ tuning vào mọi tác vụ. |
+| S4. [wwewtech/anti-slop-design](https://github.com/wwewtech/anti-slop-design) | Một trọng tâm, tránh lặp KPI/bộ lọc, bỏ số liệu khoe thành tích không có nguồn; xét đủ trạng thái tương tác. | Các ngưỡng “85%”, điểm 4/5 và hiệu ứng shake/pulse/scale là quy ước của tác giả, không phải bằng chứng nghiên cứu cho TaxManager. |
+| S5. [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) | Câu chữ trực tiếp, hệ thiết kế nhất quán, dùng nội dung sản phẩm và kiểm browser thật. | Repo thiên website công ty; ảnh lớn, hero, shader và scroll scene không phục vụ màn nhập thuế. |
+| S6. [Dekuran/anti-slop-design](https://github.com/Dekuran/anti-slop-design/blob/main/README.md) | Lưu ý một danh sách “phong cách khác mặc định” vẫn có thể tạo ra mẫu rập khuôn mới. | Thử nghiệm do tác giả tự báo cáo; không sinh màu/font bằng hash tên dự án, ép texture hoặc cấm dải màu cho ứng dụng đang có hệ thiết kế. |
+| S7. [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines) | Focus rõ, paste được, liên kết đúng nghĩa, giữ ngữ cảnh điều hướng, phản hồi khi xử lý, chuyển động có lý do. | Không áp dụng máy móc ví dụ React/Next.js, optimistic success hay gợi ý cấu hình chặn zoom vào Razor Pages. |
+| S8. [GOV.UK: validation](https://design-system.service.gov.uk/patterns/validation/) | Giữ input khi lỗi, summary đưa tới ô, thông báo chỉ cách sửa; tránh báo lỗi khi người dùng chưa nhập xong. | Không tự nới grammar tiền vi-VN hoặc bỏ kiểm tra server. |
+| S9. W3C: [target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html), [reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html), [focus not obscured](https://www.w3.org/WAI/WCAG22/Understanding/focus-not-obscured-minimum.html) | Đối chiếu tiêu chí truy cập, thay cho chấm điểm cảm tính về vẻ ngoài. | AA 2.5.8 là 24 CSS px với ngoại lệ; 44px là mục tiêu nội bộ cho điều khiển mobile thường dùng. Bảng dữ liệu có ngoại lệ reflow; trang chứa bảng vẫn phải reflow. |
+| S10. [heydamir/unslop](https://github.com/heydamir/unslop) | Audit rồi sửa theo lớp: spacing, color, icons, copy, type, layout, details, visuals, motion; màn đã tốt chỉ sửa phần cần thiết. | Giữ contract và brand; không ép thêm hình/điểm nhấn hoặc làm video trước/sau. |
+| S11. [ibelick/ui-skills](https://github.com/ibelick/ui-skills) | Bộ hướng dẫn design engineering và playbook có ví dụ tương tác cho từng lỗi nhỏ. | Lấy quy tắc phù hợp; scale nút, shadow, skeleton và truncate không tự trở thành yêu cầu của sản phẩm. |
+| S12. [emilkowalski/skills](https://github.com/emilkowalski/skills) | Quyết định motion có lý do; thử phá UI bằng dữ liệu khó; ghi lại lý do của chỉnh sửa thiết kế để tránh lặp lỗi. | Không thêm animation/library vì repo có skill tương ứng. |
+| S13. [yetone/kill-ai-slop](https://github.com/yetone/kill-ai-slop) | Catalogue trước/sau cho cả hình thức và câu chữ; lưu ý kiểu terminal hoặc editorial cũng có thể thành khuôn mới. | Nguồn chuyên biệt nhỏ hơn nhóm repo đầu bảng 15.5; không lấy phong cách paper/ink của tác giả làm theme ứng dụng. |
+| S14. [Nutlope/hallmark](https://github.com/nutlope/hallmark) | Floor/Reflex/Finish, app-screen scope và giữ nội dung/wiring khi redesign. Phân tích riêng tại mục 15.8. | Không áp giới hạn chữ/hero của marketing lên bảng/form; không dùng clip để giấu overflow. |
+| S15. [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | Tra cứu theo vấn đề, ưu tiên truy cập/tương tác; đối chiếu các sửa sai hướng dẫn mới. | Kết quả tìm kiếm không thay brief hoặc đo thực tế; không tái sinh design system đang dùng. |
+| S16. [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | Nguồn gốc workflow web-design-guidelines; dùng tiêu chí web ở S7 để review có vị trí và bằng chứng. | Sao của toàn bộ collection; chỉ lấy phần framework-agnostic cho Razor Pages. |
+
+Các link GitHub trỏ nhánh đang phát triển, nội dung có thể đổi; ngày trên ghi thời điểm tra cứu, không khẳng định phiên bản phát hành. Dùng như tài liệu tham khảo, không tự cài skill, dependency, extension hay thực thi script từ repo. Khi đưa một công cụ thành cổng tự động, chốt phiên bản và kiểm false positive trước.
+
+### 15.2. Quy tắc thiết kế có thể kiểm tra
+
+Bảng này bổ sung mục 4–10; mã nguồn là căn cứ tham khảo, cột áp dụng là quyết định của dự án.
+
+| Quy tắc | Áp dụng và cách kiểm tại TaxManager | Căn cứ |
+|---|---|---|
+| AS01. Công việc quyết định bố cục | Mở editor phải tìm được kỳ, trạng thái lưu, nơi nhập và hành động tiếp theo; không cần đi qua hero hoặc lời giới thiệu. | S1, S5 |
+| AS02. Nhóm theo nghĩa | Dùng tiêu đề/khoảng cách cho nhóm nhập; bảng cho đối chiếu số. Khung chỉ khi phân biệt một vùng chức năng; không bọc từng nhãn, căn cứ hoặc hàng bằng card. | S1, S2 |
+| AS03. Một trọng tâm, đủ thao tác | Không lặp cùng KPI hay bộ chọn kỳ ở nhiều widget cùng phạm vi. Bộ chọn tháng của editor và bộ chọn kỳ đối chiếu khác việc vẫn được giữ, phải ghi rõ phạm vi. | S4 |
+| AS04. Mọi số có ngữ cảnh | Tiền nổi bật phải có đơn vị, kỳ, trạng thái và đường xem cách tính. Không thêm tỷ lệ tăng trưởng, “tiết kiệm thuế”, số người dùng hay badge tin cậy nếu thiếu dữ liệu chứng minh. | S4; mục 6–7 |
+| AS05. Nhịp đọc thay cho trang trí | Duy trì căn trái nhãn, căn phải tiền, tabular-nums, khoảng cách theo nhóm. Dùng độ đậm/cỡ chữ có vai trò; không tạo hierarchy bằng nhãn IN HOA, icon tile hoặc một từ tiêu đề đổi màu. | S1, S2 |
+| AS06. Câu chữ chỉ việc xảy ra | Dùng động từ thống nhất ở mục 8. Xóa lời quảng cáo như “tối ưu tài chính thông minh”; thay “có lỗi xảy ra” bằng chỉ tiêu lỗi và cách xử lý. | S3, S5, S8 |
+| AS07. Bấm được phải có kết quả | Link đi tới tài nguyên thật; nút thực hiện hành động đúng tên. Chưa có tính năng thì ghi chưa hỗ trợ trong phạm vi liên quan, không dựng nút giả, bộ lọc vô tác dụng hoặc link `#` lấp chỗ. | S7 |
+| AS08. Phản hồi trung thực | Xét default, hover, focus, active, đang xử lý, thành công, lỗi, disabled khi có nghĩa. Hiện “đã lưu” sau server xác nhận; không trì hoãn kết quả hoặc thêm skeleton chỉ để có animation. | S4, S7; contract lưu |
+| AS09. Form giữ công sức đã nhập | Paste, di chuyển caret, sửa giữa chuỗi và POST lỗi phải giữ giá trị. Không tự bật lỗi đỏ mỗi phím; format tiền không tự coi chuỗi sai là hợp lệ. | S8; mục 5 |
+| AS10. Điều hướng giữ đúng ngữ cảnh | Kiểm Back/Forward, refresh và link tháng/lần tính: giữ hồ sơ, kỳ, revision phù hợp. Đổi fragment trong editor không gửi form hoặc làm mất thay đổi chưa lưu. | S7; mục 3, 12 |
+| AS11. Motion giải thích thay đổi | Không count-up tiền, stagger hàng, shimmer, shake lỗi hoặc pulse thành công. Mở/đóng có thể phản hồi ngắn theo token 150ms; 0ms hợp lệ, reduced-motion không mất thông tin. | S1, S7; mục 10 |
+| AS12. Cùng hệ thống ở mọi trạng thái | Số dài, tên dài, lỗi nhiều dòng và bảng trên mobile phải giữ hierarchy; không giảm font, cắt tiền hoặc giấu trạng thái để làm ảnh gọn. | S2, S9; mục 7, 9 |
+
+### 15.3. Điều chỉnh các rào chắn cũ
+
+- Giữ Inter tự host vì có tiếng Việt và phục vụ đọc số. Không thay font chỉ vì một repo coi Inter là dấu hiệu slop; kiểm file tải thật, dấu và tabular-nums theo mục 10.
+- Giữ palette xanh, trạng thái bằng chữ và viền chọn có nghĩa. Không dùng quy tắc “luôn tint màu đen”, sinh palette ngẫu nhiên hoặc thay toàn bộ theme để vượt scanner.
+- Card, viền, disclosure và số tổng không tự là lỗi. Kiểm vai trò của từng thành phần; tiếp tục giữ phản hồi trực tiếp về giảm đường phân chia và không thu gọn phần nhập chính tại mục 10.2.
+- Thay yêu cầu xóa ít nhất một chi tiết bằng rà soát có lý do ở mục 10.9. Không xóa hướng dẫn, nhãn nguồn, đơn vị, focus hoặc cảnh báo để trông tối giản.
+- Một hành động chính là ưu tiên thị giác theo trạng thái, không phải giấu mọi thao tác khác. Preview tiếp tục đứng trước nút xóa trong thứ tự submit dù Lưu nổi hơn; thử Enter như quy tắc repo.
+- Nét riêng đến từ bảng 12 tháng, giai đoạn/ngoại lệ, nguồn số và cách tính kiểm tra được; không bắt buộc thêm một “signature effect”.
+
+### 15.4. Cổng review trước khi kết thúc thay đổi UI
+
+Quy trình dùng cho từng màn hình, nối với mục 10.9 và thử người dùng ở mục 13:
+
+1. Ghi tác vụ, dữ liệu thật từ contract và ràng buộc. Nếu cần tham chiếu, ghi URL, phần học được và phần không phù hợp; screenshot đẹp không chứng minh UX tốt.
+2. Khi bố cục chưa rõ, so hai wireframe khác cấu trúc trên cùng dữ liệu/token; chọn theo khả năng tìm thông tin và hoàn thành việc. Sửa nhỏ dùng hệ hiện tại, không bắt buộc sinh biến thể.
+3. Kiểm ma trận dưới, sửa lỗi chức năng/truy cập trước rồi mới polish. Xem ảnh render thật ở 375/768/1280px theo mục 10.9; thử riêng 320 CSS px hoặc zoom native 400% từ viewport 1280px cho reflow.
+4. Lưu kết quả theo từng tiêu chí: đạt/chưa đạt/chưa kiểm, route, trạng thái dữ liệu, viewport, thao tác, ảnh hoặc kết quả test. Ngoại lệ theo bảng mục 10; không đổi checkbox thành đạt bằng nhận xét “đẹp hơn”.
+
+| Trạng thái/bài thử | Kết quả cần quan sát |
+|---|---|
+| Trống, thiếu, 0, dự kiến, giả định | Không tự thêm 0, số demo hoặc KPI để lấp màn hình; chỉ dẫn bước tiếp theo và nhãn đúng từng giá trị. |
+| Đủ dữ liệu; số/tên dài | Số và đơn vị đầy đủ, nguồn/cách tính tìm được; không tràn toàn trang hoặc ép cỡ chữ nhỏ. |
+| POST lỗi và nhiều cảnh báo | Giữ chuỗi nhập; summary, focus và link mở đúng ô bị lỗi; thông tin quan trọng không chỉ nằm trong tooltip. |
+| Chưa lưu, đang gửi, đã lưu, xung đột | Người dùng phân biệt được bản đang sửa và bản đã lưu; lỗi không báo thành công, không reset form. Kiểm phản hồi khi request thực sự còn chờ. |
+| Bàn phím, Enter, menu, sticky | Đi được cả luồng; Enter xem trước an toàn; focus không bị che. W3C AA chỉ yêu cầu không che toàn bộ, dự án giữ mục tiêu thấy trọn điều khiển. |
+| Không JS, Back/Forward, mở lại link | Luồng nền vẫn dùng được; định dạng có marker đúng contract, tháng/revision không tự đổi, không mất form vì đổi section. |
+| Mobile và reflow | Nội dung thường đọc bằng cuộn dọc; bảng được cuộn riêng có tên và thao tác bàn phím. Không dùng `overflow: hidden` để che lỗi. |
+
+Điều kiện chặn hoàn tất: đổi nghĩa tiền, mất input, ghi đè ngoài ý định, nhầm dự báo/thực tế, báo lưu giả, thao tác giả hoặc luồng chính không dùng được bằng phím. Bằng chứng accessibility và cổng kỹ thuật vẫn bắt buộc theo repo; điểm thẩm mỹ không bù được lỗi này. Trường hợp không áp dụng phải nêu lý do; chưa kiểm thì giữ mở, không tính là đạt.
+
+Lượt nghiên cứu này chỉ cập nhật kế hoạch và tiêu chí review. Chưa chạy lại QA giao diện, chưa xác nhận các màn hiện có đạt AS01–AS12 và chưa đánh dấu hoàn tất thêm đợt UI nào.
+
+### 15.5. Độ phổ biến và tính cập nhật đã xác minh
+
+Snapshot kiểm tra ngày **28/11/2026**. Số sao đọc từ dữ liệu trang GitHub; SHA là HEAD nhánh mặc định lúc đọc; ngày commit dưới đây quy về UTC. GitHub API công khai bị rate limit trong lượt này, nên dùng trang repo và trang commit gốc để đối chiếu, không chép số từ bài tổng hợp. Không dùng ngày crawler để làm ngày tác giả cập nhật.
+
+| Repo | Sao tại lúc kiểm tra | Commit gần nhất (UTC) / bằng chứng | Đọc mức cập nhật đúng phạm vi |
+|---|---:|---|---|
+| [anthropics/skills](https://github.com/anthropics/skills) | 201,665 | 2026-11-16 · [e4bb5d9](https://github.com/anthropics/skills/commit/e4bb5d960d87126ff3b3a8af1a104b7db67560ba) | Collection chung; HEAD sửa docx/pptx/xlsx, không chứng minh frontend-design vừa đổi. |
+| [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | 155,328 | 2026-11-27 · [11ca2b3](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/commit/11ca2b3bdd555649f278ee348c32a9302b24dcf1) | HEAD sửa nhận định WCAG large-text/contrast trong brand skills; có liên quan trực tiếp chất lượng guide. |
+| [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill) | 122,444 | 2026-11-26 · [952435f](https://github.com/Leonxlnx/taste-skill/commit/952435f63acece7d2fcb4b4d3c1786c1c43603e0) | HEAD về sponsor README; hoạt động repo không đồng nghĩa luật thiết kế mới. |
+| [pbakaus/impeccable](https://github.com/pbakaus/impeccable) | 118,220 | 2026-11-26 · [2fc5e14](https://github.com/pbakaus/impeccable/commit/2fc5e1459efbbf06d92c7306517c286bf12490cf) | HEAD là hotfix CLI 4.11.1; không suy ngày cập nhật của từng quy tắc. |
+| [nutlope/hallmark](https://github.com/nutlope/hallmark) | 62,230 | 2026-11-11 · [04977e1](https://github.com/nutlope/hallmark/commit/04977e15f3dfd6ee4b74c887dac3eb52665d6c92) | HEAD sửa CI; đọc app-screen scope tại SHA này, không suy có bộ quy tắc mới ngày 11/11. |
+| [emilkowalski/skills](https://github.com/emilkowalski/skills) | 60,692 | 2026-11-15 · [64eb3de](https://github.com/emilkowalski/skills/commit/64eb3deb9a5fbfa041faf783e0bc3fd635872e9c) | HEAD thêm ask-emil để chọn skill; dùng riêng design-eng, break-ui và remove-animations khi cần. |
+| [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) | 35,058 | 2026-11-20 · [5a37a63](https://github.com/vercel-labs/agent-skills/commit/5a37a6329fbad3666c3207392a6a7c0110e92efb) | HEAD merge sửa web-design-guidelines; xem nội dung guide liên quan trước khi áp dụng. |
+| [heydamir/unslop](https://github.com/heydamir/unslop) | 22,778 | 2026-11-15 · [620163e](https://github.com/heydamir/unslop/commit/620163eedb3529d9cd23a3994ed8d287d06f760d) | HEAD sửa test trên macOS; workflow chín pass vẫn phải đọc từ skill đã chốt. |
+| [ibelick/ui-skills](https://github.com/ibelick/ui-skills) | 11,481 | 2026-11-27 · [49289ef](https://github.com/ibelick/ui-skills/commit/49289efa4ce27c3c174f9c90731c6ce4013830eb) | HEAD merge filming-software; không suy tất cả UI skills đều cập nhật ngày đó. |
+| [yetone/kill-ai-slop](https://github.com/yetone/kill-ai-slop) | 1,484 | 2026-09-15 · [f6e2ae3](https://github.com/yetone/kill-ai-slop/commit/f6e2ae32b30443ec7bd0da4da971ee18d8f8ffcb) | HEAD sửa ví dụ catalogue; chủ yếu làm nguồn so sánh trước/sau. |
+
+Sao của `anthropics/skills` và `vercel-labs/agent-skills` là toàn bộ collection, không phải riêng skill thiết kế. Không thấy banner archived ở các trang trên lúc kiểm tra; đây không phải bảo đảm bảo trì tương lai. Nguồn S3/S4/S6 là góc nhìn bổ sung, không dùng chúng đại diện nhóm repo phổ biến. Ngày HEAD mới chỉ chứng minh hoạt động repo; muốn nói một hướng dẫn vừa đổi phải mở diff đúng tệp.
+
+### 15.6. Guide và tips từ tác giả gốc
+
+| Nguồn đọc thêm | Nội dung đáng dùng | Tính cập nhật / cách dùng |
+|---|---|---|
+| [UI Skills Playbook](https://www.ui-skills.com/playbook) | Ví dụ tương tác về khoảng cách nhóm, căn số, focus, chữ dài và trạng thái. | Kiểm lại bản đang phục vụ ngày 28/11; trang không nêu ngày xuất bản, không gọi đây là bài mới. |
+| [Emil: Agents with Taste](https://emilkowal.ski/ui/agents-with-taste) | Viết lựa chọn thiết kế thành quy tắc kèm lý do, để agent sửa đúng triệu chứng. | Bài nền tảng được đọc lại ngày 28/11; không suy ngày xuất bản từ ngày truy cập. |
+| [Emil: 7 Practical Animation Tips](https://emilkowal.ski/ui/7-practical-animation-tips) | Phản hồi thao tác, easing, tâm mở popover, tránh trì hoãn tooltip kế tiếp. | Chỉ dùng phần có ích cho tác vụ; giảm chuyển động vẫn là lựa chọn hợp lệ. |
+| [Kill AI Slop catalogue](https://killaislop.com/) | So trực tiếp bản lỗi và bản sửa; kiểm cả các phong cách “anti-slop” đã thành công thức. | README và catalogue có thể lệch số mục; đọc ví dụ thực, không lấy con số marketing làm cổng QA. |
+| [Anthropic: Harness design for long-running application development](https://www.anthropic.com/research/harness-design-long-running-apps) | Tách đánh giá thiết kế, tính riêng, độ hoàn thiện và chức năng; dùng thao tác browser làm bằng chứng. | Xuất bản 24/03/2026; vẫn có ích về quy trình nhưng không gọi là bản hướng dẫn mới tháng 11. Không sao chép trọng số ưu tiên thẩm mỹ hơn chức năng vào công cụ thuế. |
+
+### 15.7. Mẹo bổ sung đưa vào review
+
+Đây là lựa chọn áp dụng riêng, cần kiểm trên UI; không cộng thêm hiệu ứng chỉ để làm đủ checklist.
+
+| Mẹo | Thực hiện / giới hạn | Nguồn |
+|---|---|---|
+| Sửa từng lớp trên cùng một màn | Với lượt polish lớn, rà spacing → color → icons → copy → type → layout → details → visuals → motion; bỏ qua lớp không có lỗi. Lỗi chức năng/truy cập vẫn sửa trước theo 15.4. | S10 |
+| Khoảng cách thể hiện quan hệ | Tiêu đề gần nhóm của nó hơn nhóm trước; khoảng giữa hai nhóm lớn hơn giữa hai trường cùng nhóm. Chọn trong thang token 4/8/16/24/32, không sinh giá trị rời. | S10, UI Skills Playbook |
+| Kiểm wrap bằng tiếng Việt thật | Thử tiêu đề, nút và nhãn trạng thái dài; dùng wrap thích hợp thay chèn `<br>` để cứu một viewport. `text-wrap: balance/pretty` chỉ tăng cường, fallback phải đọc được; không truncate tiền hoặc căn cứ. | UI Skills Playbook; mục 7, 9 |
+| Căn icon bằng mắt sau khi căn hình học | So icon với baseline/x-height và nét chữ tại cỡ thực; nếu cần chỉnh quang học, dùng cùng quy tắc trong partial/token, không vá từng nút. | UI Skills Playbook |
+| Giữ bố cục khi đổi trạng thái | Thử nhãn đang lưu/lỗi dài hơn nhãn thường; vùng phản hồi không đẩy nút hoặc ô đang thao tác sang chỗ khác. Chỉ thiết kế loading cho request đang chờ thực sự. | S11, S12; AS08 |
+| Phản hồi hover đúng thiết bị | Chỉ dùng hover tinh chỉnh với pointer phù hợp; trên touch phải thấy trạng thái chọn qua chữ/aria-current, không mắc kẹt ở hover. Focus bàn phím luôn rõ, không chạy animation. | S12; mục 9 |
+| Thử phá màn hình có chủ đích | Dùng tên một ký tự và rất dài, khoản tiền lớn, nhiều cảnh báo, danh sách trống, phím Enter lặp và cửa sổ thấp; ghi lỗi cụ thể thay vì chỉ chụp màn đủ dữ liệu. | S12; ma trận 15.4 |
+| Lưu lý do của chỉnh sửa lặp lại | Khi người dùng sửa cùng một kiểu trình bày, cập nhật quy tắc tương ứng trong plan kèm lý do/bằng chứng; không để agent sau quay về kiểu đã bỏ. Tri thức Bint vẫn theo quy trình chờ duyệt của repo. | S12, Emil: Agents with Taste |
+
+### 15.8. Hallmark: áp dụng phần nào cho TaxManager
+
+Đã đối chiếu skill cục bộ `C:/Users/LENOVO/.agents/skills/hallmark/SKILL.md` (version 2.0.0), [App screens](https://github.com/nutlope/hallmark/blob/04977e15f3dfd6ee4b74c887dac3eb52665d6c92/skills/hallmark/references/flow.md#app-screens) và [gates](https://github.com/nutlope/hallmark/blob/04977e15f3dfd6ee4b74c887dac3eb52665d6c92/skills/hallmark/references/gates.md), cùng [bản nguồn tại SHA 04977e1](https://github.com/nutlope/hallmark/tree/04977e15f3dfd6ee4b74c887dac3eb52665d6c92/skills/hallmark). README hiện mô tả 50 theme; không dùng số theme/gate từ các bài tổng hợp cũ để nhận diện phiên bản.
+
+- **Phân tầng kết quả:** học cách tách Floor (phải sửa), Reflex (mặc định cần xem lý do) và Finish (hoàn thiện). Lỗi đúng/sai, truy cập và trung thực dữ liệu ở 15.4 là điều kiện chặn của sản phẩm; ngoại lệ thẩm mỹ không miễn các điều kiện này.
+- **Chọn đúng scope:** nhánh App screens bỏ hero, ngân sách chữ marketing, hình thay thế và reveal khi tải; cho phép một font sans quen thuộc. Vì vậy bảng/form thuế không bị ép xuống khoảng 80 từ hoặc phải đổi Inter.
+- **Giữ wiring:** đổi trình bày phải giữ `name`, `id`, route, handler, form action và hook kiểm thử; trạng thái chưa có logic phải ghi là thiếu, không vẽ như đã hoạt động.
+- **Giữ hệ đã chốt:** đọc token và brand của dự án trước; không bốc theme cho mỗi màn. Ví dụ/cảnh báo của Hallmark là dữ liệu đầu vào để review, không thay phản hồi trực tiếp của người dùng.
+- **Kiểm overflow thật:** yêu cầu clip ở tool không phải lý do giấu tiền, focus hoặc lỗi responsive. Bảng cuộn riêng và reflow của dự án vẫn là chuẩn đối chiếu.
+- **Tách nghiên cứu và chạy audit:** lượt này đọc hướng dẫn, chưa chạy `sloplint`, render hay review Hallmark trên app; không ghi số gate đạt. Một lượt audit sau phải chỉ rõ route, scope và bằng chứng trước/sau.
+
+### 15.9. Cách giữ tài liệu nghiên cứu còn cập nhật
+
+- Trước khi dùng một nguồn để sửa UI, kiểm lại tệp/commit liên quan nếu snapshot quá 30 ngày hoặc repo đổi major version; 30 ngày là nhịp kiểm nội bộ, không phải chuẩn của ngành.
+- Khi refresh, ghi ngày kiểm, SHA hoặc version, thay đổi có tác động và quyết định giữ/đổi. Không thay quy tắc chỉ vì số sao tăng, tên skill đổi hoặc HEAD vừa thêm sponsor.
+- Ưu tiên diff sửa tính đúng, truy cập và hành vi. Ví dụ mới: UI UX Pro Max ngày 27/11 đã sửa nhận định WCAG large-text/contrast trong brand skills; tiếp tục đo theo W3C và giữ ngưỡng chữ 4,5:1 hiện có của dự án.
+- Hướng dẫn nền tảng cũ vẫn dùng được nếu điều kiện còn đúng; ghi rõ cũ/mới/chưa rõ ngày xuất bản. Không gọi “mới nhất” khi chỉ thấy ngày search index.
+- Bảng sao/commit là snapshot của lượt này, không tự cập nhật. Khi chưa đọc được nguồn hoặc diff, ghi chưa xác minh; không điền ngày/số từ suy đoán.

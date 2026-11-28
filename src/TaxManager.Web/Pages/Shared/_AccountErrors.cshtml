@@ -1,0 +1,13 @@
+@if (!ViewData.ModelState.IsValid) {
+    var fieldOrder = new[] { "Username", "Password", "ConfirmPassword", "AcceptDataUse" };
+    var entries = ViewData.ModelState.Where(e => e.Value!.Errors.Count > 0)
+        .OrderBy(e => Array.IndexOf(fieldOrder, e.Key) is var index && index >= 0 ? index : -1).ToArray();
+    var firstField = entries.FirstOrDefault(e => fieldOrder.Contains(e.Key)).Key ?? (ViewData["AccountErrorFallback"] as string ?? "Username");
+    <div class="error-summary account-errors" role="alert" tabindex="-1" aria-labelledby="account-errors">
+        <div class="account-error-heading"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 7v6m0 4h.01" /></svg><h2 id="account-errors">Kiểm tra thông tin</h2></div>
+        <ul>@foreach (var entry in entries) {
+            @foreach (var error in entry.Value!.Errors) { <li>@error.ErrorMessage</li> }
+        }</ul>
+        <a class="account-error-action" href="#@firstField">Sửa thông tin</a>
+    </div>
+}

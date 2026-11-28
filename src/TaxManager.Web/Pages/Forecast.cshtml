@@ -51,11 +51,22 @@
 </fieldset> }
 <button type="submit" asp-page-handler="AddBonus" formnovalidate>Thêm khoản thưởng</button>
 </section>
-<section id="sua-thang" data-navigation-section="du-lieu" class="month-editor input-panel" aria-labelledby="month-editor-heading"><h2 id="month-editor-heading">Dữ liệu riêng theo tháng</h2><p>Chọn tháng cần nhập hoặc chỉnh; không cần nhập nếu chưa có dữ liệu riêng.</p>
+<section id="sua-thang" data-navigation-section="du-lieu" class="month-editor input-panel" aria-labelledby="month-editor-heading"><h2 id="month-editor-heading">Dữ liệu riêng theo tháng</h2><p>Chọn một tháng để chỉnh dữ liệu riêng. Gross để trống sẽ dùng lương theo giai đoạn.</p>
+<div data-month-fallback class="month-fallback">
 <label asp-for="SelectedMonth">Chọn tháng</label><select asp-for="SelectedMonth"><option value="0">Chọn tháng</option>@for (var month = 1; month <= 12; month++) { <option value="@month">Tháng @month</option> }</select>
-<input type="hidden" name="EditingMonth" value="@Model.SelectedMonth" />
 <button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" formnovalidate>Sửa tháng đã chọn</button>
-@for (var month = 0; month < 12; month++) { if (Model.HasMonthData(month)) { <button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@(month + 1)" formnovalidate>Tháng @(month + 1) đã có dữ liệu</button> } }
+</div>
+<input type="hidden" name="EditingMonth" value="@Model.SelectedMonth" />
+<div class="month-options" data-month-options role="group" aria-label="Chọn tháng cần sửa" hidden>
+@for (var month = 0; month < 12; month++) {
+    var hasData = Model.HasMonthData(month);
+    var selected = Model.SelectedMonth == month + 1;
+    <button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@(month + 1)" formnovalidate
+        class="month-option @(hasData ? "has-data" : "")" aria-current="@(selected ? "true" : null)" aria-label="Tháng @(month + 1) @(hasData ? "đã có dữ liệu" : "chưa có dữ liệu")">
+        <span>Tháng @(month + 1)</span><span class="month-state">@(selected ? "Đang sửa" : hasData ? "Đã nhập" : "Chưa nhập")</span>
+    </button>
+}
+</div>
 
 @for (var i = 0; i < 12; i++) {
 <input type="hidden" asp-for="Exceptions[i].Month" />
@@ -111,10 +122,16 @@
 @if (Model.ProfileId is not null) { <button type="submit" asp-page-handler="Calculate">Tính thuế năm</button> }
 </div>
 @if (Model.ProfileId is null) { <p>Lưu hồ sơ trước khi tính thuế năm. Bạn vẫn có thể lưu khi chưa đủ dữ liệu.</p> }
+else {
+<nav class="forecast-related" aria-label="Phân tích hồ sơ">
+    <a asp-page="/ForecastScenarios" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision"><partial name="Shared/_Icon" model='@("create")' /><span><strong>So sánh thưởng giả định</strong><span class="hint">Thử thêm thưởng, giữ nguyên hồ sơ đã lưu.</span></span></a>
+    <a asp-page="/ForecastReconciliation" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision"><partial name="Shared/_Icon" model='@("compare")' /><span><strong>Đối chiếu nguồn</strong><span class="hint">So với số công ty hoặc eTax trong cùng kỳ.</span></span></a>
+</nav>
+}
 </section>
 <div class="form-actions" role="group" aria-label="Thao tác hồ sơ">
 <span class="hint">Xem trước không lưu thay đổi.</span>
-<div class="actions"><a asp-page="/ForecastProfiles">Trở lại danh sách</a><button type="submit"><partial name="Shared/_Icon" model='@("preview")' />Xem trước 12 tháng</button><button class="primary" type="submit" asp-page-handler="Save"><partial name="Shared/_Icon" model='@("save")' />Lưu hồ sơ</button></div>
+<div class="actions"><button type="submit"><partial name="Shared/_Icon" model='@("preview")' />Xem trước 12 tháng</button><button class="primary" type="submit" asp-page-handler="Save"><partial name="Shared/_Icon" model='@("save")' />Lưu hồ sơ</button></div>
 </div>
 </form>
 @if (Model.Completeness is { MissingObligation.Count: > 0 } missing)
@@ -125,9 +142,11 @@
 @if (Model.AnnualResult is not null) { <partial name="Shared/_AnnualResult" model="Model.AnnualResult" /> }
 @if (Model.ProfileId is not null)
 {
-    <section><h2>Kết quả năm đã lưu</h2>
-    <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.ProfileId">Mở lịch sử tính năm</a></p>
-    @foreach (var result in Model.AnnualHistory) { <p><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.ProfileId" asp-route-record="@result.HistoryId">Kết quả ngày @TaxManager.Web.Pages.ForecastModel.LocalTime(result.CreatedAtUtc) giờ Việt Nam, bản dữ liệu @result.InputRevision</a></p> }
+    <section class="forecast-history"><div class="page-heading"><div><h2>Kết quả năm đã lưu</h2><p>@(Model.AnnualHistory.Count == 0 ? "Chưa có kết quả tính năm. Tính thuế năm để lưu kết quả đầu tiên." : $"{Model.AnnualHistory.Count} kết quả tính, giữ riêng từng lần.")</p></div>
+    </div>
+    @if (Model.AnnualHistory.Count > 0) {
+    <ul class="forecast-history-list">@foreach (var result in Model.AnnualHistory) { <li><a asp-page="/ForecastAnnualHistory" asp-route-id="@Model.ProfileId" asp-route-record="@result.HistoryId"><span>Kết quả ngày @TaxManager.Web.Pages.ForecastModel.LocalTime(result.CreatedAtUtc) giờ Việt Nam</span><span class="hint">Bản dữ liệu @result.InputRevision</span></a></li> }</ul>
+    }
     </section>
 }
-@if (Model.ProfileId is not null) { <p><a asp-page="/ForecastDelete" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision">Xem thao tác xóa hồ sơ</a></p> }
+@if (Model.ProfileId is not null) { <p class="forecast-delete"><a asp-page="/ForecastDelete" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision">Xem thao tác xóa hồ sơ</a></p> }

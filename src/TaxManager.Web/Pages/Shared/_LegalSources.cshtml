@@ -1,0 +1,16 @@
+@model IEnumerable<TaxManager.Core.LegalBasis>
+@using TaxManager.Web.LegalCitations
+@{
+    var sources = Model.Select(basis => new { Basis = basis, Url = BasisView.SafeSourceUrl(basis) })
+        .Where(source => source.Url is not null)
+        .GroupBy(source => source.Url!.AbsoluteUri, StringComparer.Ordinal).ToArray();
+}
+@if (sources.Length > 0) {
+<div class="legal-sources"><p>Văn bản nguồn</p><ul>
+@foreach (var source in sources) {
+    var documents = string.Join(", ", source.Select(item => item.Basis.DocumentNumber)
+        .Where(number => !string.IsNullOrWhiteSpace(number)).Distinct());
+    <li><a href="@source.Key" rel="noopener noreferrer">@(documents.Length > 0 ? "Văn bản " + documents : "Nguồn tại " + source.First().Url!.Host)</a></li>
+}
+</ul></div>
+}

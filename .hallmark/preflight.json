@@ -10,5 +10,5 @@
   },
   "preserve": ["palette", "Vietnamese voice", "Inter", "sidebar destinations and order", "form wiring", "nullable money"],
   "introduce": ["Hallmark app-screen polish and finish review"],
-  "scope": "Monthly preview table and backup/restore screens; existing project system takes precedence over theme dealing"
+  "scope": "Monthly preview table, backup/restore, forecast scenario, manual source reconciliation, local account forms, inline error summary/password controls, and versioned synthetic data-use acknowledgement; existing project system takes precedence over theme dealing"
 }

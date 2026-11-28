@@ -1,5 +1,29 @@
 // Native form submission stays usable without JavaScript.
 (() => {
+    const monthOptions = document.querySelector('[data-month-options]');
+    const monthFallback = document.querySelector('[data-month-fallback]');
+    if (monthOptions && monthFallback) {
+        monthOptions.hidden = false;
+        monthFallback.hidden = true;
+    }
+    document.querySelectorAll('[data-password-fields]').forEach(form => {
+        form.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+            const password = document.getElementById(toggle.getAttribute('aria-controls'));
+            if (!password || !form.contains(password)) return;
+            toggle.hidden = false;
+            toggle.closest('.password-input').dataset.passwordReady = '';
+            toggle.addEventListener('click', () => {
+                const show = password.type === 'password';
+                password.type = show ? 'text' : 'password';
+                const label = `${show ? 'Ẩn' : 'Hiện'} ${toggle.dataset.passwordLabel}`;
+                toggle.setAttribute('aria-pressed', String(show));
+                toggle.setAttribute('aria-label', label);
+                toggle.title = label;
+                toggle.querySelector('[data-password-show]').hidden = show;
+                toggle.querySelector('[data-password-hide]').hidden = !show;
+            });
+        });
+    });
     const navigation = document.getElementById('primary-navigation');
     const toggle = document.querySelector('[data-navigation-toggle]');
     if (navigation && toggle) {
@@ -137,6 +161,18 @@
             });
         });
     });
+    document.querySelector('[data-scenario-form]')?.addEventListener('input', () => {
+        const stale = document.querySelector('[data-stale-comparison]');
+        if (stale) stale.hidden = false;
+    });
+    const reconciliation = document.querySelector('[data-reconciliation-form]');
+    const markReconciliationStale = () => {
+        const stale = document.querySelector('[data-stale-reconciliation]');
+        if (stale) stale.hidden = false;
+    };
+    reconciliation?.addEventListener('input', markReconciliationStale);
+    reconciliation?.addEventListener('change', markReconciliationStale);
+    document.querySelector('[data-reconciliation-result]')?.focus();
     const form = document.querySelector('[data-forecast-form]');
     if (!form) return;
     const state = document.querySelector('[data-save-state]');

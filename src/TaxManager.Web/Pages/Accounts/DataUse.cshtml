@@ -1,0 +1,18 @@
+@page "/tai-khoan/du-lieu-thu"
+@model TaxManager.Web.Pages.Accounts.DataUseModel
+@{ ViewData["Title"] = "Dữ liệu thử của bạn"; ViewData["AccountErrorFallback"] = "AcceptDataUse"; }
+<div class="page-heading"><div><h1>Dữ liệu thử của bạn</h1><p>Đọc phạm vi sử dụng trước khi mở hồ sơ.</p></div></div>
+<form method="post" class="input-panel">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <partial name="Shared/_AccountErrors" />
+    <partial name="Shared/_LocalDataUseNotice" />
+    @if (Model.Acceptance is { } acceptance) {
+        <p class="hint">Đã xác nhận lúc @TaxManager.Web.Pages.ForecastModel.LocalTime(acceptance.AcceptedAt) giờ Việt Nam.</p>
+        <div class="actions"><a class="button primary" asp-page="/ForecastProfiles">Trở lại hồ sơ</a></div>
+    } else {
+    <label class="consent-choice" asp-for="AcceptDataUse"><input asp-for="AcceptDataUse" aria-describedby="data-use-notice error-AcceptDataUse" />Tôi đồng ý dùng dữ liệu thử theo nội dung trên.</label>
+    <span class="error" id="error-AcceptDataUse" asp-validation-for="AcceptDataUse"></span>
+    <div class="actions"><button type="submit" class="primary">Đồng ý và tiếp tục</button></div>
+    }
+</form>
+<form method="post" asp-page="/Accounts/Index" asp-page-handler="Logout"><button type="submit" class="text-action">Đăng xuất</button></form>

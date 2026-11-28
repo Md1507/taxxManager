@@ -1,0 +1,22 @@
+@page "/tai-khoan/dang-ky"
+@model TaxManager.Web.Pages.Accounts.RegisterModel
+@{ ViewData["Title"] = "Tạo tài khoản thử"; }
+<div class="page-heading"><div><h1>Tạo tài khoản thử</h1><p>Bắt đầu với kho dữ liệu thử riêng, chưa có hồ sơ.</p></div></div>
+<form method="post" class="input-panel" data-password-fields>
+    <partial name="Shared/_AccountErrors" />
+    <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" aria-describedby="username-help" />
+    <p class="hint" id="username-help">3–64 chữ cái không dấu, chữ số, dấu chấm, gạch dưới hoặc gạch ngang. Không cần email.</p>
+    <span class="error" id="error-Username" asp-validation-for="Username"></span>
+    <label asp-for="Password">Mật khẩu</label>
+    <div class="password-input"><input asp-for="Password" type="password" autocomplete="new-password" maxlength="128" aria-describedby="password-help" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+    <p class="hint" id="password-help">12–128 ký tự. Có thể dán hoặc dùng trình quản lý mật khẩu. Lưu mật khẩu ở nơi riêng; bản thử chưa hỗ trợ phục hồi.</p>
+    <span class="error" id="error-Password" asp-validation-for="Password"></span>
+    <label asp-for="ConfirmPassword">Nhập lại mật khẩu</label>
+    <div class="password-input"><input asp-for="ConfirmPassword" type="password" autocomplete="new-password" maxlength="128" /><partial name="Shared/_PasswordToggle" model='@("ConfirmPassword")' /></div>
+    <span class="error" id="error-ConfirmPassword" asp-validation-for="ConfirmPassword"></span>
+    <partial name="Shared/_LocalDataUseNotice" />
+    <label class="consent-choice" asp-for="AcceptDataUse"><input asp-for="AcceptDataUse" aria-describedby="data-use-notice error-AcceptDataUse" />Tôi đồng ý dùng dữ liệu thử theo nội dung trên.</label>
+    <span class="error" id="error-AcceptDataUse" asp-validation-for="AcceptDataUse"></span>
+    <div class="actions"><button type="submit" class="primary">Tạo tài khoản thử</button></div>
+</form>
+<p>Đã có tài khoản? <a asp-page="/Accounts/Login">Đăng nhập</a></p>
