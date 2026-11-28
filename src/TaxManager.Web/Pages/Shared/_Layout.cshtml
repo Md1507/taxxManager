@@ -38,7 +38,12 @@
         </nav>
     </aside>
     <div class="workspace">
-        <header class="topbar">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <span class="environment">Đang dùng kho khôi phục</span> }<span class="environment">Demo local (dữ liệu mẫu)</span>@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Accounts.AccountMode>().Enabled) { <a asp-page="/Accounts/Index">Tài khoản</a> }</header>
+        <header class="topbar">
+            <div class="topbar-context">@if (Context.RequestServices.GetRequiredService<TaxManager.Web.Backup.SelectedDatabase>().IsRestored) { <span class="environment">Đang dùng kho khôi phục</span> }<span class="environment">Demo local</span></div>
+            @if (Context.RequestServices.GetRequiredService<TaxManager.Web.Accounts.AccountMode>().Enabled) {
+                <a class="button header-account" asp-page="/Accounts/Index"><partial name="Shared/_Icon" model='@("account")' /><span class="header-account-copy"><span>Tài khoản</span>@if (User.Identity?.IsAuthenticated == true) { <span class="header-account-name" title="@User.Identity.Name">@User.Identity.Name</span> }</span></a>
+            }
+        </header>
         <main id="main" tabindex="-1">@RenderBody()</main>
         <footer>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</footer>
     </div>

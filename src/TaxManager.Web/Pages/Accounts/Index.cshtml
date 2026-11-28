@@ -1,15 +1,19 @@
 @page "/tai-khoan"
 @model TaxManager.Web.Pages.Accounts.IndexModel
-@{ ViewData["Title"] = "Tài khoản thử"; }
-<h1>Tài khoản thử</h1>
-<section class="input-panel"><h2>@User.Identity?.Name</h2>
-    <p>Hồ sơ và bản sao đang mở thuộc kho thử của tài khoản này.</p>
-    <p class="hint">Dữ liệu và tài khoản vẫn được giữ khi đăng xuất. Chức năng xóa toàn bộ tài khoản chưa có ở bước này.</p>
-    <p><a asp-page="/Accounts/Export">Xuất dữ liệu tài khoản</a></p>
-    @if (Model.Acceptance is { } acceptance) {
-        <p class="hint">Đã xác nhận nội dung ngày @TaxManager.Web.Accounts.LocalDataUse.DisplayVersion lúc @TaxManager.Web.Pages.ForecastModel.LocalTime(acceptance.AcceptedAt) giờ Việt Nam.</p>
-        <p><a asp-page="/Accounts/DataUse">Xem nội dung đã xác nhận</a></p>
-    } else { <p><a asp-page="/Accounts/DataUse">Đọc và xác nhận phạm vi dữ liệu thử</a></p> }
-    <div class="actions"><a asp-page="/ForecastProfiles" class="button primary">Trở lại hồ sơ</a></div>
-    <form method="post" asp-page-handler="Logout"><button type="submit">Đăng xuất</button></form>
+@{ ViewData["Title"] = "Tài khoản thử"; ViewData["AccountWide"] = true; }
+<div class="page-heading account-page-heading"><div><h1>Tài khoản thử</h1><p>Quản lý dữ liệu và phiên đăng nhập của bạn.</p></div><a asp-page="/ForecastProfiles" class="button primary">Trở lại hồ sơ</a></div>
+<section class="input-panel account-settings" aria-labelledby="account-identity-heading">
+    <div class="account-identity"><partial name="Shared/_Icon" model='@("account")' /><div><h2 id="account-identity-heading">@User.Identity?.Name</h2><p>Đang đăng nhập trên thiết bị này.</p></div></div>
+    <div class="account-group" role="group" aria-labelledby="account-data-heading">
+        <h2 id="account-data-heading">Dữ liệu của bạn</h2>
+        <div class="account-setting-row"><partial name="Shared/_Icon" model='@("download")' /><div><h3>Xuất dữ liệu tài khoản</h3><p>Tải hồ sơ, các phiên bản và lịch sử từ kho gốc để đọc và tự lưu giữ.</p></div><a class="button" asp-page="/Accounts/Export">Xuất dữ liệu</a></div>
+        <div class="account-setting-row"><partial name="Shared/_Icon" model='@("shield")' /><div><h3>Phạm vi dữ liệu thử</h3>
+        @if (Model.Acceptance is { } acceptance) {
+            <p class="account-confirmed"><partial name="Shared/_Icon" model='@("check-circle")' />Đã xác nhận nội dung ngày @TaxManager.Web.Accounts.LocalDataUse.DisplayVersion.</p>
+            <p>Xác nhận lúc @TaxManager.Web.Pages.ForecastModel.LocalTime(acceptance.AcceptedAt) giờ Việt Nam.</p>
+        } else { <p>Đọc và xác nhận phạm vi sử dụng trước khi mở hồ sơ.</p> }
+        </div><a class="button" asp-page="/Accounts/DataUse">@(Model.Acceptance is null ? "Đọc và xác nhận" : "Xem nội dung")</a></div>
+        <p class="account-limit">Bản thử chưa hỗ trợ xóa toàn bộ tài khoản. Tệp đã tải và bản sao bên ngoài ứng dụng do bạn tự quản lý.</p>
+    </div>
+    <div class="account-group account-session"><div><h2>Phiên đăng nhập</h2><p>Đăng xuất vẫn giữ tài khoản, hồ sơ và dữ liệu đã lưu.</p></div><form method="post" asp-page-handler="Logout"><button type="submit"><partial name="Shared/_Icon" model='@("logout")' />Đăng xuất</button></form></div>
 </section>

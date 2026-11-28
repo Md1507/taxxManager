@@ -2,7 +2,7 @@
 @model TaxManager.Web.Pages.Accounts.RegisterModel
 @{ ViewData["Title"] = "Tạo tài khoản thử"; }
 <div class="page-heading"><div><h1>Tạo tài khoản thử</h1><p>Bắt đầu với kho dữ liệu thử riêng, chưa có hồ sơ.</p></div></div>
-<form method="post" class="input-panel" data-password-fields data-password-registration>
+<form method="post" class="input-panel account-entry-form" data-password-fields data-password-registration>
     <partial name="Shared/_AccountErrors" />
     <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" aria-describedby="username-help" />
     <p class="hint" id="username-help">3–64 chữ cái không dấu, chữ số, dấu chấm, gạch dưới hoặc gạch ngang. Không cần email.</p>
@@ -21,4 +21,4 @@
     <span class="error" id="error-AcceptDataUse" asp-validation-for="AcceptDataUse"></span>
     <div class="actions"><button type="submit" class="primary">Tạo tài khoản thử</button></div>
 </form>
-<p>Đã có tài khoản? <a asp-page="/Accounts/Login">Đăng nhập</a></p>
+<div class="account-entry-switch"><p>Đã có tài khoản?</p><a class="button" asp-page="/Accounts/Login">Đăng nhập</a></div>

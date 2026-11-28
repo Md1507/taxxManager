@@ -978,3 +978,12 @@ Sao của `anthropics/skills` và `vercel-labs/agent-skills` là toàn bộ coll
 - Không áp điều kiện mật khẩu mới vào đăng nhập/xác nhận mật khẩu của tài khoản cũ, hoặc đổi chính sách mật khẩu tệp sao lưu theo điều kiện tài khoản.
 - Menu phải cao hơn mọi thanh hành động hoặc header bảng trong nội dung. `.workspace` tạo stacking context ở layer base; sidebar ở layer intersection. Không chỉ so hai con số z-index khi chúng nằm trong những stacking context khác nhau. Kiểm hit-test thật tại vị trí nút tính bị che bởi menu, cả lúc đã cuộn.
 - Nút menu dùng icon mở/đóng, tên truy cập rõ, vùng chạm 44 px; không để “Đóng menu” xuống dòng ép logo trên mobile. Bằng chứng: [review mật khẩu/menu](docs/reviews/2026-11-28-password-menu.md).
+
+### Tài khoản: nhóm thao tác và giới hạn chiều rộng
+
+- Trang tài khoản/xuất dữ liệu tối đa 46rem, form đăng nhập/đăng ký giữ khổ hẹp. Header và nội dung cùng trục; không kéo rộng toàn màn hình.
+- Phân nhóm thông tin đăng nhập, dữ liệu và phiên đăng nhập bằng khoảng cách. Dùng hàng icon + tiêu đề/mô tả + nút phụ, không thẻ lồng thẻ, không thêm đường phân chia. Mỗi màn có đúng một nút đặc.
+- Trạng thái xác nhận có chữ, icon và ngày thật; không biến thông tin trạng thái thành nút. Không sửa lời xác nhận có phiên bản trong lượt thiết kế.
+- Xuất JSON và sao lưu để khôi phục phải phân biệt rõ công dụng và phạm vi. Nút tải là primary; quay lại/sao lưu là phụ. Trên mobile giữ thứ tự DOM và thứ tự nhìn thấy thống nhất.
+- Bằng chứng và ảnh: [review tài khoản](docs/reviews/2026-11-28-account-ui.md).
+- Lối vào tài khoản trên topbar là nút phụ có icon, nhãn và tên đang đăng nhập; mở thẳng trang tài khoản, không dropdown. Giữ một primary cho nhiệm vụ của màn chính. Tên dài được ellipsis với tên đầy đủ vẫn truy cập được; Demo local là huy hiệu riêng.

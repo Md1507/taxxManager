@@ -2,6 +2,28 @@
   {
     "date": "2026-11-28",
     "mode": "polish",
+    "scope": "component",
+    "theme": "project green (user named)",
+    "prompt": "Improve the account entry on the main application pages instead of a bare text link.",
+    "signature": "One outlined account action with user icon, label and current username; direct navigation",
+    "review": "Fresh-context finish review: ship, no findings. 320/375/1440 screenshots; 64-character name truncates without horizontal overflow.",
+    "verification": "docs/reviews/2026-11-28-account-ui.md",
+    "lint": "Component static 0 FAIL, 0 REFLEX, 0 WARN; render not run, no puppeteer-core. Actual signed-in HTTPS response mirrored for browser visuals; profiles 320 axe 0 violations/0 incomplete."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Improve the account UI with grouped settings and explicit actions.",
+    "signature": "Capped account settings rows, one primary, no nested cards",
+    "review": "Fresh-context finish review: recapture then ship; no material visual findings on complete 1440/375 account, export and authentication screenshots.",
+    "verification": "docs/reviews/2026-11-28-account-ui.md",
+    "lint": "Shared gate 56: sidebar and table header in separate scroll contexts; no WARN. Render unavailable without puppeteer-core. Orca screenshots of inert HTTPS response mirror."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "polish",
     "scope": "app",
     "theme": "project green (user named)",
     "prompt": "Check registration password conditions live; minimum 8; prevent sticky calculation button painting over mobile navigation.",

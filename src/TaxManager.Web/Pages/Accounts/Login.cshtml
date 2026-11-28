@@ -3,7 +3,7 @@
 @{ ViewData["Title"] = "Đăng nhập"; }
 <div class="page-heading"><div><h1>Đăng nhập</h1><p>Mở kho dữ liệu thử của bạn.</p></div></div>
 @if (Model.Created) { <p role="status">Đã tạo tài khoản thử. Đăng nhập để bắt đầu.</p> }
-<form method="post" class="input-panel" data-password-fields>
+<form method="post" class="input-panel account-entry-form" data-password-fields>
     <input type="hidden" asp-for="ReturnUrl" />
     <partial name="Shared/_AccountErrors" />
     <label asp-for="Username">Tên đăng nhập</label><input asp-for="Username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="64" />
@@ -14,4 +14,4 @@
     <div class="actions"><button type="submit" class="primary">Đăng nhập</button></div>
     <p class="hint">Phiên đăng nhập kéo dài tối đa 30 phút. Chưa có chức năng phục hồi mật khẩu.</p>
 </form>
-<p>Chưa có tài khoản? <a asp-page="/Accounts/Register">Tạo tài khoản thử</a></p>
+<div class="account-entry-switch"><p>Chưa có tài khoản?</p><a class="button" asp-page="/Accounts/Register">Tạo tài khoản thử</a></div>

@@ -1,15 +1,15 @@
 @page "/tai-khoan/xuat-du-lieu"
 @model TaxManager.Web.Pages.Accounts.ExportModel
-@{ ViewData["Title"] = "Xuất dữ liệu tài khoản"; }
+@{ ViewData["Title"] = "Xuất dữ liệu tài khoản"; ViewData["AccountWide"] = true; }
 <div class="page-heading"><div><h1>Xuất dữ liệu tài khoản</h1><p>Tải dữ liệu của bạn để đọc và tự lưu giữ.</p></div></div>
-<form method="post" class="input-panel" data-password-fields>
+<form method="post" class="input-panel account-export" data-password-fields>
     <partial name="Shared/_AccountErrors" />
-    <p>Tệp JSON gồm tên đăng nhập, xác nhận dùng dữ liệu thử, hồ sơ, các phiên bản, kết quả đã tính và nhật ký còn giữ trong kho gốc của tài khoản.</p>
-    <p>Tệp không có mật khẩu bảo vệ. Ai có tệp đều đọc được nội dung; hãy tự cất giữ hoặc xóa khi không cần. Tệp này dùng để đọc, không dùng khôi phục tài khoản.</p>
-    <label asp-for="Password">Mật khẩu hiện tại</label>
+    <h2>Dữ liệu trong tệp</h2>
+    <dl class="account-export-summary"><div><dt>Định dạng</dt><dd>JSON, dùng để đọc và lưu giữ.</dd></div><div><dt>Phạm vi</dt><dd>Kho gốc của tài khoản; không gồm kho khôi phục đang mở.</dd></div><div><dt>Nội dung</dt><dd>Tên đăng nhập, xác nhận dùng dữ liệu thử, hồ sơ, các phiên bản, kết quả đã tính và nhật ký còn giữ.</dd></div></dl>
+    <p class="account-export-warning"><partial name="Shared/_Icon" model='@("warning")' /><span>Tệp không có mật khẩu bảo vệ. Ai có tệp đều đọc được nội dung; hãy tự cất giữ hoặc xóa khi không cần.</span></p>
+    <div class="account-export-confirm"><label asp-for="Password">Mật khẩu hiện tại</label>
     <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" aria-describedby="error-Password" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
-    <span class="error" id="error-Password" asp-validation-for="Password"></span>
-    <div class="actions"><button type="submit" class="primary"><partial name="Shared/_Icon" model='@("download")' />Tải dữ liệu tài khoản</button></div>
+    <span class="error" id="error-Password" asp-validation-for="Password"></span></div>
+    <div class="actions account-export-actions"><button type="submit" class="primary"><partial name="Shared/_Icon" model='@("download")' />Tải tệp JSON</button><a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
 </form>
-<p class="hint">Kho khôi phục đang mở không nằm trong tệp này. Dùng <a asp-page="/Backup">Sao lưu</a> để giữ một bản có mật khẩu của kho đang mở.</p>
-<p><a asp-page="/Accounts/Index">Trở lại tài khoản</a></p>
+<aside class="account-export-backup" aria-label="Bản sao để khôi phục"><div><h2>Cần một bản để khôi phục?</h2><p>Tệp JSON này không dùng khôi phục tài khoản. Sao lưu giữ kho đang mở trong một tệp có mật khẩu.</p></div><a class="button" asp-page="/Backup"><partial name="Shared/_Icon" model='@("backup")' />Sao lưu</a></aside>

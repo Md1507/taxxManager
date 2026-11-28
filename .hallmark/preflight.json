@@ -21,5 +21,5 @@
     "Hallmark app-screen polish and finish review",
     "compact monthly basis references with unchanged verification state and original provenance"
   ],
-  "scope": "Monthly preview table, backup/restore, forecast scenario, manual source reconciliation, local account forms, inline error summary/password controls, and versioned synthetic data-use acknowledgement; existing project system takes precedence over theme dealing; monthly calculator common-range input and single-month editing; original-account readable JSON export"
+  "scope": "Monthly preview table, backup/restore, forecast scenario, manual source reconciliation, local account forms, inline error summary/password controls, and versioned synthetic data-use acknowledgement; existing project system takes precedence over theme dealing; monthly calculator common-range input and single-month editing; original-account readable JSON export; grouped account settings and readable export UI; authentication action hierarchy"
 }

@@ -43,6 +43,7 @@
   --focus-offset: var(--space-1);
   --shadow: none;
   --content-max: 68.75rem;
+  --account-content-max: 46rem;
   --month-input-width: 6rem;
   --month-field-width: 7rem;
   --profiles-table-min: 32rem;

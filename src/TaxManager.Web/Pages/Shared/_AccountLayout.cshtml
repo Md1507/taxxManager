@@ -12,8 +12,8 @@
 </head>
 <body class="account-shell">
 <a class="skip-link" href="#main">Đến nội dung</a>
-<header class="account-header"><a class="wordmark" asp-page="/ForecastProfiles"><svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect x="1" y="1" width="26" height="26" rx="5" fill="currentColor" /><path d="M7 8h14M14 8v13M7 14h3M7 19h3M18 14h3M18 19h3" /></svg><span>TaxManager</span></a><span class="environment">Demo local</span></header>
-<main id="main" tabindex="-1">@RenderBody()</main>
+<header class="account-header @(ViewData["AccountWide"] is true ? "account-header-wide" : "")"><a class="wordmark" asp-page="/ForecastProfiles"><svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect x="1" y="1" width="26" height="26" rx="5" fill="currentColor" /><path d="M7 8h14M14 8v13M7 14h3M7 19h3M18 14h3M18 19h3" /></svg><span>TaxManager</span></a><span class="environment">Demo local</span></header>
+<main id="main" class="@(ViewData["AccountWide"] is true ? "account-main-wide" : "account-main-form")" tabindex="-1">@RenderBody()</main>
 <footer>Chỉ dùng tài khoản và dữ liệu thử. Kết quả thuế chỉ mang tính tham khảo.</footer>
 </body>
 </html>

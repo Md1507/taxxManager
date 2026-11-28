@@ -242,6 +242,51 @@ td .badge{display:flex;width:max-content;margin-top:var(--space-2);margin-left:a
 .workspace{position:relative;z-index:var(--layer-base)}
 .navigation-toggle{flex-shrink:0;width:var(--target-touch);padding:var(--space-2)}
 .navigation-toggle>span:not(.visually-hidden){display:flex}
+.topbar{align-items:center}
+.topbar-context{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2);margin-right:auto;min-width:0}
+.header-account{min-width:0;text-align:left;padding:var(--space-2) var(--space-3)}
+.header-account-copy{display:grid;min-width:0;max-width:var(--sidebar-width)}
+.header-account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted);font-size:var(--font-sm);font-weight:var(--font-regular)}
+.account-shell main.account-main-wide{max-width:var(--account-content-max)}
+.account-header{max-width:32rem}
+.account-header.account-header-wide{max-width:var(--account-content-max)}
+.account-page-heading{align-items:center}
+.account-settings{margin:0}
+.account-identity{display:flex;align-items:center;gap:var(--space-4)}
+.account-identity>.ui-icon{width:var(--brand-mark-size);height:var(--brand-mark-size);color:var(--brand)}
+.account-identity h2{margin:0;overflow-wrap:anywhere}
+.account-identity p{margin:var(--space-1) 0 0}
+.account-group{margin-top:var(--space-8)}
+.account-group h2{font-size:var(--font-lg);margin-bottom:var(--space-4)}
+.account-setting-row{display:grid;grid-template-columns:var(--icon-size) minmax(0,1fr) auto;align-items:start;gap:var(--space-3);margin-top:var(--space-6)}
+.account-setting-row>.ui-icon{margin-top:var(--space-1);color:var(--brand)}
+.account-setting-row h3{margin:0;font-weight:var(--font-medium)}
+.account-setting-row p{font-size:var(--font-base);margin:var(--space-2) 0 0}
+.account-confirmed{display:flex;align-items:baseline;gap:var(--space-2);color:var(--success)}
+.account-confirmed .ui-icon{align-self:flex-start;margin-top:var(--space-1)}
+.account-limit{margin-top:var(--space-6);color:var(--text-muted)}
+.account-session{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
+.account-session h2{margin-bottom:var(--space-2)}
+.account-session p{margin:0}
+.account-session form{flex-shrink:0}
+.account-entry-form>label:first-of-type{margin-top:0}
+.account-entry-form>.actions{margin-top:var(--space-6);margin-bottom:0}
+.account-entry-form>.actions>.primary{width:100%}
+.account-entry-switch{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-top:var(--space-6)}
+.account-entry-switch p{margin:0}
+.account-export-summary{display:grid;gap:var(--space-4);margin:0}
+.account-export-summary>div{display:grid;grid-template-columns:var(--month-field-width) minmax(0,1fr);gap:var(--space-4)}
+.account-export-summary dt{color:var(--text-muted)}
+.account-export-summary dd{margin:0}
+.account-export-warning{display:flex;align-items:flex-start;gap:var(--space-3);margin-top:var(--space-6)}
+.account-export-warning>.ui-icon{color:var(--warning);margin-top:var(--space-1)}
+.account-export-confirm{margin-top:var(--space-6)}
+.account-export-actions{justify-content:flex-end;margin-top:var(--space-6);margin-bottom:0}
+.account-export-backup{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-top:var(--space-6)}
+.account-export-backup h2{font-size:var(--font-base);font-weight:var(--font-medium);margin-bottom:var(--space-2)}
+.account-export-backup p{margin:0}
+.account-export-backup>.button{flex-shrink:0}
+@media(max-width:48rem){.account-page-heading>.button{width:100%}.account-setting-row{grid-template-columns:var(--icon-size) minmax(0,1fr)}.account-setting-row>.button{grid-column:2;justify-self:start}.account-session,.account-export-backup{align-items:flex-start;flex-direction:column}.account-export-summary>div{grid-template-columns:minmax(0,1fr);gap:var(--space-1)}.account-export-actions{display:grid;grid-template-columns:minmax(0,1fr)}.account-export-actions>.primary{grid-row:1}.account-export-actions>.button{grid-row:2}}
 .data-use-notice{margin-top:var(--space-6);color:var(--text-muted)}
 .data-use-notice h2{font-size:var(--font-base);color:var(--text)}
 .consent-choice{display:flex;align-items:flex-start;gap:var(--space-3);padding-block:var(--space-2);font-size:var(--font-sm);font-weight:var(--font-regular);cursor:pointer}

@@ -1,5 +1,11 @@
 # Phát triển persistence
 
+Nếu chỉ muốn chạy thử giao diện, dùng `.\run.ps1` từ root repository. Script tự
+chuẩn bị môi trường và chạy bản có tài khoản. Khi cần thiết lập chứng chỉ HTTPS
+lần đầu, chạy `.\run.ps1 -TrustCertificate` và xác nhận khi hệ điều hành hỏi.
+`-NoAccounts` mở bản HTTP không có tài khoản, còn `-Store '<đường dẫn tuyệt đối>'`
+mở lại kho synthetic đã có.
+
 Chỉ dùng dữ liệu giả. SDK local net10, EF packages và dotnet-ef giữ versions hiện có.
 Từ repository root:
 
@@ -7,6 +13,7 @@ Từ repository root:
 . ./scripts/dev/activate-dotnet.ps1
 $env:NUGET_PACKAGES = Join-Path $PWD '.dotnet/nuget-packages'
 $env:DOTNET_CLI_HOME = Join-Path $env:TEMP 'taxmanager-cli'
+dotnet restore TaxManager.sln
 dotnet build TaxManager.sln --no-restore --disable-build-servers -m:1
 dotnet test tests/TaxManager.Data.Tests --no-restore --disable-build-servers -m:1
 dotnet test tests/TaxManager.Core.Tests --no-restore --disable-build-servers -m:1
