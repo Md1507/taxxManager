@@ -1,0 +1,72 @@
+@page "/ho-so/{id:guid}/bao-cao"
+@model TaxManager.Web.Pages.ForecastReportModel
+@using TaxManager.Web.Reporting
+@{
+    ViewData["Title"] = "Báo cáo và checklist";
+    ViewData["ProfileId"] = Model.Report?.Id;
+}
+@if (Model.Report is not { } report) {
+    <h1>Báo cáo và checklist</h1>
+    <p role="alert">@Model.Error</p>
+    <p><a asp-page="/ForecastProfiles">Trở lại hồ sơ</a></p>
+} else {
+    <p><a asp-page="/Forecast" asp-route-id="@report.Id">Trở lại hồ sơ</a></p>
+    <div class="page-heading"><div><h1>Báo cáo hồ sơ năm @report.Input.Year</h1>
+        <p>Phiên bản @report.Revision. Chỉ gồm dữ liệu đã lưu.</p></div>
+        <a class="button primary" asp-page="/ForecastReport" asp-route-id="@report.Id" asp-page-handler="Csv"
+           asp-route-revision="@report.Revision" asp-route-record="@(report.Calculation?.HistoryId ?? Guid.Empty)"><partial name="Shared/_Icon" model='@("download")' />Xuất CSV</a>
+    </div>
+    @if (report.Revision != report.CurrentRevision) { <p class="notice">Bạn đang đọc phiên bản @report.Revision; hồ sơ hiện tại là phiên bản @report.CurrentRevision.</p> }
+    <p class="hint">CSV mở được bằng Excel và chứa số liệu, trạng thái, nguồn và ghi chú. Đây là báo cáo tham khảo có dữ liệu đọc được; không phải tờ khai chính thức hoặc bản sao lưu.</p>
+
+    <section class="input-panel" aria-labelledby="checklist-heading"><h2 id="checklist-heading">Checklist dữ liệu</h2>
+    <p>Rà lại dữ liệu trước khi trao đổi với HR. Danh sách này không xác nhận điều kiện quyết toán.</p>
+    <ul>
+        @if (report.Completeness.MissingObligation.Count == 0) {
+            <li>Đã nhập gross, bảo hiểm và số người phụ thuộc cho cả 12 tháng.</li>
+        } else {
+            <li>Còn @report.Completeness.MissingObligation.Count đầu vào để tính nghĩa vụ năm:
+            <ul>@foreach (var field in report.Completeness.MissingObligation.GroupBy(m => m.Kind)) {
+                <li>@(field.Key switch { TaxManager.Core.Forecasting.ForecastInputKind.Gross => "Gross", TaxManager.Core.Forecasting.ForecastInputKind.Insurance => "Bảo hiểm", _ => "Người phụ thuộc" }): tháng @string.Join(", ", field.Select(m => m.Month)).</li>
+            }</ul>
+            <a asp-page="/Forecast" asp-route-id="@report.Id" asp-route-month="@report.Completeness.MissingObligation[0].Month" asp-fragment="sua-thang">Nhập bổ sung trong hồ sơ hiện tại</a>.</li>
+        }
+        <li>Khấu trừ đã nhập: @report.Completeness.WithholdingMonths/12 tháng.
+            @if (report.Completeness.MissingWithholdingMonths.Count > 0) { <span>Còn thiếu tháng @string.Join(", ", report.Completeness.MissingWithholdingMonths). Không thay bằng 0.</span> }
+        </li>
+        <li>Dữ liệu thực tế cho nghĩa vụ: @report.Completeness.ActualObligationMonths/12 tháng. Rà lại các nhãn Dự kiến và Giả định.</li>
+        <li>@(report.Values.Count(v => v.Amount is not null && string.IsNullOrWhiteSpace(v.Source))) giá trị đã nhập còn thiếu nguồn; đối chiếu phiếu lương và ghi chú.</li>
+        <li>Kiểm tra tháng nhận thưởng và nhãn đã gồm gross để tránh cộng trùng.</li>
+    </ul></section>
+
+    <section aria-labelledby="report-months-heading"><h2 id="report-months-heading">Dữ liệu 12 tháng</h2>
+    <p class="hint" id="report-table-hint">Ô chưa nhập khác số 0. Bảng có thể cuộn ngang.</p>
+    <div class="table-scroll" role="region" aria-label="Bảng báo cáo 12 tháng" aria-describedby="report-table-hint" tabindex="0">
+    <table class="forecast-preview"><thead><tr><th scope="col">Tháng</th><th class="money" scope="col">Lương gross</th><th class="money" scope="col">Bảo hiểm</th><th class="money" scope="col">Người phụ thuộc</th><th class="money" scope="col">Khấu trừ</th></tr></thead><tbody>
+    @foreach (var month in report.MonthlyValues.GroupBy(v => v.Month)) {
+        <tr><th scope="row">Tháng @month.Key</th>@foreach (var value in month) { <td class="money"><partial name="Shared/_ReportValue" model="value" /></td> }</tr>
+    }
+    </tbody></table></div></section>
+
+    <section aria-labelledby="report-bonuses-heading"><h2 id="report-bonuses-heading">Thưởng đã nhập</h2>
+    @if (!report.Bonuses.Any()) { <p>Chưa có khoản thưởng đã nhập trong bản lưu này.</p> }
+    @foreach (var bonus in report.Bonuses) {
+        <p>Tháng @bonus.Month: @TaxManager.Web.Pages.ForecastModel.FormatAmount(bonus.Amount!.Value) đ;
+            @ForecastReportCsv.Status(bonus.Status), @(bonus.IncludedInGross == true ? "đã gồm gross, không cộng thêm" : "cộng thêm vào gross").</p>
+    }</section>
+
+    <details><summary>Nguồn, ghi chú và ngày nhập</summary>
+    @foreach (var value in report.Values.Where(v => v.Amount is not null)) {
+        <section><h3>Tháng @value.Month: @value.Label</h3>
+        <p>Nguồn: @(string.IsNullOrWhiteSpace(value.Source) ? "Chưa nhập" : value.Source)</p>
+        <p class="entry-note">Ghi chú: @(string.IsNullOrEmpty(value.Note) ? "Chưa nhập" : value.Note)</p>
+        <p class="hint">Ngày nhập: @TaxManager.Web.Pages.ForecastModel.LocalTime(value.EnteredAt!.Value) giờ Việt Nam.</p></section>
+    }</details>
+
+    @if (report.Calculation is { } saved) {
+        <partial name="Shared/_AnnualResult" model="saved" />
+    } else {
+        <section><h2>Kết quả năm</h2><p>Chưa có kết quả năm đã lưu cho phiên bản này. Báo cáo không tự tính hoặc lấy kết quả của phiên bản khác.</p>
+        <p><a asp-page="/Forecast" asp-route-id="@report.Id" asp-fragment="tong-quan">Tính từ hồ sơ hiện tại</a></p></section>
+    }
+}

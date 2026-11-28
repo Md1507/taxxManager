@@ -45,6 +45,16 @@ public sealed class GroupedMoneyHttpTests
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync());
         Assert.Contains($"value=\"{amount}\"", html);
         Assert.Contains("Số tiền chưa đúng định dạng", html);
+        // A screen reader receives both the existing salary hint and the server error,
+        // even before the browser runs any JavaScript.
+        var gross = Regex.Match(html, "<input\\b(?=[^>]*\\bid=\"Gross\")[^>]*>").Value;
+        Assert.Contains("aria-invalid=\"true\"", gross);
+        var descriptions = Regex.Match(gross, "aria-describedby=\"([^\"]+)\"").Groups[1].Value.Split(' ');
+        Assert.Contains("salary-terms", descriptions);
+        Assert.Contains("error-Gross", descriptions);
+        Assert.Contains("money-Gross-hint", descriptions);
+        Assert.Contains("id=\"error-Gross\"", html);
+        Assert.Contains("href=\"#Gross\"", html);
         await using var context = host.Services.GetRequiredService<SyntheticDatabase>().Open();
         Assert.Empty(await new ForecastStore(context).ListAsync());
     }

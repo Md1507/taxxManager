@@ -1,5 +1,97 @@
 // Native form submission stays usable without JavaScript.
 (() => {
+    const navigation = document.getElementById('primary-navigation');
+    const toggle = document.querySelector('[data-navigation-toggle]');
+    if (navigation && toggle) {
+        const compact = window.matchMedia('(max-width: 64rem)');
+        const sidebar = navigation.closest('.sidebar');
+        const syncOffset = () => {
+            if (compact.matches) {
+                const style = getComputedStyle(sidebar);
+                const height = sidebar.querySelector('.sidebar-heading').getBoundingClientRect().height;
+                const padding = parseFloat(style.paddingTop);
+                document.documentElement.style.setProperty('--navigation-offset',
+                    `${height + padding * 2 + parseFloat(style.paddingBottom)}px`);
+            } else document.documentElement.style.removeProperty('--navigation-offset');
+        };
+        const setNavigation = expanded => {
+            navigation.hidden = !expanded;
+            toggle.setAttribute('aria-expanded', String(expanded));
+            toggle.textContent = expanded ? 'Đóng menu' : 'Menu';
+        };
+        const syncNavigation = () => {
+            const active = document.activeElement;
+            toggle.hidden = !compact.matches;
+            setNavigation(!compact.matches);
+            // The destination must be visible before receiving focus after a resize.
+            if (compact.matches && navigation.contains(active)) toggle.focus();
+            if (!compact.matches && active === toggle) navigation.querySelector('a')?.focus();
+            syncOffset();
+        };
+        sidebar.dataset.navigationReady = '';
+        syncNavigation();
+        compact.addEventListener('change', syncNavigation);
+        new ResizeObserver(syncOffset).observe(sidebar.querySelector('.sidebar-heading'));
+        toggle.addEventListener('click', () => setNavigation(navigation.hidden));
+        sidebar.addEventListener('focusout', event => {
+            if (compact.matches && !sidebar.contains(event.relatedTarget)) setNavigation(false);
+        });
+        sidebar.addEventListener('keydown', event => {
+            if (compact.matches && event.key === 'Escape' && !navigation.hidden) {
+                event.preventDefault();
+                setNavigation(false);
+                toggle.focus();
+            }
+        });
+        const sectionLinks = [...navigation.querySelectorAll('[data-section-link]')].filter(link => {
+            const url = new URL(link.href);
+            return url.pathname === location.pathname && url.search === location.search;
+        });
+        const setCurrentSection = id => {
+            navigation.querySelectorAll('[aria-current]').forEach(link => link.removeAttribute('aria-current'));
+            sectionLinks.find(link => link.hash === '#' + id)?.setAttribute('aria-current', 'location');
+        };
+        const sections = [...document.querySelectorAll('main [id], main [data-navigation-section]')]
+            .filter(section => sectionLinks.some(link => link.hash === '#' + (section.dataset.navigationSection || section.id)));
+        const syncSection = () => {
+            if (!sections.length) return;
+            const offset = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop);
+            // A section becomes current as its heading enters the upper third of the visible content.
+            const readingLine = offset + (innerHeight - offset) / 3;
+            let current = sections[0];
+            for (const section of sections) {
+                const margin = parseFloat(getComputedStyle(section).scrollMarginTop);
+                if (section.getBoundingClientRect().top <= readingLine + margin) current = section;
+            }
+            if (scrollY > 0 && innerHeight + scrollY >= document.documentElement.scrollHeight - 2)
+                current = sections.at(-1);
+            setCurrentSection(current.dataset.navigationSection || current.id);
+        };
+        let sectionFrame;
+        const scheduleSection = () => {
+            cancelAnimationFrame(sectionFrame);
+            sectionFrame = requestAnimationFrame(syncSection);
+        };
+        window.addEventListener('scroll', scheduleSection, { passive: true });
+        window.addEventListener('resize', scheduleSection);
+        window.addEventListener('hashchange', scheduleSection);
+        window.addEventListener('pageshow', scheduleSection);
+        scheduleSection();
+        navigation.querySelectorAll('a').forEach(link => link.addEventListener('click', event => {
+            if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            const target = new URL(link.href, location.href);
+            if (compact.matches) setNavigation(false);
+            if (target.pathname === location.pathname && target.search === location.search) {
+                // Keep edits in this document; the native fragment link supplies history and scrolling.
+                const destination = document.getElementById(target.hash.slice(1));
+                if (destination) {
+                    destination.setAttribute('tabindex', '-1');
+                    destination.focus({ preventScroll: true });
+                    if (sectionLinks.includes(link)) setCurrentSection(destination.id);
+                }
+            }
+        }));
+    }
     const summary = document.querySelector('.error-summary');
     summary?.focus();
     summary?.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', () => {

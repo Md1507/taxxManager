@@ -36,6 +36,11 @@ Khi làm việc với `src/TaxManager.Data/Migrations/**`, `tests/TaxManager.Dat
 
 ### Điểm dễ sai
 
+Khi làm việc với `docs/reviews/**`:
+
+- **Ảnh báo cáo có thể nới affected test tới full khi thiếu ánh xạ bgraph** [k:01M8F671GP7FD4E6G4CVEW6E7R]
+  Nếu bint test affected --run nới scope tới full vì ảnh PNG ngoài project chưa được ánh xạ, eval.test_command null sẽ khiến lệnh không chạy test. Đọc selection.widening bằng bint test affected --json; không báo cổng này đã qua, không bỏ ảnh hoặc thu hẹp test im lặng. Trong lượt UI 28/11/2026 đã chạy scripts/dev/verify-web-mvp.ps1 trực tiếp để kiểm đầy đủ Core/Data/Web và EF, giữ nguyên cấu hình Bint.
+
 Khi làm việc với `scripts/dev/**`, `src/**/*.csproj`, `tests/**/*.csproj`, `global.json`:
 
 - **Chuẩn bị SDK và restore trước script kiểm chứng Web MVP** [k:01M8BMXQW27NZWH4EKHABV6NZK]
@@ -65,9 +70,9 @@ Khi làm việc với `src/TaxManager.Data/**`, `tests/TaxManager.Data.Tests/**`
 Khi làm việc với `src/TaxManager.Data/**`, `tests/TaxManager.Data.Tests/TaxRules/**`:
 
 - **Nhận biết giới hạn adapter hiện tại khi cập nhật catalog thuế** [k:01M85R5BA80S0DDJVNMBYQ00BS]
-  Với adapter hiện tại, chỉ lưu luật lương tháng có bảo hiểm nhập tay; snapshot có optional graph bị từ chối. Xem đây là giới hạn triển khai cần mở rộng có kiểm thử, không phải giới hạn lâu dài của sản phẩm.
+  Adapter lưu luật lương với bảo hiểm nhập tay và hỗ trợ AnnualSalaryRules, RoundingPolicy, CashBonusRules trong phạm vi AnnualRuleGraphCodec. Các graph bảo hiểm, lương bổ sung, khấu trừ vãng lai, nhiều nguồn lương, từ thiện và hưu trí vẫn bị từ chối; mở rộng chúng bằng thay đổi riêng có kiểm thử.
   Dùng SeedReferencesAsync/LoadReferencesAsync cho đúng bộ tham khảo Core 2025/2026; đường này không nhận tùy ý luật mới hoặc mọi snapshot Unverified.
-  Giữ nguyên trạng thái nguồn cho tới khi đáp ứng quy trình kiểm tra đã xác định; không đổi Verified hay thêm fallback chỉ để vượt cổng. Triển khai riêng các thay đổi về trạng thái xác minh, nguồn và graph được hỗ trợ.
+  Giữ nguyên trạng thái nguồn qua lưu/mở lại; nguồn official phải qua ValidateOfficial. Không đổi Verified hay thêm fallback để vượt cổng. Đây là giới hạn triển khai hiện tại, không phải giới hạn lâu dài của sản phẩm.
 
 Khi làm việc với `src/TaxManager.Data/Migrations/**`, `src/TaxManager.Data/Upgrades/**`, `tests/TaxManager.Data.Tests/**`:
 
@@ -80,8 +85,18 @@ Khi làm việc với `src/TaxManager.Data/Migrations/**`, `tests/TaxManager.Dat
 
 - **Thêm migration phải đối chiếu cả kỳ vọng schema mới và mốc downgrade cũ** [k:01M8CBFWCGN1RHN8ZHFV2P3M9Z]
   Khi thêm migration, rà các kỳ vọng GetAppliedMigrations ở MigrationTests, ProfilePersistenceTests và HistoryMigrationTests; test tính năng mới không bao phủ hết các kỳ vọng danh sách/số lượng cũ.
-  Cập nhật kỳ vọng chạy tới schema mới nhất theo migration thực tế; giữ kỳ vọng cho các mốc migrate/downgrade tường minh và kiểm dữ liệu, audit, sentinel, trigger, idempotency.
-  HistoryMigrationTests hiện lên 6 migration rồi gỡ hai migration forecast trước khi AddCalculationHistory từ chối Down, nên sau lỗi còn 4; không thay đồng loạt mọi số 4 thành số mới nhất.
+  Cập nhật kỳ vọng chạy tới schema mới nhất theo danh sách migration thực tế; giữ kỳ vọng cho các mốc migrate/downgrade tường minh và kiểm dữ liệu, audit, sentinel, trigger, idempotency.
+  Trong HistoryMigrationTests, downgrade về AddDataProtectionAndAudit gỡ các migration phía sau trước khi AddCalculationHistory từ chối Down, nên sau lỗi vẫn còn bốn migration đầu. Giữ mốc này khi bổ sung migration mới; không thay đồng loạt mọi số 4 thành số mới nhất.
+
+Khi làm việc với `src/TaxManager.Data/TaxRules/**`, `src/TaxManager.Data/Upgrades/**`:
+
+- **Model EF có cột AnnualGraph mới nhưng đường legacy/copy-forward vẫn dùng schema trước cột này. SnapshotRows cần project…** [k:01M8E9N50FHAQEK75JVNDYXN2J]
+  Model EF có cột AnnualGraph mới nhưng đường legacy/copy-forward vẫn dùng schema trước cột này. SnapshotRows cần projection NULL AS AnnualGraph cho schema cũ; insert graph null phải bỏ cột khỏi INSERT. Giữ byte migration cũ và test legacy upgrade; không bỏ guard DB legacy populated để che lỗi missing column.
+
+Khi làm việc với `src/TaxManager.Web/**`, `tests/TaxManager.Web.Tests/**`:
+
+- **Tiền vi-VN cần dấu định dạng và xử lý cả trường tháng ẩn** [k:01M8F49W9Q99372V01ZZBZV6NK]
+  Theo yêu cầu UI ngày 28/11/2026, ô tiền tự tách hàng nghìn bằng chấm, phần lẻ bằng phẩy. Form được JavaScript định dạng gửi AmountFormat=vi-VN; MoneyInput xác thực grammar tường minh. Giao thức cũ không marker vẫn nhận chấm hoặc phẩy là thập phân để không đổi dữ liệu cũ. Khi format phải xử lý cả input tiền ẩn của các tháng chưa mở; bỏ sót có thể diễn giải 1.234 cũ thành 1234. Không dùng JS Number hoặc parse theo culture với AllowThousands.
 
 Khi làm việc với `src/TaxManager.Web/Demo/**`, `src/TaxManager.Web/DemoApplication.cs`, `tests/TaxManager.Web.Tests/**`:
 
@@ -91,23 +106,8 @@ Khi làm việc với `src/TaxManager.Web/Demo/**`, `src/TaxManager.Web/DemoAppl
   Chỉ mở kho synthetic hợp lệ ngay dưới TEMP, giữ kiểm tra marker, reparse point và khóa; đừng tự tạo lại kho/khóa khi mở lại thất bại.
   Kiểm cả metadata/ngày nhập, thiếu khác 0 và cập nhật qua các host; giữ ca thiếu/sai khóa sau khi xóa hồ sơ.
 
-Khi làm việc với `src/TaxManager.Web/Pages/Forecast*`, `src/TaxManager.Core/Forecasting/**`, `tests/TaxManager.Web.Tests/Forecasting/**`:
+Khi làm việc với `src/TaxManager.Web/Pages/Forecast*`:
 
-- **Giữ hợp đồng nhập tiền dự báo: thiếu khác 0, dấu phẩy là thập phân** [k:01M8BMXR829S6QRCBBJWYSB8SF]
-  Giữ số tiền dự báo nullable: ô trống là thiếu, còn 0 là giá trị đã nhập; không điền 0 để thay dữ liệu chưa biết.
-  Dùng hợp đồng ForecastAmountBinder cho các trường tiền: một dấu phẩy hoặc chấm là dấu thập phân, không cho cú pháp phân nhóm hàng nghìn.
-  Không thay bằng parser theo culture với AllowThousands/NumberStyles.Number; cách đó có thể diễn giải khác số người dùng nhập.
-  Khi POST sai, giữ nguyên chuỗi nhập và lỗi ModelState để người dùng sửa; các test HTTP kiểm cả việc từ chối dấu phân nhóm lẫn số lẻ dấu phẩy.
-
-Khi làm việc với `src/TaxManager.Web/Pages/Forecast*`, `tests/TaxManager.Web.Tests/Forecasting/**`:
-
-- **Xóa giai đoạn forecast phải dịch cả dấu thời gian trong DraftToken** [k:01M8CBFS1DPP02R61NX2E264B6]
-  Khi bỏ một phần tử Periods, dịch đồng bộ chỉ số trong danh sách, ModelState và các khóa period/{index} của EntryStamp trong DraftToken; bỏ dấu của phần tử bị xóa.
-  Giữ EnteredAt của giai đoạn còn lại nếu dữ liệu không đổi; chỉ dịch danh sách sẽ làm mất liên kết fingerprint và ghi lại ngày nhập ở lần Preview sau.
-  Dùng đồng hồ điều khiển được, tăng thời gian giữa Preview → RemovePeriod → Preview để bắt hồi quy; hai lượt cùng thời điểm có thể che lỗi.
-- **Probe forecast đọc textarea từ HTML thô và gửi lại cả xuống dòng** [k:01M8CBFY0W4W2J2AWVTG0TFGMK]
-  Khi đổi markup ghi chú forecast hoặc gặp nhiều test persistence cùng sai chuỗi, kiểm Fields/Browser.Send của ForecastPersistenceBlackBoxTests trước khi kết luận dữ liệu lưu sai.
-  Fields lấy toàn bộ nội dung giữa hai thẻ textarea rồi HtmlDecode, không đọc DOM; Browser.Send gửi lại chuỗi đó, nên xuống dòng do markup có thể trở thành dữ liệu của lần POST tiếp theo.
-  Đối chiếu HTML thô, giá trị textarea trong trình duyệt và dữ liệu POST để định vị lỗi; đừng Trim ghi chú người dùng hoặc nới assertion để làm xanh test.
-  Nếu đổi textarea thủ công, giữ mã hóa HTML và ưu tiên ModelState.AttemptedValue khi POST lỗi; kiểm vòng lưu/mở/xem trước với ghi chú nhiều dòng.
+- **Khi chuyển thanh hành động xuống cuối form forecast, phải giữ submit mặc định là Preview đứng trước các nút bỏ giai đoạ…** [k:01M8G33DP7ZSB0MXMQ9PV1A68A]
+  Khi chuyển thanh hành động xuống cuối form forecast, phải giữ submit mặc định là Preview đứng trước các nút bỏ giai đoạn/xóa tháng. Enter trong ô nhập có thể kích hoạt submit đầu tiên dù form action là Preview. Giữ test Default_submit_previews_without_removing_a_period và kiểm Enter trong trình duyệt; chỉ kiểm nhấp Lưu/Xem trước không phát hiện lỗi này.
 <!-- bint:end -->

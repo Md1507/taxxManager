@@ -4,7 +4,7 @@ Ngày lập: 27/11/2026; đồng bộ ngày 28/11/2026. Phạm vi: kế hoạch 
 Nguồn trạng thái: [roadmap](docs/product-roadmap.md); kế hoạch kỹ thuật: [PLAN.md](PLAN.md); vận hành: [Web MVP](docs/web-mvp.md).
 Khi tài liệu thiết kế cũ khác trạng thái hiện tại, dùng roadmap và mã hiện tại để đối chiếu; không đánh dấu tính năng đã có chỉ vì có wireframe.
 Nền 3.1/3.1b, chặng 2 và chặng 3 đã nghiệm thu kỹ thuật; phiếu chặng 3 đã done. UI Đ1–Đ2 trên các route hiện có đã triển khai, gồm định dạng tiền khi gõ và chú thích gross/net theo phản hồi ngày 28/11. Xem [kiểm chứng UI](docs/reviews/2026-11-28-ui-phases-one-two.md) và [kiểm chứng chặng 3](docs/reviews/2026-11-27-annual-stage-three.md).
-Màn chi tiết tháng đã nối với bản forecast lưu theo ID/tháng/revision, có bước tính, bậc thuế và căn cứ; xem [kiểm chứng màn tháng](docs/reviews/2026-11-28-forecast-month.md). Còn nghiệm thu UX thủ công đầy đủ; dark mode hiện là hướng tham khảo từ ảnh người dùng, chưa triển khai.
+Màn chi tiết tháng đã nối với bản forecast lưu theo ID/tháng/revision, có bước tính, bậc thuế và căn cứ; xem [kiểm chứng màn tháng](docs/reviews/2026-11-28-forecast-month.md). Đã bổ sung menu thu gọn và liên kết lỗi với ô nhập; thao tác phím, lưu tháng và reflow đã kiểm từng phần tại [báo cáo khả năng truy cập](docs/reviews/2026-11-28-ui-accessibility.md). Còn nghiệm thu UX thủ công đầy đủ; dark mode hiện là hướng tham khảo từ ảnh người dùng, chưa triển khai.
 Quy tắc phối hợp: roadmap quyết định phạm vi/thứ tự/tiến độ; PLAN quyết định điều kiện kỹ thuật; file này quyết định bố cục, token và hành vi UI. Khi triển khai, cập nhật cả ba liên kết/trạng thái trong cùng tác vụ, không lấy checkbox UI thay nghiệm thu nghiệp vụ.
 
 ## 1. Mục tiêu và giả định về người dùng
@@ -29,11 +29,11 @@ Quy tắc phối hợp: roadmap quyết định phạm vi/thứ tự/tiến đ�
 
 ## 3. Sơ đồ điều hướng và danh sách màn hình
 
-Đ1 đến Đ6 là đợt UI ở mục 11, không phải đánh số lại chặng nghiệp vụ. `/`, `/Forecast`, `/ForecastDelete`, `/ForecastAnnualHistory` và `/ho-so/{id}/thang/{month}?revision={revision}` đang có; các route `/ho-so/...` khác vẫn là đề xuất.
+Đ1 đến Đ6 là đợt UI ở mục 11, không phải đánh số lại chặng nghiệp vụ. `/ho-so` là danh sách riêng; `/Forecast` tạo hồ sơ và `/Forecast?id={id}` sửa hồ sơ. `/`, `/ForecastDelete`, `/ForecastAnnualHistory`, `/ho-so/{id}/thang/{month}?revision={revision}` và `/ho-so/{id}/bao-cao` đang có; các route `/ho-so/...` khác vẫn là đề xuất.
 Giữ route hiện có trong Đ1 để giảm chi phí; đường dẫn tiếng Việt không dấu cho màn hình mới dễ nhận biết hơn tên nội bộ.
 
 ```text
-hồ sơ (/Forecast)
+hồ sơ (/ho-so)
   +-- tạo hoặc mở hồ sơ
       +-- nhập theo giai đoạn
       +-- bảng 12 tháng
@@ -49,7 +49,7 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 
 | Màn hình | Route đề xuất | Mục đích | Dữ liệu hiển thị | Hành động chính duy nhất | Đợt / hiện trạng |
 |---|---|---|---|---|---|
-| Danh sách hồ sơ | `/Forecast` | Tìm và tiếp tục hồ sơ | Năm, phạm vi, lần lưu, mức đầy đủ | tạo hồ sơ | Đ1; danh sách đã có |
+| Danh sách hồ sơ | `/ho-so` | Tìm và tiếp tục hồ sơ | Năm, trạng thái Thiếu/Đủ, số phiên bản; không hiện UUID | tạo hồ sơ | Đ1; tách khỏi editor |
 | Nhập theo giai đoạn | `/Forecast?id={id}` | Tạo/sửa lịch lương | Giai đoạn, ngoại lệ, metadata | lưu hồ sơ | Đ1; đã có nền |
 | Bảng 12 tháng | `/Forecast?id={id}#bang-thang` | Rà dữ liệu cả năm | Gross, bảo hiểm, phụ thuộc, khấu trừ, trạng thái | sửa tháng đã chọn | Đ1; mở rộng preview |
 | Công cụ tính tháng | `/` | Giữ công cụ 2025/2026 | Đầu vào 12 tháng, kết quả riêng từng tháng | tính 12 tháng | Đ1; đã có |
@@ -61,7 +61,7 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Người phụ thuộc | `/ho-so/{id}/nguoi-phu-thuoc` | Quản lý theo thời gian | Khoảng tháng, tự khai/đăng ký, nguồn | lưu người phụ thuộc | Đ2; số theo giai đoạn đã có, hồ sơ đăng ký còn mở rộng |
 | Lịch sử tính | `/ho-so/{id}/lich-su` | Đọc các lần đã tính | Thời điểm, phạm vi, độ phủ, phiên bản luật | tính lại | Đ2; `/ForecastAnnualHistory?id={id}` đã có và được chuẩn hóa |
 | Chi tiết lần tính | `/ho-so/{id}/lich-su/{recordId}` | Đọc bản đã lưu | Snapshot đầu vào, kết quả, căn cứ cũ | tính lại | Đ2; `record={recordId}` tại route lịch sử đã có |
-| Báo cáo và checklist | `/ho-so/{id}/bao-cao` | Chuẩn bị trao đổi/quyết toán | Báo cáo, nguồn, phần thiếu | xuất báo cáo | Đ3; chưa có |
+| Báo cáo và checklist | `/ho-so/{id}/bao-cao` | Chuẩn bị trao đổi/quyết toán | Báo cáo bản lưu, nguồn, phần thiếu | xuất CSV | Đ3; đã có bản đầu, backup chưa có |
 | Sao lưu và khôi phục | `/du-lieu` | Tự giữ bản có thể khôi phục | Phạm vi, phiên bản, kết quả kiểm tra bản nhập | tạo bản sao lưu | Đ3; chưa có |
 | Xem trước khôi phục | `/du-lieu/khoi-phuc` | Kiểm tra trước khi ghi | Hồ sơ sẽ thêm, trùng, lỗi, phiên bản | khôi phục bản đã kiểm tra | Đ3; chưa có |
 | Hai kịch bản | `/ho-so/{id}/kich-ban` | Thử thêm thưởng giả định | Cơ sở, khoản bổ sung, hai kết quả | so sánh kịch bản | Đ4; chưa có |
@@ -72,7 +72,7 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Xuất dữ liệu cá nhân | `/tai-khoan/du-lieu/xuat` | Lấy bản dữ liệu cá nhân | Phạm vi, loại dữ liệu | xuất dữ liệu cá nhân | Đ6; chưa có |
 | Xóa tài khoản và dữ liệu | `/tai-khoan/xoa` | Xác nhận hành động không thể hoàn tác | Phạm vi xóa, lịch sử, giới hạn bản sao | xóa tài khoản và dữ liệu | Đ6; chưa có |
 
-Lựa chọn điều hướng: thanh ngang hoặc sidebar. Chọn thanh bên dọc theo brief mới, 6 đến 8 mục ở bản đầy đủ: hồ sơ, dữ liệu 12 tháng, tổng quan năm, người phụ thuộc, lịch sử, báo cáo, đối chiếu, dữ liệu và tài khoản.
+Lựa chọn điều hướng: thanh ngang hoặc sidebar. Chọn thanh bên dọc theo brief mới; thứ tự hiện có là hồ sơ, dữ liệu 12 tháng, người phụ thuộc, tổng quan năm, lịch sử, báo cáo, công cụ tháng. Các phần của editor cùng thứ tự sidebar; dữ liệu riêng tháng và bảng xem trước nằm trọn trước người phụ thuộc, không xen kẽ làm mục chọn quay ngược. Đối chiếu, dữ liệu và tài khoản chỉ thêm khi có chức năng.
 Chỉ hiện mục đã có chức năng trong đợt đang làm, không tạo mục giả để đủ số; thưởng ở nhập liệu, kịch bản ở tổng quan, tính tháng là công cụ trong hồ sơ. Mobile thu sidebar thành nút `mở điều hướng`, giữ thứ tự và tên; chưa có tài khoản thì không hiện lựa chọn tài khoản.
 Mỗi màn hình có một thông tin ưu tiên và một nút chính; các liên kết điều hướng, hủy, thêm dòng dùng kiểu phụ.
 Trang xem trước khôi phục/xóa là ngữ cảnh riêng, không tranh hành động chính với trang dữ liệu.
@@ -81,15 +81,15 @@ Trang xem trước khôi phục/xóa là ngữ cảnh riêng, không tranh hành
 
 ### Design plan ngắn trước triển khai
 
-Palette nền/chữ: nền trang `#FAFAFA`, bề mặt `#FFFFFF`, chữ chính `#1A1F1B`, chữ phụ `#5F5F5F`, viền mạnh `#767676`.
+Palette nền/chữ: nền trang `#F3F6F3`, bề mặt `#FFFFFF`, chữ chính `#1A1F1B`, chữ phụ `#526057`, viền mạnh `#76867B`.
 Màu thương hiệu `#395B40`, nền chọn `#E7FFEC`; giữ bốn màu ngữ nghĩa đã định nghĩa ở mục 10. Đây là bộ chốt thay palette cũ, không tạo màu mới.
 Font: Inter tự host, một họ cho tiêu đề, nội dung, bảng và trường nhập; độ đậm 400/500/600, số dùng tabular-nums.
-Bố cục: sidebar 224px, thanh trên chứa tên hồ sơ/hành động chính, vùng nội dung sáng một cột, tối đa 1200px; văn bản 72ch, lề 16/24/32px theo thiết bị. Chỉ chế độ sáng, CSS theo vai trò để thêm dark mode sau.
+Bố cục: sidebar 224px có logo nhỏ và icon nét đồng bộ; thanh trên chỉ chứa huy hiệu Demo local. Danh sách và editor là hai màn riêng, mỗi màn một nút chính; editor đặt thanh thao tác dính cuối form. Nội dung sáng một cột, tối đa 1100px; văn bản 72ch, lề 16/24/32px theo thiết bị. Chỉ chế độ sáng, CSS theo vai trò để thêm dark mode sau.
 Chữ, nhãn và tiêu đề căn trái; tiền căn phải; vùng nội dung nằm giữa viewport nhưng không căn giữa đoạn chữ.
 
 ```text
 +-------------------+----------------------------------------------+
-| TaxManager        | tên hồ sơ                  [hành động chính] |
+| TaxManager        |                     [Demo local]             |
 | hồ sơ             +----------------------------------------------+
 | dữ liệu 12 tháng  | kỳ, phạm vi, tình trạng lưu                   |
 | tổng quan năm     | bảng hoặc form của công việc                  |
@@ -156,7 +156,7 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 +------------------------------------------------------------------+
 ```
 
-- Thành phần: fieldset giai đoạn, tháng bắt đầu/kết thúc, ô tiền, trạng thái, metadata mở rộng, bản xem trước tác động.
+- Thành phần: panel trắng có tiêu đề, fieldset/legend ngữ nghĩa không viền; ô tháng hẹp, tiền căn phải có đơn vị đ trong ô, ví dụ và hướng dẫn ngay dưới; trạng thái, metadata mở rộng, bản xem trước tác động.
 - Có hai hướng xử lý chồng giai đoạn: cho ghi đè sau xác nhận hoặc yêu cầu sửa khoảng. Chọn yêu cầu sửa trước khi lưu ở UI đích vì dễ hiểu và ít nhánh.
 - Đây là thay đổi so với preview hiện tại cho giai đoạn sau thay giai đoạn trước; khi triển khai phải cập nhật hành vi có kiểm thử, không đổi âm thầm.
 - Tháng ngoại lệ luôn được giữ; muốn bỏ ngoại lệ phải chọn tại tháng đó, không gộp vào sửa khoảng.
@@ -184,7 +184,7 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 ```
 
 - Thành phần: bảng semantic, chú giải ngay phía trên, bộ chọn tháng native, link sửa trong hàng, tổng có điều kiện.
-- Mỗi ô có giá trị phải có badge; metadata mở bằng liên kết `nguồn và ghi chú tháng ...`, dùng lại disclosure, không cần hover.
+- Mỗi ô có giá trị phải có badge; nguồn/ghi chú của bản xem trước gom vào một khối dưới bảng, chia bằng tiêu đề tháng. Các dòng bảng giữ thao tác sửa và mở chi tiết; tránh thêm một khối thu gọn ở từng dòng.
 - Có hai hướng mobile: đổi thành thẻ hoặc giữ bảng cuộn. Chọn giữ bảng, cố định cột tháng và hàng tiêu đề để so sánh ngang không mất ngữ cảnh.
 - Trống: 12 hàng vẫn có kỳ rõ, tiền ghi `chưa nhập`; mời `nhập lương theo giai đoạn` bằng liên kết phụ.
 - Lỗi: liên kết lỗi đưa đến đúng tháng/ô; cảnh báo nhiều tháng gom theo chỉ tiêu và cho mở danh sách đầy đủ.
@@ -212,7 +212,7 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 ```
 
 - Thành phần: cùng ô tiền/metadata, bảng bước tính, bảng bậc thuế, disclosure căn cứ; ghi riêng thuế đã khấu trừ và thuế ứng dụng tính.
-- Hai hướng căn cứ: popover hoặc disclosure trong dòng. Chọn disclosure để dùng với bàn phím, màn hình nhỏ và ít JavaScript; giữ nút `?` có tên truy cập rõ.
+- Gom căn cứ của màn chi tiết tháng vào một khối “Văn bản và trạng thái xác minh”, hiện các nguồn bên trong bằng văn bản và liên kết. Công cụ demo giữ nút `?` có tên truy cập rõ; tránh disclosure lồng nhau hoặc lặp cho từng căn cứ trong cùng phần.
 - Khi dữ liệu thay đổi, kết quả cũ ghi `đầu vào đã thay đổi, tính lại để xem kết quả mới`; không để số cũ trông như vừa tính.
 - Trống: `nhập số từ phiếu lương tháng 8 để xem cách tính`; không tự điền tiền.
 - Lỗi: `bảo hiểm phải là số không âm. nhập theo dạng 1.234.567,50`; giữ chuỗi người dùng nhập.
@@ -222,7 +222,7 @@ Trong các wireframe dưới, chữ trong ngoặc vuông là nút hoặc trườ
 
 #### Triển khai màn tháng từ bản lưu, 28/11/2026
 
-Giữ palette đã chốt: brand `#395B40`, nền `#FAFAFA`, bề mặt `#FFFFFF`, chữ `#1A1F1B`, chữ phụ `#5F5F5F`, viền chức năng `#767676`; Inter 400/500/600 và số tabular. Nội dung căn trái, tiền căn phải. Tái dùng sidebar và header; chỉ thuế năm có khung brand.
+Giữ palette đã chốt: brand `#395B40`, nền `#F3F6F3`, bề mặt `#FFFFFF`, chữ `#1A1F1B`, chữ phụ `#526057`, viền chức năng `#76867B`; Inter 400/500/600 và số tabular. Nội dung căn trái, tiền căn phải. Tái dùng sidebar và header; chỉ thuế năm có khung brand.
 
 ```text
 bảng 12 tháng / bản đã lưu             [sửa tháng]
@@ -448,7 +448,7 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 - Hai hướng mobile cho bảng: thẻ hoặc cuộn riêng. Chọn bảng cuộn riêng, giữ cột tháng và hàng tiêu đề; không làm toàn trang tràn ngang.
 - Khung bảng có tên, hướng dẫn `cuộn ngang để xem các cột`, focus được bằng bàn phím, có chiều cao giới hạn để sticky header hoạt động; kiểm sticky ở cả hai trục.
 - Dưới breakpoint tablet, form một cột; nút chính xuống dòng, vẫn chỉ một nút. Không làm sticky footer ở đợt đầu để tránh che ô đang sửa.
-- Desktop sidebar dọc; dưới 64rem thu thành disclosure `mở điều hướng` để 768px vẫn đủ chỗ nhập. Điều hướng không modal, aria-expanded/controls, không khóa focus; đóng khi chọn trang và trả focus về nút khi đóng bằng phím.
+- Desktop sidebar dọc; dưới 64rem dùng nút chữ `Menu` cùng hàng với tên ứng dụng, mở ra đổi thành `Đóng menu`. Không dùng mũi tên dropdown cho điều hướng. Nút có aria-expanded/controls, không khóa focus; đóng khi chọn trang hoặc Escape, trả focus về nút khi đóng bằng phím. Không có JavaScript thì hiện toàn bộ liên kết.
 - Chữ thân bài và ô nhập tối thiểu 16px, line-height từ 1,5; không giảm font để nhét tiền dài. Đoạn giải thích tối đa 72ch.
 - Mọi chữ đạt 4,5:1; viền input, icon mang nghĩa và focus đạt 3:1 so với nền sát nó. Viền chia vùng trang trí không thay viền điều khiển.
 - Mục tiêu bấm tối thiểu 24x24px; nút chính/điều khiển thường dùng trên điện thoại 44px, khoảng cách giữa nút 8px.
@@ -469,15 +469,16 @@ Lỗi có biểu tượng, mô tả cạnh ô và tóm tắt liên kết ở đ�
 - Định nghĩa token trong `src/TaxManager.Web/wwwroot/css/tokens.css` khi code; file CSS đã được tạo trong đợt triển khai ngày 28/11/2026.
 - Chỉ dùng brand, brand-tint, bg, surface, text, text-muted, border-strong và warning/error/info/success của bộ chốt dưới đây. Token theo vai trò `--surface`, `--text`, không lấy xanh mặc định framework hoặc thêm màu ngoài bộ này.
 - Một họ font Inter hỗ trợ tiếng Việt, thang 13/14/16/20/24/32; 400/500/600, không thêm font mono/serif cho nhãn.
-- Khoảng cách theo bội số 4px; tối đa hai bo góc 4px và 8px; không bóng. Viền 1px để tách vùng, viền input dùng token đủ tương phản.
+- Khoảng cách theo bội số 4px; tối đa hai bo góc 4px và 8px; không bóng. Tách vùng bằng nền và khoảng cách; viền input mảnh đủ tương phản, bảng danh sách chỉ có đường ngang mảnh.
 - Mỗi màn hình đúng một hành động chính, một thông tin quan trọng nhất; không thêm thành phần ngoài danh sách ở dưới.
 - Các lựa chọn màu, cỡ, khoảng cách, bo góc chỉ xuất hiện tại token; CSS thành phần chỉ tham chiếu var(), không chép hex/px ra từng màn hình.
 - Chỉ chế độ sáng; dark mode để sau và chỉ thay token theo vai trò. Sidebar chọn dùng brand-tint, chữ đậm 600, viền trái 3px brand, aria-current; giữ sẵn chỗ viền ở các mục khác để không nhảy bố cục.
-- Thanh trên chứa tên hồ sơ/hành động chính, sidebar 6 đến 8 mục khi đủ chức năng. Chỉ khung thuế năm ước tính dùng nền brand; không xen kẽ khung đậm/nhạt để trang trí.
+- Thanh trên chứa huy hiệu Demo local; hành động chính theo từng màn hình. Sidebar 6 đến 8 mục khi đủ chức năng, dính theo viewport và cuộn riêng nếu cửa sổ thấp. Mỗi mục chuyển tới đúng phần, mục hiện tại tự cập nhật theo nội dung khi cuộn tay (aria-current=location). Liên kết trong editor chỉ đổi fragment, giữ form chưa lưu và query POST. Mobile giữ thanh Menu dính; menu mở phủ lên nội dung, đóng trước khi cuộn tới phần, không che tiêu đề đích. Chỉ khung thuế năm ước tính dùng nền brand; không xen kẽ khung đậm/nhạt để trang trí.
 
 #### 2. Danh sách cấm
 
 - Hạn chế vạch phân chia, đặc biệt đường ngang kéo dài hết vùng nội dung. Không thêm `hr` hoặc `border-top`/`border-bottom` chỉ để tách các phần, disclosure, thanh trên hay footer; ưu tiên khoảng trắng và tiêu đề. Chỉ giữ viền có chức năng rõ ở ô nhập, bảng dữ liệu, vùng xác nhận/lỗi và focus. Đây là điều chỉnh theo phản hồi trực tiếp ngày 28/11/2026.
+- Không dùng accordion/dropdown làm bố cục mặc định. Hiện trực tiếp các phần nhập chính, khoản thưởng, giải thích gross/net và bảng bậc thuế; chỉ thu gọn nguồn, ghi chú hoặc nội dung tra cứu dài theo nhóm. Không lặp mũi tên tam giác/chevron trước từng tiêu đề, từng dòng hoặc từng căn cứ; trigger còn lại dùng chữ gạch chân, giữ ngữ nghĩa native và bàn phím. Không thay mũi tên bằng chuỗi dấu cộng hay icon trang trí khác. Đây là điều chỉnh visual theo phản hồi người dùng ngày 28/11/2026.
 - Không gradient, kính mờ, blob, minh họa có sẵn, emoji làm icon; không thẻ giống nhau phủ kín trang hoặc thẻ lồng thẻ.
 - Không khối liên kết nhanh lấp chỗ trống, nhãn IN HOA nhóm menu, nền hình tròn hoặc avatar minh họa; không dùng danh sách thẻ giống nhau thay bảng.
 - Không hero số lớn/nhãn nhỏ; trang chính là dữ liệu. Không nền kem với serif/đất nung, nền gần đen với neon, bố cục báo giấy hairline/cột dày/bo góc 0.
@@ -540,18 +541,18 @@ Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; k
 :root {
   --brand: #395B40;
   --brand-tint: #E7FFEC;
-  --bg: #FAFAFA;
+  --bg: #F3F6F3;
   --surface: #FFFFFF;
   --text: #1A1F1B;
-  --text-muted: #5F5F5F;
-  --border-strong: #767676;
+  --text-muted: #526057;
+  --border-strong: #76867B;
   --success: #246647;
   --warning: #895600;
   --error: #B02A37;
   --info: #365C85;
   --on-brand: var(--surface);
   --focus: var(--brand);
-  --divider: var(--border-strong);
+  --divider: #DDE5DE;
   --backdrop: var(--text);
   --backdrop-opacity: .24;
   --font-family: "Inter", system-ui, sans-serif;
@@ -581,7 +582,11 @@ Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; k
   --focus-width: 2px;
   --focus-offset: var(--space-1);
   --shadow: none;
-  --content-max: 75rem;
+  --content-max: 68.75rem;
+  --month-input-width: 6rem;
+  --month-field-width: 7rem;
+  --profiles-table-min: 32rem;
+  --actionbar-clearance: 10rem;
   --sidebar-width: 14rem;
   --prose-max: 72ch;
   --breakpoint-tablet: 48rem;
@@ -592,6 +597,7 @@ Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; k
   --target-min: 1.5rem;
   --target-touch: 2.75rem;
   --icon-size: 1rem;
+  --brand-mark-size: 1.75rem;
   --row-min: 3rem;
   --table-max-height: 28rem;
   --scroll-offset: var(--space-12);
@@ -608,8 +614,8 @@ Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; k
 - Vai trò chữ: h1 24px, tiêu đề màn hình rộng tối đa 32px khi cần; h2 20px; thân bài/input/bảng 16px; ghi chú 14px; 13px chỉ metadata phụ, không dùng cho số quan trọng.
 - Dùng 400 cho nội dung, 500 cho label, 600 cho heading/tổng; không dùng letter-spacing tăng cho nhãn.
 - Khoảng nhỏ 4/8px, giữa trường 16px, giữa nhóm 24px, giữa vùng 32px; 48px chỉ tách phần lớn. Mọi giá trị qua token tương ứng.
-- Viền vùng/input dùng border-strong, nút chính surface trên brand. Khung thuế năm dùng on-brand trên brand; badge trong khung dùng chữ/viền on-brand không tô success/warning lên nền brand.
-- Kiểm số học bộ mới: chữ chính/phụ và ngữ nghĩa trên surface/bg từ 5,93:1; border-strong từ 4,35:1; on-brand trên brand 7,65:1; brand trên brand-tint 7,26:1. Vẫn phải đo UI thật, không suy kết quả render từ token.
+- Input dùng border-strong, đường ngang bảng dùng divider; panel không có khung đậm. Nút chính surface trên brand. Khung thuế năm dùng on-brand trên brand; badge trong khung dùng chữ/viền on-brand không tô success/warning lên nền brand.
+- Đo màu CSS thực tế: chữ phụ trên nền trang 6,09:1 và trắng 6,63:1; viền input trên trắng 3,84:1; on-brand trên brand 7,65:1. Nhãn thiếu dữ liệu trên trắng 6,19:1. Vẫn kiểm render và trạng thái tương tác riêng.
 - Badge dùng success/info/warning trên surface hoặc bg; khung brand dùng on-brand cùng hình/viền trạng thái. Không tạo màu mới hoặc làm nhạt cả điều khiển gây mất tương phản.
 - Dùng border-style phân biệt trạng thái, không gradient tạo vân. Nút phụ nền surface, chữ text hoặc brand có viền border-strong; disabled giữ độ đọc và có chữ giải thích.
 
@@ -618,13 +624,13 @@ Bộ dưới đây đã có tại `src/TaxManager.Web/wwwroot/css/tokens.css`; k
 | Thành phần | Biến thể và hành vi | Dùng ở đâu |
 |---|---|---|
 | App layout | Sidebar dọc, thanh trên tên hồ sơ/nút chính, main sáng, skip link, footer | Mọi màn hình |
-| Điều hướng | 6 đến 8 mục ở bản đầy đủ, mục chọn viền trái/đậm/nền, disclosure mobile, aria-current | Trong hồ sơ và tài khoản |
+| Điều hướng | 6 đến 8 mục ở bản đầy đủ, mục chọn viền trái/đậm/nền, nút chữ Menu ở mobile, aria-current | Trong hồ sơ và tài khoản |
 | Tiêu đề và ngữ cảnh | h1, năm, phạm vi, trạng thái lưu, một nút chính | Mọi màn hình |
 | Button/link | Chính, phụ, nguy hiểm; nguy hiểm chỉ làm chính ở màn xác nhận | Lưu, tính, thêm/bỏ, xóa |
 | Field | Label, hint, error, đơn vị; text/select/checkbox/radio native, textarea | Form |
 | Ô tiền | Field text decimal, phân nhóm ngay khi gõ, đơn vị, phần lẻ dấu phẩy | Mọi số tiền nhập |
 | Nhóm giai đoạn | Fieldset khoảng tháng + tiền + trạng thái; thêm/bỏ bằng button | Lịch lương/phụ thuộc |
-| Metadata disclosure | Nguồn, ghi chú, thời điểm; không giấu nhãn trạng thái | Mỗi giá trị/nhóm áp dụng |
+| Metadata disclosure | Gom nguồn, ghi chú, thời điểm theo nhóm; trigger chữ, không lặp mũi tên; không giấu nhãn trạng thái | Giai đoạn lương, tháng đang sửa hoặc toàn bộ bản xem trước |
 | Bảng dữ liệu | Header/row scope, số phải, tổng, khung cuộn/sticky | 12 tháng, bậc thuế, lịch sử |
 | Badge trạng thái | SVG hình dạng + chữ + kiểu viền | Giá trị và kết quả |
 | Độ phủ và chú giải | Văn bản số tháng + danh sách thiếu, không cần biểu đồ/donut | Bảng và dự báo |
@@ -658,9 +664,9 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 
 | Đợt UI | Liên hệ roadmap / PLAN | Trạng thái nền ngày 28/11 và việc UI còn làm |
 |---|---|---|
-| Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã chuẩn hóa token/sidebar/form/bảng và nối chi tiết tháng từ forecast đã lưu; kiểm thử HTTP, host mới, axe và ba viewport qua. Còn nghiệm thu UX thủ công đầy đủ. |
+| Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã chuẩn hóa token/sidebar/form/bảng và nối chi tiết tháng từ forecast đã lưu; HTTP, host mới, menu/lỗi bằng phím và reflow đã kiểm. Còn luồng bàn phím đầy đủ, focus khi cửa sổ hoạt động, screenreader và zoom native. |
 | Đ2 | Chặng 3, bước 3.3 | Nền chặng 3 đã done. Đã tái bố trí kết quả năm, thưởng, phụ thuộc theo số lượng và lịch sử; giữ service hiện có. |
-| Đ3 | Chặng 4, bước 4.1/4.2 | Chưa triển khai; cần chặng 3 xong trước xuất/checklist/backup. |
+| Đ3 | Chặng 4, bước 4.1/4.2 | Đã có báo cáo/checklist dữ liệu và CSV từ bản lưu theo contract riêng; backup/khôi phục chưa triển khai, chặng 4 chưa hoàn tất. |
 | Đ4 | Chặng 5 | Chưa triển khai; chỉ bắt đầu sau chặng 4. |
 | Đ5 | Chặng 6 | Chưa triển khai; chỉ bắt đầu sau chặng 5. |
 | Đ6 | Bước 3.2 và quyền dữ liệu 4.1 | Chưa triển khai; điều kiện trước phục vụ nhiều người qua mạng, không phải chặng sản phẩm 6. |
@@ -668,12 +674,13 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 ### Đợt 1. Bản nhỏ nhất dùng được: nhập, lưu, mở và kiểm tháng
 
 - [x] Tạo tokens.css đúng bộ màu chốt, sidebar/thanh trên/light mode, field tiền, badge, bảng, disclosure, error summary; thử font tiếng Việt và tabular-nums.
-- [x] Danh sách hồ sơ và trang xác nhận xóa, giữ route hiện có.
+- [x] Tách danh sách `/ho-so` khỏi form `/Forecast`; bảng không hiện UUID, trạng thái Thiếu/Đủ dữ liệu và số phiên bản; mỗi màn có một nút chính. Sau xóa trở về danh sách; giữ các URL mở/sửa hồ sơ cũ.
 - [x] Form giai đoạn, nguồn/ghi chú, ngoại lệ và bảng 12 tháng; chỉ một nút lưu chính.
 - [x] Chi tiết tháng gắn hồ sơ forecast qua service chỉ đọc, bước tính/bậc/căn cứ đúng kỳ, xử lý thiếu/0/thưởng, mở editor đúng tháng và lưu chung hồ sơ. Kết quả tính khi mở, chưa lưu lịch sử tháng.
 - [x] Công cụ `/` vẫn tính tháng 2025/2026; dữ liệu mẫu tách khỏi hồ sơ đang dùng.
 - [x] Thử mất thay đổi, xung đột revision, lỗi tiền, chồng giai đoạn, thiếu khác 0 và giữ ngày nhập.
-- [ ] Nghiệm thu UX: luồng tạo/lưu, giai đoạn/ngoại lệ, mở qua host mới, sửa và đọc kết quả đã qua HTTP; ảnh ba kích thước và axe đã qua. Còn hoàn tất kiểm thủ công bàn phím, screenreader và zoom native theo yêu cầu QA, không thay bằng kết quả tự động.
+- [x] Kiểm từng tương tác bằng phím: menu Enter/Space/Tab/Shift+Tab/Escape, liên kết lỗi tới đúng ô, gõ tiền và lưu/mở kết quả tháng; reflow 320–1280px và cỡ chữ 200%. Xem [bằng chứng và giới hạn](docs/reviews/2026-11-28-ui-accessibility.md).
+- [ ] Nghiệm thu UX đầy đủ: luồng tạo/lưu, giai đoạn/ngoại lệ, mở qua host mới, sửa và đọc kết quả đã qua HTTP; ảnh và axe đã qua. Còn luồng chỉ bàn phím từ đầu đến cuối, viền focus không bị che khi cửa sổ có focus, screenreader và zoom native 200%/400%; không thay bằng activeElement hoặc kết quả tự động.
 
 ### Đợt 2. Tổng hợp năm, đầu vào bổ sung và lịch sử
 
@@ -685,8 +692,8 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 
 ### Đợt 3. Báo cáo, checklist, sao lưu và khôi phục
 
-- [ ] Một trang báo cáo/checklist, xuất bảng tham khảo đọc được bằng Excel, không cần PDF đẹp ở đợt này.
-- [ ] Chọn CSV tương thích Excel hoặc XLSX bằng công cụ miễn phí: mặc định CSV cho chi phí thấp; không gọi CSV là bản sao lưu.
+- [x] Một trang báo cáo/checklist dữ liệu, xuất bảng tham khảo đọc được bằng Excel; giữ revision, metadata, trạng thái và kết quả năm đã lưu. Xem [contract](docs/design/forecast-report.md). Checklist không thay điều kiện quyết toán pháp lý.
+- [x] Chọn CSV UTF-8 BOM, quoting/CRLF, số decimal invariant và bảo vệ ô chữ khỏi công thức; không gọi CSV là bản sao lưu.
 - [ ] Trang sao lưu và xem trước khôi phục; kiểm loại/phiên bản, trùng hồ sơ, metadata và lịch sử trước khi ghi.
 - [ ] Bản sao phải được bảo vệ; UI nêu cách mở lại và xử lý mất bí mật khôi phục theo contract đã triển khai, không xuất kèm khóa kho gốc trong gói không được bảo vệ. Chưa có contract an toàn thì chưa bật sao lưu.
 - [ ] Xong khi: báo cáo khớp hồ sơ, giữ nhãn/phần thiếu; backup khôi phục được metadata/lịch sử/phiên bản; dữ liệu hỏng bị từ chối, không ghi đè âm thầm; QA qua.

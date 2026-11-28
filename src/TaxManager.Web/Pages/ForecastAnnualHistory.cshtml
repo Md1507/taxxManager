@@ -6,7 +6,7 @@
 }
 <h1>Lịch sử tính thuế năm</h1>
 <p>Demo dữ liệu giả. Mỗi kết quả giữ bản dữ liệu và căn cứ tại lần tính. Xóa hồ sơ hiện hành vẫn giữ các kết quả này.</p>
-<p>@if (Model.ProfileExists) { <a asp-page="/Forecast" asp-route-id="@Model.Id">Mở hồ sơ</a> } else { <span>Hồ sơ hiện hành đã xóa; bản tính vẫn được giữ.</span> } <a asp-page="/Forecast">Danh sách hồ sơ</a></p>
+<p>@if (Model.ProfileExists) { <a asp-page="/Forecast" asp-route-id="@Model.Id">Mở hồ sơ</a> } else { <span>Hồ sơ hiện hành đã xóa; bản tính vẫn được giữ.</span> } <a asp-page="/ForecastProfiles">Danh sách hồ sơ</a></p>
 @if (Model.History.Count == 0) { <p>Chưa có kết quả năm được lưu cho hồ sơ này.</p> }
 @if (Model.History.Count > 0) {
 <div class="table-scroll" role="region" aria-label="Các lần tính đã lưu" tabindex="0"><table><thead><tr><th scope="col">Lần tính (giờ Việt Nam)</th><th scope="col">Năm / bản dữ liệu</th><th scope="col">Độ phủ thực tế</th><th scope="col">Phiên bản luật</th><th scope="col">Thao tác</th></tr></thead><tbody>

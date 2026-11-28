@@ -1,0 +1,25 @@
+@page "/ho-so"
+@model TaxManager.Web.Pages.ForecastProfilesModel
+@{
+    ViewData["Title"] = "Hồ sơ thuế";
+}
+<div class="page-heading"><div><h1>Hồ sơ thuế</h1><p>Mở hồ sơ đã lưu hoặc tạo hồ sơ năm 2026.</p></div>
+<a class="button primary" asp-page="/Forecast"><partial name="Shared/_Icon" model='@("create")' />Tạo hồ sơ</a></div>
+<partial name="Shared/_Errors" />
+@if (ViewData.ModelState.IsValid) {
+@if (Model.Profiles.Count == 0) {
+<section class="input-panel"><h2>Chưa có hồ sơ đã lưu</h2><p>Chọn Tạo hồ sơ để nhập mức lương đầu tiên cho năm 2026.</p></section>
+} else {
+<div class="table-scroll profiles-list" role="region" aria-label="Hồ sơ đã lưu" tabindex="0">
+<table class="profiles-table"><caption class="visually-hidden">Hồ sơ đã lưu</caption>
+<thead><tr><th scope="col">Hồ sơ</th><th scope="col">Năm</th><th scope="col">Trạng thái</th><th scope="col">Phiên bản</th></tr></thead>
+<tbody>
+@foreach (var profile in Model.Profiles) {
+<tr><th scope="row"><a asp-page="/Forecast" asp-route-id="@profile.Id">Hồ sơ năm 2026</a></th><td>2026</td>
+<td><span class="profile-status @(profile.IsComplete ? "complete" : "incomplete")">@(profile.IsComplete ? "Đủ dữ liệu" : "Thiếu dữ liệu")</span></td>
+<td>@profile.Revision phiên bản</td></tr>
+}
+</tbody></table></div>
+<p class="hint">“Đủ dữ liệu” nghĩa là đã nhập gross, bảo hiểm, người phụ thuộc và khấu trừ cho cả 12 tháng.</p>
+}
+}

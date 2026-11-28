@@ -1,0 +1,7 @@
+@model TaxManager.Web.Reporting.ReportValue
+@if (Model.Amount is { } amount) {
+    <span>@TaxManager.Web.Pages.ForecastModel.FormatAmount(amount) @Model.Unit</span>
+    <partial name="_ForecastStatus" model="Model.Status!.Value" />
+} else {
+    <span class="muted">Chưa nhập</span>
+}

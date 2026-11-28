@@ -4,9 +4,13 @@
         <h2 id="error-title">Kiểm tra thông tin trước khi tiếp tục</h2>
         <ul>
         @foreach (var entry in ViewData.ModelState.Where(e => e.Value?.Errors.Count > 0)) {
+            <li id="error-@Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.CreateSanitizedId(entry.Key, "_")">
             @foreach (var error in entry.Value!.Errors) {
-                <li>@if (entry.Key.Length > 0) { <a href="#@entry.Key.Replace(".", "_").Replace("[", "_").Replace("]", "_")">@error.ErrorMessage</a> } else { @error.ErrorMessage }</li>
+                <div>
+                @if (entry.Key.Length > 0) { <a href="#@Microsoft.AspNetCore.Mvc.Rendering.TagBuilder.CreateSanitizedId(entry.Key, "_")">@error.ErrorMessage</a> } else { @error.ErrorMessage }
+                </div>
             }
+            </li>
         }
         </ul>
     </div>

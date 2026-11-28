@@ -17,7 +17,7 @@ public sealed class ForecastDeleteModel(SyntheticDatabase database) : PageModel
         {
             await using var context = database.Open();
             await new ForecastStore(context).DeleteAsync(Id, Revision);
-            return RedirectToPage("/Forecast");
+            return RedirectToPage("/ForecastProfiles");
         }
         catch (Exception ex) when (ex is DataProtectionException or InvalidOperationException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException)
         {

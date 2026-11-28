@@ -1,10 +1,10 @@
 @model TaxManager.Web.Pages.ForecastModel
 @using TaxManager.Core.Forecasting
 @using TaxManager.Web.Pages
-<section id="bang-thang" aria-labelledby="months-heading">
+<section id="bang-thang" data-navigation-section="du-lieu" aria-labelledby="months-heading">
 <h2 id="months-heading">Xem trước 12 tháng</h2>
 <p>Kiểm tra từng chỉ tiêu trước khi lưu. Dữ liệu nhập riêng cho một tháng luôn được giữ.</p>
-<div class="status-legend" aria-label="Chú giải trạng thái"><partial name="_ForecastStatus" model="ForecastStatus.Actual" /><partial name="_ForecastStatus" model="ForecastStatus.Planned" /><partial name="_ForecastStatus" model="ForecastStatus.Assumed" /></div>
+<div class="status-legend" role="group" aria-label="Chú giải trạng thái"><partial name="_ForecastStatus" model="ForecastStatus.Actual" /><partial name="_ForecastStatus" model="ForecastStatus.Planned" /><partial name="_ForecastStatus" model="ForecastStatus.Assumed" /></div>
 <p class="hint" id="table-hint">Bảng có thể cuộn ngang. Chọn sửa tháng để bổ sung số liệu và nguồn.</p>
 @foreach (var conflict in Model.Preview!.ConflictingMonths) { <p>Tháng @conflict là ngoại lệ và được giữ nguyên.</p> }
 <div class="table-scroll" role="region" aria-label="Dữ liệu 12 tháng" aria-describedby="table-hint" tabindex="0">
@@ -13,26 +13,31 @@
 var insurance = Model.InsurancePreview.GetValueOrDefault(month.Key);
 var dependents = Model.DependentsPreview.GetValueOrDefault(month.Key);
 var withheld = Model.WithheldPreview.GetValueOrDefault(month.Key);
-<tr><th scope="row">Tháng @month.Key</th><td data-label="Lương">@(month.Value is null ? "Chưa nhập" : ForecastModel.FormatAmount(month.Value.Value) + " đ")@if (month.Value is not null) { <partial name="_ForecastStatus" model="month.Value.Status" /> }</td><td class="money">@(insurance is null ? "Chưa nhập" : ForecastModel.FormatAmount(insurance.Value) + " đ")@if (insurance is not null) { <partial name="_ForecastStatus" model="insurance.Status" /> }</td><td class="money">@(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <partial name="_ForecastStatus" model="dependents.Status" /> }</td><td class="money">@(withheld is null ? "Chưa nhập" : ForecastModel.FormatAmount(withheld.Value) + " đ")@if (withheld is not null) { <partial name="_ForecastStatus" model="withheld.Status" /> }</td><td><button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@month.Key" formnovalidate>Sửa tháng @month.Key</button><details><summary>Nguồn và ghi chú tháng @month.Key</summary>
-@foreach (var entry in new[] { ("Lương", month.Value), ("Bảo hiểm", insurance), ("Khấu trừ", withheld) }) {
-<p>@entry.Item1 tháng @month.Key: @(entry.Item2 is null ? "Chưa nhập" : ForecastModel.FormatAmount(entry.Item2.Value) + " đ")@if (entry.Item2 is { } value) { <span>; Nguồn: @value.Source; Ghi chú: @value.Note; Ngày nhập: @ForecastModel.LocalTime(value.EnteredAt) giờ Việt Nam</span> }</p>
-}
-<p>Người phụ thuộc tháng @month.Key: @(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <span>; Nguồn: @dependents.Source; Ghi chú: @dependents.Note; Ngày nhập: @ForecastModel.LocalTime(dependents.EnteredAt) giờ Việt Nam</span> }</p>
-</details>
+<tr><th scope="row">Tháng @month.Key</th><td data-label="Lương">@(month.Value is null ? "Chưa nhập" : ForecastModel.FormatAmount(month.Value.Value) + " đ")@if (month.Value is not null) { <partial name="_ForecastStatus" model="month.Value.Status" /> }</td><td class="money">@(insurance is null ? "Chưa nhập" : ForecastModel.FormatAmount(insurance.Value) + " đ")@if (insurance is not null) { <partial name="_ForecastStatus" model="insurance.Status" /> }</td><td class="money">@(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <partial name="_ForecastStatus" model="dependents.Status" /> }</td><td class="money">@(withheld is null ? "Chưa nhập" : ForecastModel.FormatAmount(withheld.Value) + " đ")@if (withheld is not null) { <partial name="_ForecastStatus" model="withheld.Status" /> }</td><td class="table-actions"><button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@month.Key" formnovalidate>Sửa tháng @month.Key</button>
 @if (Model.ProfileId is not null && Model.SavedInputConfirmed) {
 <a asp-page="/ForecastMonth" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision" asp-route-month="@month.Key">Chi tiết tháng @month.Key từ bản đã lưu</a>
 }
 </td></tr>
 }
 </tbody></table></div>
+<details><summary>Nguồn và ghi chú của bản xem trước</summary>
+@foreach (var month in Model.Preview.Months) {
+var insurance = Model.InsurancePreview.GetValueOrDefault(month.Key);
+var dependents = Model.DependentsPreview.GetValueOrDefault(month.Key);
+var withheld = Model.WithheldPreview.GetValueOrDefault(month.Key);
+<h3>Nguồn và ghi chú tháng @month.Key</h3>
+@foreach (var entry in new[] { ("Lương", month.Value), ("Bảo hiểm", insurance), ("Khấu trừ", withheld) }) {
+<p>@entry.Item1 tháng @month.Key: @(entry.Item2 is null ? "Chưa nhập" : ForecastModel.FormatAmount(entry.Item2.Value) + " đ")@if (entry.Item2 is { } value) { <span>; Nguồn: @value.Source; Ghi chú: @value.Note; Ngày nhập: @ForecastModel.LocalTime(value.EnteredAt) giờ Việt Nam</span> }</p>
+}
+<p>Người phụ thuộc tháng @month.Key: @(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <span>; Nguồn: @dependents.Source; Ghi chú: @dependents.Note; Ngày nhập: @ForecastModel.LocalTime(dependents.EnteredAt) giờ Việt Nam</span> }</p>
+}
 @if (Model.BonusPreview.Count > 0) {
-<details><summary>Thưởng đã nhập (@Model.BonusPreview.Count khoản)</summary>
+<h3>Thưởng đã nhập (@Model.BonusPreview.Count khoản)</h3>
 @foreach (var bonus in Model.BonusPreview) { <p>Thưởng tháng @bonus.Month: @ForecastModel.FormatAmount(bonus.Amount.Value) đ, @(bonus.IncludedInGross ? "đã gồm gross" : "cộng thêm vào gross"); <partial name="_ForecastStatus" model="bonus.Amount.Status" /> Nguồn: @bonus.Amount.Source; Ghi chú: @bonus.Amount.Note; Ngày nhập: @ForecastModel.LocalTime(bonus.Amount.EnteredAt) giờ Việt Nam</p> }
-</details>
 }
 @if (Model.DependentPeriodPreview.Count > 0) {
-<details><summary>Người phụ thuộc theo giai đoạn đã nhập</summary>
+<h3>Người phụ thuộc theo giai đoạn đã nhập</h3>
 @foreach (var period in Model.DependentPeriodPreview) { <p>Người phụ thuộc từ tháng @period.FromMonth đến tháng @period.ToMonth: @period.Count.Value; <partial name="_ForecastStatus" model="period.Count.Status" /> Nguồn: @period.Count.Source; Ghi chú: @period.Count.Note; Ngày nhập: @ForecastModel.LocalTime(period.Count.EnteredAt) giờ Việt Nam</p> }
-</details>
 }
+</details>
 </section>

@@ -1,7 +1,7 @@
 @{
     var page = ViewContext.RouteData.Values["page"]?.ToString();
     var profile = ViewData["ProfileId"]?.ToString();
-    var forecast = profile is null ? "/Forecast" : "/Forecast?id=" + profile;
+    var forecast = page == "/Forecast" ? "" : profile is null ? "/Forecast" : "/Forecast?id=" + profile;
 }
 <!doctype html>
 <html lang="vi">
@@ -20,22 +20,23 @@
 <a class="skip-link" href="#main">Đến nội dung</a>
 <div class="app-shell">
     <aside class="sidebar">
-        <a class="wordmark" href="/Forecast">TaxManager</a>
+        <div class="sidebar-heading"><a class="wordmark" asp-page="/ForecastProfiles"><svg class="brand-mark" viewBox="0 0 28 28" aria-hidden="true" focusable="false"><rect x="1" y="1" width="26" height="26" rx="5" fill="currentColor" /><path d="M7 8h14M14 8v13M7 14h3M7 19h3M18 14h3M18 19h3" /></svg><span>TaxManager</span></a>
+        <button class="navigation-toggle" data-navigation-toggle aria-controls="primary-navigation" aria-expanded="true" hidden>Menu</button></div>
         <p class="sidebar-caption">Thuế thu nhập cá nhân</p>
-        <nav aria-label="Điều hướng chính">
-            <a href="/Forecast" aria-current="@(page == "/Forecast" && profile is null ? "page" : null)">Hồ sơ thuế</a>
-            <a href="@(forecast + "#du-lieu")" aria-current="@((page == "/Forecast" && profile is not null) || page == "/ForecastMonth" ? "page" : null)">Dữ liệu 12 tháng</a>
-            <a href="@(forecast + "#tong-quan")">Tổng quan năm</a>
-            <a href="@(forecast + "#nguoi-phu-thuoc")">Người phụ thuộc</a>
+        <nav id="primary-navigation" aria-label="Điều hướng chính">
+            <a asp-page="/ForecastProfiles" aria-current="@(page == "/ForecastProfiles" ? "page" : null)"><partial name="Shared/_Icon" model='@("profiles")' />Hồ sơ thuế</a>
+            <a href="@(forecast + "#du-lieu")" data-section-link aria-current="@(page == "/Forecast" ? "location" : page == "/ForecastMonth" ? "page" : null)"><partial name="Shared/_Icon" model='@("calendar")' />Dữ liệu 12 tháng</a>
+            <a href="@(forecast + "#nguoi-phu-thuoc")" data-section-link><partial name="Shared/_Icon" model='@("people")' />Người phụ thuộc</a>
+            <a href="@(forecast + "#tong-quan")" data-section-link><partial name="Shared/_Icon" model='@("annual")' />Tổng quan năm</a>
             @if (profile is not null) {
-                <a href="/ForecastAnnualHistory?id=@profile" aria-current="@(page == "/ForecastAnnualHistory" ? "page" : null)">Lịch sử tính</a>
+                <a href="/ForecastAnnualHistory?id=@profile" aria-current="@(page == "/ForecastAnnualHistory" ? "page" : null)"><partial name="Shared/_Icon" model='@("history")' />Lịch sử tính</a>
+                <a asp-page="/ForecastReport" asp-route-id="@profile" aria-current="@(page == "/ForecastReport" ? "page" : null)"><partial name="Shared/_Icon" model='@("report")' />Báo cáo và checklist</a>
             }
-            <a href="/" aria-current="@(page == "/Index" ? "page" : null)">Công cụ tính tháng</a>
+            <a href="/" aria-current="@(page == "/Index" ? "page" : null)"><partial name="Shared/_Icon" model='@("calculator")' />Công cụ tính tháng</a>
         </nav>
-        <p class="local-note">Dữ liệu mẫu trên máy này.<br />Không nhập dữ liệu cá nhân thật.</p>
     </aside>
     <div class="workspace">
-        <header class="topbar"><span>@(ViewData["Context"] ?? "Không gian thuế cá nhân")</span><span class="environment">Demo local</span></header>
+        <header class="topbar"><span class="environment">Demo local (dữ liệu mẫu)</span></header>
         <main id="main" tabindex="-1">@RenderBody()</main>
         <footer>Kết quả chỉ mang tính tham khảo, không thay thế tư vấn thuế chính thức.</footer>
     </div>

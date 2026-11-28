@@ -7,28 +7,20 @@
     var posted = HttpMethods.IsPost(ViewContext.HttpContext.Request.Method);
     var unsaved = posted && !Model.SavedInputConfirmed;
 }
-<div class="page-heading"><div><h1>Hồ sơ thuế năm 2026</h1><p>Cá nhân cư trú, một nơi trả lương. Chỉ dùng dữ liệu mẫu.</p></div><a class="button" href="/Forecast#du-lieu">Tạo hồ sơ</a></div>
-@if (Model.ProfileId is null && !posted) {
-<section aria-labelledby="profiles-heading"><h2 id="profiles-heading">Hồ sơ đã lưu</h2>
-@if (Model.SavedProfiles.Count == 0) { <p class="empty-state">Chưa có hồ sơ đã lưu. Nhập mức lương đầu tiên ở dưới để tạo hồ sơ năm 2026.</p> }
-else {
-<div class="table-scroll" role="region" aria-label="Hồ sơ đã lưu" tabindex="0"><table><thead><tr><th scope="col">Hồ sơ</th><th scope="col">Năm</th><th scope="col">Dữ liệu cần bổ sung</th><th scope="col">Bản lưu</th></tr></thead><tbody>
-@foreach (var profile in Model.SavedProfiles) { <tr><th scope="row"><a asp-page="/Forecast" asp-route-id="@profile.Id">Mở hồ sơ năm 2026</a><div class="history-id">@profile.Id</div></th><td>2026</td><td><details><summary>Xem thông tin cần bổ sung</summary><p>@Model.DescribeMissing(profile)</p></details></td><td>@profile.Revision</td></tr> }
-</tbody></table></div>
-}
-</section>
-}
+<p><a asp-page="/ForecastProfiles">Trở lại hồ sơ</a></p>
+<div class="page-heading"><div><h1>Hồ sơ thuế năm 2026</h1><p>Cá nhân cư trú, một nơi trả lương.</p></div></div>
 <form method="post" asp-page-handler="Preview" id="forecast-form" data-forecast-form autocomplete="off" data-unsaved="@(unsaved ? "true" : "false")">
 <input type="hidden" asp-for="DraftToken" />
 <input type="hidden" asp-for="ProfileId" /><input type="hidden" asp-for="Revision" />
+@* Enter previews even when the visible action bar follows the row-removal buttons. *@
+<button type="submit" hidden tabindex="-1" aria-hidden="true">Xem trước 12 tháng</button>
 <partial name="Shared/_Errors" />
 <div id="du-lieu" class="page-heading"><div><h2>Nhập lương theo giai đoạn</h2>
 <p class="save-state" data-save-state role="status">@(unsaved ? "Bản xem trước chưa lưu. Lưu hồ sơ để giữ thay đổi." : Model.ProfileId is null ? "Hồ sơ mới, chưa lưu." : $"Đã mở bản lưu {Model.Revision}. Xem trước không lưu hồ sơ.")</p></div>
-<div class="actions"><button type="submit">Xem trước 12 tháng</button><button class="primary" type="submit" asp-page-handler="Save">Lưu hồ sơ</button></div></div>
-<p class="hint">Số tiền tự tách hàng nghìn bằng dấu chấm, ví dụ 123.456.789. Dùng dấu phẩy cho phần lẻ: 1.234.567,50. Ô trống là chưa biết; nhập 0 khi xác nhận không phát sinh.</p>
+</div>
 <noscript><p>Để nhập khi tắt JavaScript, dùng số không phân nhóm như 123456789,50.</p></noscript>
 <fieldset class="form-region"><legend class="visually-hidden">Dữ liệu dự báo</legend><fieldset><legend>Giai đoạn lương</legend>
-<div class="form-grid"><div><label asp-for="FromMonth">Từ tháng</label><input asp-for="FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="FromMonth"></span></div><div><label asp-for="ToMonth">Đến tháng</label><input asp-for="ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="ToMonth"></span></div><div><label asp-for="Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Gross" type="text" inputmode="decimal" aria-describedby="salary-terms" /><span class="error" asp-validation-for="Gross"></span></div></div>
+<div class="form-grid salary-period-grid"><div><label asp-for="FromMonth">Từ tháng</label><input asp-for="FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="FromMonth"></span></div><div><label asp-for="ToMonth">Đến tháng</label><input asp-for="ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="ToMonth"></span></div><div><label asp-for="Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Gross" type="text" inputmode="decimal" aria-describedby="salary-terms" /><span class="error" asp-validation-for="Gross"></span></div></div>
 
 
 <partial name="Shared/_SalaryTerms" />
@@ -38,7 +30,7 @@ else {
 <label asp-for="Note">Ghi chú hoặc lý do giả định</label><input asp-for="Note" /><span class="error" asp-validation-for="Note"></span></details></fieldset>
 @for (var i = 0; i < Model.Periods.Count; i++) {
 <fieldset><legend>Giai đoạn thay đổi @(i + 1)</legend>
-<div class="form-grid"><div><label asp-for="Periods[i].FromMonth">Từ tháng</label><input asp-for="Periods[i].FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="Periods[i].FromMonth"></span></div><div><label asp-for="Periods[i].ToMonth">Đến tháng</label><input asp-for="Periods[i].ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="Periods[i].ToMonth"></span></div><div><label asp-for="Periods[i].Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Periods[i].Gross" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Periods[i].Gross"></span></div></div>
+<div class="form-grid salary-period-grid"><div><label asp-for="Periods[i].FromMonth">Từ tháng</label><input asp-for="Periods[i].FromMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="Periods[i].FromMonth"></span></div><div><label asp-for="Periods[i].ToMonth">Đến tháng</label><input asp-for="Periods[i].ToMonth" type="number" min="1" max="12" /><span class="error" asp-validation-for="Periods[i].ToMonth"></span></div><div><label asp-for="Periods[i].Gross">Lương gross mỗi tháng (đồng)</label><input asp-for="Periods[i].Gross" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Periods[i].Gross"></span></div></div>
 
 
 <label asp-for="Periods[i].Status">Trạng thái</label><select asp-for="Periods[i].Status"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState[$"Periods[{i}].Note"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin lương giai đoạn thay đổi</summary>
@@ -46,7 +38,7 @@ else {
 <label asp-for="Periods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="Periods[@i].Note" id="Periods_@(i)__Note" rows="2">@(ViewData.ModelState[$"Periods[{i}].Note"]?.AttemptedValue ?? Model.Periods[i].Note)</textarea><span class="error" asp-validation-for="Periods[i].Note"></span></details>
 <button type="submit" asp-page-handler="RemovePeriod" name="index" value="@i" formnovalidate>Bỏ giai đoạn @(i + 1)</button></fieldset> }
 <button type="submit" asp-page-handler="AddPeriod" formnovalidate>Thêm giai đoạn thay đổi</button>
-<details open="@(ViewData.ModelState.Keys.Any(k => k.StartsWith("Bonuses[") && ViewData.ModelState[k]?.Errors.Count > 0) ? "open" : null)"><summary>Thưởng từ nơi trả lương hiện tại</summary>
+<section class="input-panel" aria-labelledby="bonuses-heading"><h2 id="bonuses-heading">Thưởng từ nơi trả lương hiện tại</h2>
 <p>Nhập thưởng tiền thực tế hoặc dự kiến. Chọn đã gồm gross nếu khoản này đã nằm trong lương gross của tháng nhận.</p>
 @for (var i = 0; i < Model.Bonuses.Count; i++) {
 <fieldset><legend>Khoản thưởng @(i + 1)</legend>
@@ -58,21 +50,8 @@ else {
 <label asp-for="Bonuses[i].Note">Ghi chú</label><textarea name="Bonuses[@i].Note" id="Bonuses_@(i)__Note" rows="2">@(ViewData.ModelState[$"Bonuses[{i}].Note"]?.AttemptedValue ?? Model.Bonuses[i].Note)</textarea>
 </fieldset> }
 <button type="submit" asp-page-handler="AddBonus" formnovalidate>Thêm khoản thưởng</button>
-</details>
-<details id="nguoi-phu-thuoc" open="@(ViewData.ModelState.Keys.Any(k => k.StartsWith("DependentPeriods[") && ViewData.ModelState[k]?.Errors.Count > 0) ? "open" : null)"><summary>Người phụ thuộc theo giai đoạn</summary>
-<p>Nhập số người theo khoảng tháng. Dữ liệu riêng của từng tháng được giữ ưu tiên; thông tin này không xác nhận đăng ký.</p>
-@for (var i = 0; i < Model.DependentPeriods.Count; i++) {
-<fieldset><legend>Giai đoạn người phụ thuộc @(i + 1)</legend>
-<label asp-for="DependentPeriods[i].FromMonth">Từ tháng</label><input asp-for="DependentPeriods[i].FromMonth" type="number" min="1" max="12" />
-<label asp-for="DependentPeriods[i].ToMonth">Đến tháng</label><input asp-for="DependentPeriods[i].ToMonth" type="number" min="1" max="12" />
-<label asp-for="DependentPeriods[i].Count">Số người</label><input asp-for="DependentPeriods[i].Count" type="number" min="0" /><span class="error" asp-validation-for="DependentPeriods[i].Count"></span>
-<label asp-for="DependentPeriods[i].Status">Trạng thái</label><select asp-for="DependentPeriods[i].Status"><option value="Actual">Thực tế</option><option value="Planned">Dự kiến</option><option value="Assumed">Giả định</option></select>
-<label asp-for="DependentPeriods[i].Source">Nguồn</label><input asp-for="DependentPeriods[i].Source" />
-<label asp-for="DependentPeriods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="DependentPeriods[@i].Note" id="DependentPeriods_@(i)__Note" rows="2">@(ViewData.ModelState[$"DependentPeriods[{i}].Note"]?.AttemptedValue ?? Model.DependentPeriods[i].Note)</textarea>
-</fieldset> }
-<button type="submit" asp-page-handler="AddDependentPeriod" formnovalidate>Thêm giai đoạn người phụ thuộc</button>
-</details>
-<details id="sua-thang" class="month-editor" open="@(Model.SelectedMonth > 0 ? "open" : null)"><summary>Dữ liệu riêng theo tháng</summary><p>Chọn tháng cần nhập hoặc chỉnh; không cần nhập nếu chưa có dữ liệu riêng.</p>
+</section>
+<section id="sua-thang" data-navigation-section="du-lieu" class="month-editor input-panel" aria-labelledby="month-editor-heading"><h2 id="month-editor-heading">Dữ liệu riêng theo tháng</h2><p>Chọn tháng cần nhập hoặc chỉnh; không cần nhập nếu chưa có dữ liệu riêng.</p>
 <label asp-for="SelectedMonth">Chọn tháng</label><select asp-for="SelectedMonth"><option value="0">Chọn tháng</option>@for (var month = 1; month <= 12; month++) { <option value="@month">Tháng @month</option> }</select>
 <input type="hidden" name="EditingMonth" value="@Model.SelectedMonth" />
 <button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" formnovalidate>Sửa tháng đã chọn</button>
@@ -81,21 +60,26 @@ else {
 @for (var i = 0; i < 12; i++) {
 <input type="hidden" asp-for="Exceptions[i].Month" />
 @if (Model.SelectedMonth == i + 1) {
-<fieldset><legend>Chỉnh tháng @(i + 1)</legend><p class="hint">Sửa dữ liệu rồi chọn Lưu hồ sơ ở đầu form để lưu tháng này cùng các thay đổi còn lại. Ô gross trống dùng lại giai đoạn lương.</p>
+<fieldset><legend>Chỉnh tháng @(i + 1)</legend><p class="hint">Sửa dữ liệu rồi chọn Lưu hồ sơ ở thanh thao tác cuối form để lưu tháng này cùng các thay đổi còn lại. Ô gross trống dùng lại giai đoạn lương.</p>
 <label asp-for="Exceptions[i].Gross">Gross ngoại lệ (đồng)</label><input asp-for="Exceptions[i].Gross" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Exceptions[i].Gross"></span>
-<label asp-for="Exceptions[i].Status">Trạng thái</label><select asp-for="Exceptions[i].Status"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState[$"Exceptions[{i}].Gross"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin gross ngoại lệ</summary>
-<label asp-for="Exceptions[i].Source">Nguồn</label><input asp-for="Exceptions[i].Source" />
-<label asp-for="Exceptions[i].Note">Ghi chú hoặc lý do giả định</label><input asp-for="Exceptions[i].Note" /></details>
+<label asp-for="Exceptions[i].Status">Trạng thái</label><select asp-for="Exceptions[i].Status"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select>
 <label asp-for="Exceptions[i].Insurance">Bảo hiểm bắt buộc (đồng)</label><input asp-for="Exceptions[i].Insurance" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Exceptions[i].Insurance"></span>
-<label asp-for="Exceptions[i].InsuranceStatus">Trạng thái bảo hiểm</label><select asp-for="Exceptions[i].InsuranceStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState[$"Exceptions[{i}].Insurance"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin bảo hiểm</summary>
-<label asp-for="Exceptions[i].InsuranceSource">Nguồn bảo hiểm</label><input asp-for="Exceptions[i].InsuranceSource" />
-<label asp-for="Exceptions[i].InsuranceNote">Ghi chú hoặc lý do giả định bảo hiểm</label><input asp-for="Exceptions[i].InsuranceNote" /></details>
+<label asp-for="Exceptions[i].InsuranceStatus">Trạng thái bảo hiểm</label><select asp-for="Exceptions[i].InsuranceStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select>
 <label asp-for="Exceptions[i].Dependents">Số người phụ thuộc</label><input asp-for="Exceptions[i].Dependents" type="number" min="0" /><span class="error" asp-validation-for="Exceptions[i].Dependents"></span>
-<label asp-for="Exceptions[i].DependentsStatus">Trạng thái người phụ thuộc</label><select asp-for="Exceptions[i].DependentsStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState[$"Exceptions[{i}].Dependents"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin người phụ thuộc</summary>
-<label asp-for="Exceptions[i].DependentsSource">Nguồn người phụ thuộc</label><input asp-for="Exceptions[i].DependentsSource" />
-<label asp-for="Exceptions[i].DependentsNote">Ghi chú hoặc lý do giả định người phụ thuộc</label><input asp-for="Exceptions[i].DependentsNote" /></details>
+<label asp-for="Exceptions[i].DependentsStatus">Trạng thái người phụ thuộc</label><select asp-for="Exceptions[i].DependentsStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select>
 <label asp-for="Exceptions[i].Withheld">Thuế đã hoặc dự kiến khấu trừ (đồng)</label><input asp-for="Exceptions[i].Withheld" type="text" inputmode="decimal" /><span class="error" asp-validation-for="Exceptions[i].Withheld"></span>
-<label asp-for="Exceptions[i].WithheldStatus">Trạng thái khấu trừ</label><select asp-for="Exceptions[i].WithheldStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select><details open="@(ViewData.ModelState[$"Exceptions[{i}].Withheld"]?.Errors.Count > 0 ? "open" : null)"><summary>Thông tin khấu trừ</summary>
+<label asp-for="Exceptions[i].WithheldStatus">Trạng thái khấu trừ</label><select asp-for="Exceptions[i].WithheldStatus"><option value="Planned">Dự kiến</option><option value="Actual">Thực tế</option><option value="Assumed">Giả định</option></select>
+<details open="@(ViewData.ModelState.Keys.Any(k => k.StartsWith($"Exceptions[{i}].") && ViewData.ModelState[k]?.Errors.Count > 0) ? "open" : null)"><summary>Nguồn và ghi chú tháng @(i + 1)</summary>
+<h3>Lương gross</h3>
+<label asp-for="Exceptions[i].Source">Nguồn</label><input asp-for="Exceptions[i].Source" />
+<label asp-for="Exceptions[i].Note">Ghi chú hoặc lý do giả định</label><input asp-for="Exceptions[i].Note" />
+<h3>Bảo hiểm</h3>
+<label asp-for="Exceptions[i].InsuranceSource">Nguồn bảo hiểm</label><input asp-for="Exceptions[i].InsuranceSource" />
+<label asp-for="Exceptions[i].InsuranceNote">Ghi chú hoặc lý do giả định bảo hiểm</label><input asp-for="Exceptions[i].InsuranceNote" />
+<h3>Người phụ thuộc</h3>
+<label asp-for="Exceptions[i].DependentsSource">Nguồn người phụ thuộc</label><input asp-for="Exceptions[i].DependentsSource" />
+<label asp-for="Exceptions[i].DependentsNote">Ghi chú hoặc lý do giả định người phụ thuộc</label><input asp-for="Exceptions[i].DependentsNote" />
+<h3>Khấu trừ</h3>
 <label asp-for="Exceptions[i].WithheldSource">Nguồn khấu trừ</label><input asp-for="Exceptions[i].WithheldSource" />
 <label asp-for="Exceptions[i].WithheldNote">Ghi chú hoặc lý do giả định khấu trừ</label><input asp-for="Exceptions[i].WithheldNote" /></details>
 <button type="submit" asp-page-handler="ConfirmClearMonth" formnovalidate>Xóa dữ liệu tháng này</button>
@@ -107,14 +91,31 @@ else {
 <input type="hidden" asp-for="Exceptions[i].Dependents" /><input type="hidden" asp-for="Exceptions[i].DependentsStatus" /><input type="hidden" asp-for="Exceptions[i].DependentsSource" /><input type="hidden" asp-for="Exceptions[i].DependentsNote" />
 <input type="hidden" asp-for="Exceptions[i].Withheld" data-money /><input type="hidden" asp-for="Exceptions[i].WithheldStatus" /><input type="hidden" asp-for="Exceptions[i].WithheldSource" /><input type="hidden" asp-for="Exceptions[i].WithheldNote" />
 } }
-</details>
+</section>
 </fieldset>
 @if (Model.Preview is not null) { <partial name="Shared/_ForecastMonths" model="Model" /> }
+<section id="nguoi-phu-thuoc" class="input-panel" aria-labelledby="dependents-heading"><h2 id="dependents-heading">Người phụ thuộc theo giai đoạn</h2>
+<p>Nhập số người theo khoảng tháng. Dữ liệu riêng của từng tháng được giữ ưu tiên; thông tin này không xác nhận đăng ký.</p>
+@for (var i = 0; i < Model.DependentPeriods.Count; i++) {
+<fieldset><legend>Giai đoạn người phụ thuộc @(i + 1)</legend>
+<label asp-for="DependentPeriods[i].FromMonth">Từ tháng</label><input asp-for="DependentPeriods[i].FromMonth" type="number" min="1" max="12" />
+<label asp-for="DependentPeriods[i].ToMonth">Đến tháng</label><input asp-for="DependentPeriods[i].ToMonth" type="number" min="1" max="12" />
+<label asp-for="DependentPeriods[i].Count">Số người</label><input asp-for="DependentPeriods[i].Count" type="number" min="0" /><span class="error" asp-validation-for="DependentPeriods[i].Count"></span>
+<label asp-for="DependentPeriods[i].Status">Trạng thái</label><select asp-for="DependentPeriods[i].Status"><option value="Actual">Thực tế</option><option value="Planned">Dự kiến</option><option value="Assumed">Giả định</option></select>
+<label asp-for="DependentPeriods[i].Source">Nguồn</label><input asp-for="DependentPeriods[i].Source" />
+<label asp-for="DependentPeriods[i].Note">Ghi chú hoặc lý do giả định</label><textarea name="DependentPeriods[@i].Note" id="DependentPeriods_@(i)__Note" rows="2">@(ViewData.ModelState[$"DependentPeriods[{i}].Note"]?.AttemptedValue ?? Model.DependentPeriods[i].Note)</textarea>
+</fieldset> }
+<button type="submit" asp-page-handler="AddDependentPeriod" formnovalidate>Thêm giai đoạn người phụ thuộc</button>
+</section>
 <section id="tong-quan"><div class="page-heading"><div><h2>Tổng quan năm 2026</h2><p>Tính từ bản dữ liệu đã lưu. Mỗi lần tính tạo một kết quả riêng.</p></div>
 @if (Model.ProfileId is not null) { <button type="submit" asp-page-handler="Calculate">Tính thuế năm</button> }
 </div>
 @if (Model.ProfileId is null) { <p>Lưu hồ sơ trước khi tính thuế năm. Bạn vẫn có thể lưu khi chưa đủ dữ liệu.</p> }
 </section>
+<div class="form-actions" role="group" aria-label="Thao tác hồ sơ">
+<span class="hint">Xem trước không lưu thay đổi.</span>
+<div class="actions"><a asp-page="/ForecastProfiles">Trở lại danh sách</a><button type="submit"><partial name="Shared/_Icon" model='@("preview")' />Xem trước 12 tháng</button><button class="primary" type="submit" asp-page-handler="Save"><partial name="Shared/_Icon" model='@("save")' />Lưu hồ sơ</button></div>
+</div>
 </form>
 @if (Model.Completeness is { MissingObligation.Count: > 0 } missing)
 {

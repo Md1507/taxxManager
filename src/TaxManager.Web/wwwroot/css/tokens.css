@@ -1,18 +1,18 @@
 :root {
   --brand: #395B40;
   --brand-tint: #E7FFEC;
-  --bg: #FAFAFA;
+  --bg: #F3F6F3;
   --surface: #FFFFFF;
   --text: #1A1F1B;
-  --text-muted: #5F5F5F;
-  --border-strong: #767676;
+  --text-muted: #526057;
+  --border-strong: #76867B;
   --success: #246647;
   --warning: #895600;
   --error: #B02A37;
   --info: #365C85;
   --on-brand: var(--surface);
   --focus: var(--brand);
-  --divider: var(--border-strong);
+  --divider: #DDE5DE;
   --backdrop: var(--text);
   --backdrop-opacity: .24;
   --font-family: "Inter", system-ui, sans-serif;
@@ -42,7 +42,11 @@
   --focus-width: 2px;
   --focus-offset: var(--space-1);
   --shadow: none;
-  --content-max: 75rem;
+  --content-max: 68.75rem;
+  --month-input-width: 6rem;
+  --month-field-width: 7rem;
+  --profiles-table-min: 32rem;
+  --actionbar-clearance: 10rem;
   --sidebar-width: 14rem;
   --prose-max: 72ch;
   --breakpoint-tablet: 48rem;
@@ -53,6 +57,7 @@
   --target-min: 1.5rem;
   --target-touch: 2.75rem;
   --icon-size: 1rem;
+  --brand-mark-size: 1.75rem;
   --row-min: 3rem;
   --table-max-height: 28rem;
   --scroll-offset: var(--space-12);

@@ -84,7 +84,7 @@ public sealed class ForecastHttpTests
         }
         await using var second = await DemoHost.StartAsync(syntheticRoot: root);
         using var reopened = new HttpClient { BaseAddress = second.Address };
-        var list = await reopened.GetStringAsync("/Forecast");
+        var list = await reopened.GetStringAsync("/ho-so");
         var link = Regex.Match(list, "href=\"([^\"]*Forecast\\?id=[^\"]+)\"").Groups[1].Value;
         Assert.NotEmpty(link);
         var form = await reopened.GetStringAsync(WebUtility.HtmlDecode(link));

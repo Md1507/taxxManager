@@ -52,7 +52,6 @@ public sealed class ForecastModel : PageModel
     [BindProperty] public string? DraftToken { get; set; }
     [BindProperty] public Guid? ProfileId { get; set; }
     [BindProperty] public int Revision { get; set; }
-    public IReadOnlyList<ForecastDocument> SavedProfiles { get; private set; } = [];
     public AnnualCalculationSnapshot? AnnualResult { get; private set; }
     public ForecastCompleteness? Completeness { get; private set; }
     public IReadOnlyList<AnnualCalculationSnapshot> AnnualHistory { get; private set; } = [];
@@ -134,7 +133,8 @@ public sealed class ForecastModel : PageModel
         {
             await using var context = database.Open();
             var store = new ForecastStore(context);
-            SavedProfiles = await store.ListAsync();
+            // Confirm the existing store is readable, including when starting a new profile.
+            await store.ListAsync();
             if (id is null) return;
             var document = await store.ReadAsync(id.Value);
             if (document is null) { ModelState.AddModelError(string.Empty, "Không tìm thấy hồ sơ này."); return; }
@@ -219,24 +219,19 @@ public sealed class ForecastModel : PageModel
     public static string LocalTime(DateTimeOffset value) => value.ToOffset(TimeSpan.FromHours(7))
         .ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("vi-VN"));
 
-    public string DescribeMissing(ForecastDocument document)
+    public static bool HasCompleteInputs(ForecastDocument document)
     {
         var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
-        var missing = new List<string>();
         foreach (var month in Enumerable.Range(1, 12))
         {
             var entry = draft.Exceptions.FirstOrDefault(e => e.Month == month);
             var gross = entry?.Gross ?? draft.Periods.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Gross
                 ?? (draft.FromMonth <= month && draft.ToMonth >= month ? draft.Gross : null);
             var dependents = entry?.Dependents ?? draft.DependentPeriods?.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Count;
-            var fields = new List<string>();
-            if (gross is null) fields.Add("gross");
-            if (entry?.Insurance is null) fields.Add("bảo hiểm");
-            if (dependents is null) fields.Add("người phụ thuộc");
-            if (entry?.Withheld is null) fields.Add("khấu trừ");
-            if (fields.Count > 0) missing.Add($"Tháng {month}: {string.Join(", ", fields)}");
+            if (gross is null || entry?.Insurance is null || dependents is null || entry?.Withheld is null)
+                return false;
         }
-        return missing.Count == 0 ? "Đã nhập đủ bốn chỉ tiêu cho 12 tháng" : string.Join("; ", missing);
+        return true;
     }
 
     public bool HasMonthData(int index)
