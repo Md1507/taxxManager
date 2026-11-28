@@ -1,0 +1,36 @@
+{
+  "scanned": "2026-11-29",
+  "mode": "audit-and-redesign-plan",
+  "implementation": false,
+  "scope": "app",
+  "genre": "modern-minimal",
+  "theme": "project green (by request)",
+  "baselineCommit": "4dd95fe",
+  "findings": {
+    "palette": "12 literal color tokens; src/TaxManager.Web/wwwroot/css/tokens.css:2",
+    "font": "Self-hosted Inter; tokens.css:18; site.css:4",
+    "spacing": "0/4/8/12/16/24/32/48 px; tokens.css:30",
+    "layout": "224px sidebar, content cap 1100px; tokens.css:45; Pages/Shared/_Layout.cshtml:21",
+    "wiring": "Razor Pages forms, local fragment navigation, vi-VN money JS; Forecast.cshtml:12; workspace.js:65",
+    "baseline": "17 page templates at baseline; Accounts/Delete is concurrent work outside the published baseline",
+    "limitations": "Account screenshots are HTML render snapshots; RestorePreview with no handle returned HTTP 410; source files and shared CSS changed concurrently during audit"
+  },
+  "preserve": [
+    "existing palette and Inter",
+    "Vietnamese voice, consent text, warnings and result limits",
+    "routes, handlers, field names, IDs and script hooks",
+    "nullable money, per-field statuses and provenance",
+    "saved snapshots, revisions, history and delete semantics",
+    "existing sidebar shell and destination functions"
+  ],
+  "propose": [
+    "group application navigation separately from profile context",
+    "move month preview ahead of long bonus and month editing forms",
+    "use normal-flow form actions to avoid mobile obstruction",
+    "show verification limitations outside collapsed details",
+    "use consistent figure, coverage and provenance presentation"
+  ],
+  "rawLint": { "fails": 9, "reflex": 4 },
+  "lintInterpretation": "Raw findings contain repeated labels and false positives; see plan section 9. No after or pass claimed.",
+  "plan": "docs/design/2026-11-29-ui-ux-redesign-plan.md"
+}

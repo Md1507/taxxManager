@@ -37,7 +37,8 @@ public sealed class DemoHost : IAsyncDisposable
         ServerCertificateCustomValidationCallback = (_, certificate, _, _) => certificate?.Thumbprint == Certificate.Value.Thumbprint
     }) { BaseAddress = Address };
 
-    public static async Task<DemoHost> StartAsync(ISalaryCalculator? calculator = null, TimeProvider? clock = null, string? syntheticRoot = null, bool accounts = false)
+    public static async Task<DemoHost> StartAsync(ISalaryCalculator? calculator = null, TimeProvider? clock = null, string? syntheticRoot = null, bool accounts = false,
+        string[]? extraArgs = null, Action<IServiceCollection>? configure = null)
     {
         var directory = new DirectoryInfo(Path.GetDirectoryName(SourcePath())!);
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "TaxManager.sln"))) directory = directory.Parent;
@@ -45,6 +46,7 @@ public sealed class DemoHost : IAsyncDisposable
         var args = new List<string> { "--SyntheticDemo=true" };
         if (syntheticRoot is not null) args.Add("--SyntheticStore=" + syntheticRoot);
         if (accounts) args.Add("--SyntheticAccounts=true");
+        if (extraArgs is not null) args.AddRange(extraArgs);
         var app = DemoApplication.Build(args.ToArray(), "Development", 0, webRoot,
             services =>
             {
@@ -52,6 +54,7 @@ public sealed class DemoHost : IAsyncDisposable
                 if (clock is not null) services.Replace(ServiceDescriptor.Singleton(clock));
                 if (accounts) services.Configure<KestrelServerOptions>(options =>
                     options.ConfigureHttpsDefaults(https => https.ServerCertificate = Certificate.Value));
+                configure?.Invoke(services);
             });
         await app.StartAsync();
         var address = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();

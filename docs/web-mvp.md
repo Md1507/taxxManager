@@ -62,6 +62,10 @@ trên loopback trong môi trường Development với opt-in trên; không tri�
 
 Đ6a có chế độ thử tài khoản riêng: thêm `--SyntheticAccounts=true` cùng `--SyntheticDemo=true`. App chỉ lắng nghe HTTPS loopback, mặc định `https://localhost:5088`, cần chứng chỉ development hợp lệ và được trình duyệt tin cậy. Agent không tự thay trust store. Mở `/tai-khoan/dang-ky`, tạo tên đăng nhập/mật khẩu thử rồi đăng nhập. Kho mỗi tài khoản bắt đầu trống; không tự nhận hồ sơ demo cũ. Để mở lại tài khoản ở lần chạy sau, giữ nguyên root đã in cùng `--SyntheticStore`, thư mục `accounts` và các kho/khóa riêng.
 
+Đ6g thêm Google opt-in: Google mới tạo tài khoản không mật khẩu sau khi xác nhận dữ liệu thử; Google đã biết mở cùng kho. Tài khoản local liên kết Google từ trang tài khoản, không hỏi lại mật khẩu. Google-only xác nhận xuất/xóa bằng Google; không cho gỡ credential duy nhất. Chỉ có nút khi Google được bật; cần OAuth Web client và callback `/signin-google` đúng host/port HTTPS. Hướng dẫn giữ secret ngoài repository và giới hạn tại `docs/design/account-sign-in-options.md`. Email đặt lại mật khẩu được bổ sung ở Đ6h dưới đây; passkey chưa triển khai.
+
+Đ6h (29/11): đã có quản lý/xác minh email và đặt lại mật khẩu qua liên kết 30 phút dùng một lần, thu hồi phiên cũ; email cũ giữ tới khi xác minh mới. Thêm/đổi/gỡ cần mật khẩu hoặc Google đúng chủ/mục đích; Google-only có thể tạo mật khẩu riêng qua email đã xác minh. Gửi thư opt-in qua Resend, cần sender/key/origin HTTPS loopback; mặc định tắt, kiểm chứng dùng sender giả. Giữ xanh/Inter, một primary mỗi trạng thái, kiểm mobile/desktop. Thông báo dữ liệu thử v5, export không có token/nonce. Contract/cấu hình `docs/design/account-sign-in-options.md`, kiểm chứng `docs/reviews/2026-11-29-email-recovery.md`. Liên kết mất hiệu lực sau restart do key ring development ephemeral; dữ liệu vẫn giữ. Passkey/mã dự phòng là bước tiếp theo; chưa nghiệm thu email thật hoặc vận hành qua mạng.
+
 **Khi bàn giao bản thử toàn bộ tính năng, dùng chế độ tài khoản này.** Sau phần chuẩn bị môi trường ở trên, chạy:
 
 ```powershell

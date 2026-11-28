@@ -10,8 +10,8 @@ public sealed record DataUseAcceptance(string Version, DateTimeOffset AcceptedAt
 /// <summary>Read durable acknowledgements, never the copy embedded in a login cookie.</summary>
 public sealed class LocalDataUse(UserManager<LocalUser> users, TimeProvider clock)
 {
-    public const string Version = "local-demo-2026-11-28-v2";
-    public const string DisplayVersion = "28/11/2026";
+    public const string Version = "local-demo-2026-11-29-v5";
+    public const string DisplayVersion = "29/11/2026";
     public const string ClaimType = "taxmanager.local-data-use";
 
     public async Task<DataUseAcceptance?> ReadAsync(ClaimsPrincipal principal)

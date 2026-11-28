@@ -12,6 +12,12 @@ Nội dung phiên bản đầu `local-demo-2026-11-28`: chỉ nhập dữ liệu
 
 ## Contract
 
+Đ6d dùng phiên bản `local-demo-2026-11-29-v3`: bổ sung xóa tài khoản, kho gốc và các kho khôi phục/preview phiên chạy còn quản lý; nêu riêng tệp đã tải, bản sao ngoài ứng dụng và kho khôi phục từ phiên trước không còn theo dõi. Giữ claim v1/v2, yêu cầu xác nhận phiên bản mới trước route dữ liệu. Xuất và xóa tài khoản vẫn mở cho chủ chưa xác nhận; không buộc đồng ý mới thực hiện quyền xóa.
+
+Đ6g dùng phiên bản `local-demo-2026-11-29-v4`: bổ sung mã định danh Google khi chủ động liên kết để đăng nhập; không lấy email/profile hoặc lưu access/refresh token. Giữ mọi claim cũ và yêu cầu xác nhận mới trước route dữ liệu. Liên kết Google có thông báo riêng, không hỏi lại mật khẩu local; không suy đồng ý gửi email khôi phục. Xuất và xóa vẫn mở khi chưa xác nhận phiên bản mới.
+
+Đ6h dùng phiên bản `local-demo-2026-11-29-v5`: nêu mật khẩu riêng nếu có, email khôi phục tùy chọn được lưu cho tài khoản và chuyển tới dịch vụ gửi thư để xác minh/khôi phục; chỉ email đã xác minh mới dùng reset. Không lấy email từ Google hoặc bật gửi thư chỉ từ claim đồng ý. Giữ claim cũ; route tài khoản, xuất/xóa và khôi phục vẫn mở, route dữ liệu yêu cầu xác nhận phiên bản mới.
+
 - Ghi phiên bản và thời gian UTC từ server trong claim riêng của Identity (`taxmanager.local-data-use`); dùng bảng claims hiện có, không sửa schema thuế/registry hoặc migration cũ. Chỉ dùng UserManager cho thao tác ghi Identity.
 - Đăng ký yêu cầu checkbox ở server. Tạo tài khoản và claim trong cùng transaction registry; thất bại không để tài khoản được tạo thiếu xác nhận. Kho được provision theo cơ chế Đ6a; commit không rõ kết quả thì giữ kho, không xóa mạo hiểm.
 - Tài khoản cũ phải xác nhận trước khi truy cập route dữ liệu. Mỗi request kiểm claim trong registry, không tin riêng cookie hoặc trường phiên bản/thời gian/userId do browser gửi. Claim lỗi/phiên bản cũ không mở quyền; không tự sửa hoặc suy đồng ý.

@@ -1,0 +1,13 @@
+@page "/tai-khoan/xac-minh-email"
+@model TaxManager.Web.Pages.Accounts.ConfirmEmailModel
+@{ ViewData["Title"] = "Xác minh email"; }
+<div class="page-heading"><div><h1>Xác minh email</h1></div></div>
+@if (Model.Ready) {
+<form method="post" class="input-panel">
+    <p>Xác nhận dùng địa chỉ đã nhận thư làm email khôi phục. Các phiên đăng nhập cũ sẽ kết thúc.</p>
+    <input type="hidden" asp-for="UserId" /><input type="hidden" asp-for="RequestId" /><input type="hidden" asp-for="Code" />
+    <div class="actions"><button type="submit" class="primary">Xác minh email</button><a class="button" asp-page="/Accounts/Login">Trở lại đăng nhập</a></div>
+</form>
+} else {
+<div class="input-panel"><p role="status">Liên kết không còn hợp lệ hoặc không thuộc tài khoản đang mở. Đăng nhập vào đúng tài khoản để gửi lại email xác minh.</p><div class="actions"><a class="button primary" asp-page="/Accounts/Email">Quản lý email khôi phục</a></div></div>
+}

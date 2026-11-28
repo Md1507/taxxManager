@@ -265,6 +265,9 @@ td .badge{display:flex;width:max-content;margin-top:var(--space-2);margin-left:a
 .account-confirmed{display:flex;align-items:baseline;gap:var(--space-2);color:var(--success)}
 .account-confirmed .ui-icon{align-self:flex-start;margin-top:var(--space-1)}
 .account-limit{margin-top:var(--space-6);color:var(--text-muted)}
+.account-deletion h2{font-size:var(--font-lg)}
+.account-delete-warning{display:flex;align-items:flex-start;gap:var(--space-3);margin-block:var(--space-6)}
+.account-delete-warning>.ui-icon{color:var(--warning);margin-top:var(--space-1)}
 .account-session{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
 .account-session h2{margin-bottom:var(--space-2)}
 .account-session p{margin:0}

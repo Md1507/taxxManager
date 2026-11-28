@@ -1,0 +1,314 @@
+[
+  {
+    "url": "/email-manage.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-manage.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-manage-error.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-manage-error.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-pending.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-pending.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-confirmed.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-confirmed.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-confirm.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-confirm.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-confirm-invalid.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-confirm-invalid.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-account.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-account.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-login.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-login.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/email-forgot.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-forgot.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-forgot-error.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-forgot-error.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-sent.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-sent.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-reset.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/email-reset.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/email-reset-error.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/email-reset-error.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/email-reset-invalid.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/email-reset-invalid.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  }
+]

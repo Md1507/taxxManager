@@ -1,0 +1,134 @@
+{
+  "summary": {
+    "fails": 9,
+    "reflex": 4,
+    "warns": 0,
+    "waived": 0,
+    "rejected": 0,
+    "answered": 0,
+    "dismissed": 0,
+    "notes": 0,
+    "files": 2,
+    "render": "ran",
+    "before": "before: recorded 14 links, 240 fields, 0 handlers, 0 test hooks, 0 script hooks and 3 rendered page(s) in .hallmark\\before.json; --kept checks a redesign against it"
+  },
+  "findings": [
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/",
+      "line": 1,
+      "evidence": "[1280px] control \"Công cụ tính tháng\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/",
+      "line": 1,
+      "evidence": "[1280px] control \"Sao lưu và khôi phục\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/Forecast",
+      "line": 1,
+      "evidence": "[320px] control \"Thêm giai đoạn người phụ thuộc\" wraps to 2 lines (button)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/Forecast",
+      "line": 1,
+      "evidence": "[1280px] control \"Công cụ tính tháng\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/Forecast",
+      "line": 1,
+      "evidence": "[1280px] control \"Sao lưu và khôi phục\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/ho-so",
+      "line": 1,
+      "evidence": "[1280px] control \"Công cụ tính tháng\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "49a",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/ho-so",
+      "line": 1,
+      "evidence": "[1280px] control \"Sao lưu và khôi phục\" wraps to 2 lines (a)",
+      "fix": "Shorten the label or set nowrap"
+    },
+    {
+      "gate": "56",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "http://127.0.0.1:5088/ho-so",
+      "line": 1,
+      "evidence": "[1280px] two sticky top:0 elements: aside.sidebar + th",
+      "fix": "Offset the second sticky by banner height"
+    },
+    {
+      "gate": "56",
+      "grade": "FAIL",
+      "tier": "floor",
+      "file": "src\\TaxManager.Web\\wwwroot\\site.css",
+      "line": 117,
+      "evidence": "two sticky top:0 elements: .sidebar + thead th",
+      "fix": "Offset the second sticky by banner height"
+    },
+    {
+      "gate": "37",
+      "grade": "REFLEX",
+      "tier": "reflex",
+      "file": "src\\TaxManager.Web\\wwwroot\\css\\tokens.css",
+      "line": 21,
+      "evidence": "10 font families: inter, .8125rem, .875rem, 1rem, 1.25rem, 1.5rem, 2rem, …",
+      "fix": "Drop the extra family; three is the ceiling"
+    },
+    {
+      "gate": "39b",
+      "grade": "REFLEX",
+      "tier": "reflex",
+      "file": "http://127.0.0.1:5088/",
+      "line": 1,
+      "evidence": "[1440px] control height outside 32 to 52px: button.month-option 71px, button.month-option 71px, button.month-option 71px",
+      "fix": "Marketing controls stand 44 to 52px; app UI 32 to 40px with a 44px hit target"
+    },
+    {
+      "gate": "39b",
+      "grade": "REFLEX",
+      "tier": "reflex",
+      "file": "http://127.0.0.1:5088/Forecast",
+      "line": 1,
+      "evidence": "[1440px] control height outside 32 to 52px: button.month-option 71px, button.month-option 71px, button.month-option 71px",
+      "fix": "Marketing controls stand 44 to 52px; app UI 32 to 40px with a 44px hit target"
+    },
+    {
+      "gate": "72",
+      "grade": "REFLEX",
+      "tier": "reflex",
+      "file": "http://127.0.0.1:5088/Forecast",
+      "line": 1,
+      "evidence": "[1440px] text crowds the edge of its box: fieldset bottom -82px",
+      "fix": "Pad the box: max(8px, 0.5em) at the sides, max(4px, 0.3em) above and below"
+    }
+  ]
+}

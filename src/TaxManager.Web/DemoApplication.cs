@@ -6,6 +6,9 @@ using TaxManager.Web.Backup;
 using Microsoft.AspNetCore.Antiforgery;
 using TaxManager.Web.Accounts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
 
 namespace TaxManager.Web;
 
@@ -40,7 +43,7 @@ public static class DemoApplication
         builder.Services.AddSingleton<IAntiforgeryAdditionalDataProvider, WorkspaceAntiforgery>();
         builder.Services.AddScoped<ISalaryCalculator>(services => new SalaryCalculator(services.GetRequiredService<SelectedDatabase>().Database));
         builder.Services.AddRazorPages();
-        if (accounts.Enabled) builder.Services.AddLocalAccounts();
+        if (accounts.Enabled) builder.Services.AddLocalAccounts(builder.Configuration);
         configureServices?.Invoke(builder.Services);
         var app = builder.Build();
         if (accounts.Enabled)
@@ -76,6 +79,45 @@ public static class DemoApplication
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseRateLimiter();
+            app.Use(async (context, next) =>
+            {
+                if (context.User.Identity?.IsAuthenticated != true) { await next(); return; }
+                var id = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                var gate = context.RequestServices.GetRequiredService<LocalAccountStores>().Gate(id);
+                await gate.WaitAsync(context.RequestAborted);
+                try
+                {
+                    // Xác thực diễn ra trước khi chờ; kiểm lại phiên bằng dữ liệu mới sau khi lấy gate.
+                    var registry = context.RequestServices.GetRequiredService<LocalIdentityDb>();
+                    var user = await registry.Users.AsNoTracking().SingleOrDefaultAsync(user => user.Id == id, context.RequestAborted);
+                    var signIn = context.RequestServices.GetRequiredService<SignInManager<LocalUser>>();
+                    var ticket = await context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+                    if (user is null || !ticket.Succeeded || ticket.Properties?.ExpiresUtc is not { } expires ||
+                        expires <= context.RequestServices.GetRequiredService<TimeProvider>().GetUtcNow() ||
+                        !await signIn.ValidateSecurityStampAsync(user, context.User.FindFirstValue(signIn.Options.ClaimsIdentity.SecurityStampClaimType)))
+                    {
+                        await signIn.SignOutAsync();
+                        context.Response.Headers.CacheControl = "no-store";
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return;
+                    }
+                    var deleting = await registry.UserClaims.AsNoTracking().AnyAsync(claim => claim.UserId == id &&
+                        claim.ClaimType == AccountDeletion.ClaimType, context.RequestAborted);
+                    var deletionPage = context.Request.Path.Equals("/tai-khoan/xoa", StringComparison.OrdinalIgnoreCase);
+                    var logout = context.Request.Path.Equals("/tai-khoan", StringComparison.OrdinalIgnoreCase) &&
+                        context.Request.Query["handler"] == "Logout" && HttpMethods.IsPost(context.Request.Method);
+                    if (deleting && !deletionPage && !logout)
+                    {
+                        context.Response.Headers.CacheControl = "no-store";
+                        if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsHead(context.Request.Method))
+                            context.Response.Redirect("/tai-khoan/xoa");
+                        else context.Response.StatusCode = StatusCodes.Status409Conflict;
+                        return;
+                    }
+                    await next();
+                }
+                finally { gate.Release(); }
+            });
         }
         app.Use(async (context, next) =>
         {

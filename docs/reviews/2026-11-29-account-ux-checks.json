@@ -1,0 +1,190 @@
+[
+  {
+    "url": "/ux-login.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-login.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-login-error.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-login-error.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-register.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/ux-register.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/ux-register-error.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/ux-register-error.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0,
+      0
+    ]
+  },
+  {
+    "url": "/ux-account.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/ux-account.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/ux-export.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-export.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-delete.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-delete.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": [
+      0
+    ]
+  },
+  {
+    "url": "/ux-consent.html",
+    "width": 320,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  },
+  {
+    "url": "/ux-consent.html",
+    "width": 1280,
+    "overflow": false,
+    "primary": 1,
+    "violations": [],
+    "incomplete": [],
+    "references": [],
+    "passwordLengths": []
+  }
+]

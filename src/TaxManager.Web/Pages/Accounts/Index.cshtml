@@ -1,9 +1,17 @@
 @page "/tai-khoan"
 @model TaxManager.Web.Pages.Accounts.IndexModel
+@inject TaxManager.Web.Accounts.GoogleSignIn Google
+@inject TaxManager.Web.Accounts.EmailRecoverySettings Recovery
 @{ ViewData["Title"] = "Tài khoản thử"; ViewData["AccountWide"] = true; }
 <div class="page-heading account-page-heading"><div><h1>Tài khoản thử</h1><p>Quản lý dữ liệu và phiên đăng nhập của bạn.</p></div><a asp-page="/ForecastProfiles" class="button primary">Trở lại hồ sơ</a></div>
 <section class="input-panel account-settings" aria-labelledby="account-identity-heading">
     <div class="account-identity"><partial name="Shared/_Icon" model='@("account")' /><div><h2 id="account-identity-heading">@User.Identity?.Name</h2><p>Đang đăng nhập trên thiết bị này.</p></div></div>
+    @if (Google.Enabled || Recovery.Enabled) {
+    <div class="account-group" role="group" aria-labelledby="account-login-heading"><h2 id="account-login-heading">Đăng nhập và khôi phục</h2>
+        @if (Google.Enabled) { <div class="account-setting-row"><partial name="Shared/_Icon" model='@("shield")' /><div><h3>Google</h3><p>Đăng nhập bằng Google hoặc quản lý liên kết với tài khoản này.</p></div><a class="button" asp-page="/Accounts/Google">Quản lý Google</a></div> }
+        @if (Recovery.Enabled) { <div class="account-setting-row"><partial name="Shared/_Icon" model='@("email")' /><div><h3>Email khôi phục</h3><p>@(Model.EmailState.Confirmed is not null ? "Đã xác minh: " + Model.EmailState.Confirmed : Model.EmailState.Pending is not null ? "Đang chờ xác minh: " + Model.EmailState.Pending : "Thêm email đã xác minh để lấy lại quyền truy cập.")</p></div><a class="button" asp-page="/Accounts/Email">Quản lý email</a></div> }
+    </div>
+    }
     <div class="account-group" role="group" aria-labelledby="account-data-heading">
         <h2 id="account-data-heading">Dữ liệu của bạn</h2>
         <div class="account-setting-row"><partial name="Shared/_Icon" model='@("download")' /><div><h3>Xuất dữ liệu tài khoản</h3><p>Tải hồ sơ, các phiên bản và lịch sử từ kho gốc để đọc và tự lưu giữ.</p></div><a class="button" asp-page="/Accounts/Export">Xuất dữ liệu</a></div>
@@ -13,7 +21,7 @@
             <p>Xác nhận lúc @TaxManager.Web.Pages.ForecastModel.LocalTime(acceptance.AcceptedAt) giờ Việt Nam.</p>
         } else { <p>Đọc và xác nhận phạm vi sử dụng trước khi mở hồ sơ.</p> }
         </div><a class="button" asp-page="/Accounts/DataUse">@(Model.Acceptance is null ? "Đọc và xác nhận" : "Xem nội dung")</a></div>
-        <p class="account-limit">Bản thử chưa hỗ trợ xóa toàn bộ tài khoản. Tệp đã tải và bản sao bên ngoài ứng dụng do bạn tự quản lý.</p>
+        <div class="account-setting-row"><partial name="Shared/_Icon" model='@("delete")' /><div><h3>Xóa tài khoản thử</h3><p>Xem phạm vi dữ liệu sẽ xóa và xác nhận lại tài khoản trước khi tiếp tục.</p></div><a class="button danger" asp-page="/Accounts/Delete">Xem và xóa</a></div>
     </div>
     <div class="account-group account-session"><div><h2>Phiên đăng nhập</h2><p>Đăng xuất vẫn giữ tài khoản, hồ sơ và dữ liệu đã lưu.</p></div><form method="post" asp-page-handler="Logout"><button type="submit"><partial name="Shared/_Icon" model='@("logout")' />Đăng xuất</button></form></div>
 </section>

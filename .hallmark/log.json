@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-11-29",
+    "mode": "app addition",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Continue Đ6 with account deletion, clear scope and recoverable interrupted cleanup.",
+    "signature": "One explicit deletion confirmation, current password and unchecked intent; durable pending state",
+    "review": "Fresh-context Hallmark finish review: ship, no findings on desktop 1440, mobile 320 and validation 375.",
+    "verification": "docs/reviews/2026-11-29-account-deletion.md",
+    "lint": "Shared sticky gate 56 remains outside account layout; render not run without puppeteer-core. Orca captures and axe 0 violations/0 incomplete on actual HTTPS response mirror.",
+    "tests": "Web MVP 743 tests and EF passed; final 11 deletion tests passed separately after adding two concurrency/account-switch cases."
+  },
+  {
     "date": "2026-11-28",
     "mode": "polish",
     "scope": "component",

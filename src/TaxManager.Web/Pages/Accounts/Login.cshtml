@@ -1,8 +1,14 @@
 @page "/tai-khoan/dang-nhap"
 @model TaxManager.Web.Pages.Accounts.LoginModel
+@inject TaxManager.Web.Accounts.GoogleSignIn Google
+@inject TaxManager.Web.Accounts.EmailRecoverySettings Recovery
 @{ ViewData["Title"] = "Đăng nhập"; }
 <div class="page-heading"><div><h1>Đăng nhập</h1><p>Mở kho dữ liệu thử của bạn.</p></div></div>
 @if (Model.Created) { <p role="status">Đã tạo tài khoản thử. Đăng nhập để bắt đầu.</p> }
+@if (Model.Deleted) { <p role="status">Đã xóa tài khoản và dữ liệu trong phạm vi đã xác nhận.</p> }
+@if (Model.Reset) { <p role="status">Đã lưu mật khẩu mới và kết thúc các phiên cũ. Đăng nhập lại để tiếp tục.</p> }
+@if (Model.EmailConfirmed) { <p role="status">Đã xác minh email khôi phục. Đăng nhập lại để tiếp tục.</p> }
+@if (Model.EmailRemoved) { <p role="status">Đã gỡ email khôi phục và kết thúc các phiên cũ.</p> }
 <form method="post" class="input-panel account-entry-form" data-password-fields>
     <input type="hidden" asp-for="ReturnUrl" />
     <partial name="Shared/_AccountErrors" />
@@ -12,6 +18,10 @@
     <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
     <span class="error" id="error-Password" asp-validation-for="Password"></span>
     <div class="actions"><button type="submit" class="primary">Đăng nhập</button></div>
-    <p class="hint">Phiên đăng nhập kéo dài tối đa 30 phút. Chưa có chức năng phục hồi mật khẩu.</p>
+    <p class="hint">Phiên đăng nhập kéo dài tối đa 30 phút.</p>
+    @if (Recovery.Enabled) { <div class="actions"><a class="button" asp-page="/Accounts/ForgotPassword">Quên mật khẩu</a></div> }
 </form>
+@if (Google.Enabled) {
+<form method="post" asp-page="/Accounts/GoogleEntry" class="actions"><input type="hidden" name="returnUrl" value="@Model.ReturnUrl" /><button type="submit">Đăng nhập bằng Google</button></form>
+}
 <div class="account-entry-switch"><p>Chưa có tài khoản?</p><a class="button" asp-page="/Accounts/Register">Tạo tài khoản thử</a></div>

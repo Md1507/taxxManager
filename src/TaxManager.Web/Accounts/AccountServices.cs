@@ -7,11 +7,14 @@ namespace TaxManager.Web.Accounts;
 
 internal static class AccountServices
 {
-    internal static void AddLocalAccounts(this IServiceCollection services)
+    internal static void AddLocalAccounts(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<LocalAccountStores>();
         services.AddScoped<LocalDataUse>();
         services.AddScoped<AccountDataExport>();
+        services.AddScoped<AccountDeletion>();
+        services.AddScoped<GoogleAccountConfirmation>();
+        services.AddSingleton<GoogleConfirmationTickets>();
         services.AddDbContext<LocalIdentityDb>((provider, options) =>
             options.UseSqlite(provider.GetRequiredService<LocalAccountStores>().IdentityConnection));
         services.AddIdentity<LocalUser, IdentityRole>(options =>
@@ -24,7 +27,9 @@ internal static class AccountServices
             options.Password.RequireNonAlphanumeric = false;
             options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-        }).AddEntityFrameworkStores<LocalIdentityDb>();
+            options.Tokens.ChangeEmailTokenProvider = RecoveryTokenProvider.ProviderName;
+            options.Tokens.PasswordResetTokenProvider = RecoveryTokenProvider.ProviderName;
+        }).AddEntityFrameworkStores<LocalIdentityDb>().AddTokenProvider<RecoveryTokenProvider>(RecoveryTokenProvider.ProviderName);
         services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.Name = "__Host-taxmanager.identity";
@@ -48,5 +53,7 @@ internal static class AccountServices
             }));
         });
         services.AddAntiforgery(options => options.Cookie.SecurePolicy = CookieSecurePolicy.Always);
+        services.AddGoogleSignIn(configuration);
+        services.AddAccountEmail(configuration);
     }
 }

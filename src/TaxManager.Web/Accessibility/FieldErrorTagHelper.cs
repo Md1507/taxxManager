@@ -24,6 +24,7 @@ public sealed class FieldErrorTagHelper : TagHelper
         output.Attributes.SetAttribute("aria-invalid", "true");
         var errorId = "error-" + TagBuilder.CreateSanitizedId(name, "_");
         var existing = output.Attributes["aria-describedby"]?.Value?.ToString();
-        output.Attributes.SetAttribute("aria-describedby", string.IsNullOrWhiteSpace(existing) ? errorId : existing + " " + errorId);
+        if (existing?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Contains(errorId, StringComparer.Ordinal) != true)
+            output.Attributes.SetAttribute("aria-describedby", string.IsNullOrWhiteSpace(existing) ? errorId : existing + " " + errorId);
     }
 }

@@ -1,0 +1,30 @@
+@page "/tai-khoan/email"
+@model TaxManager.Web.Pages.Accounts.EmailModel
+@{ ViewData["Title"] = "Email khôi phục"; ViewData["AccountErrorFallback"] = Model.HasPassword || Model.GoogleConfirmed ? "Email" : "google-confirm"; }
+<div class="page-heading"><div><h1>Email khôi phục</h1><p>Xác minh email để lấy lại quyền truy cập khi quên mật khẩu.</p></div></div>
+<form method="post" class="input-panel" data-password-fields>
+    <partial name="Shared/_AccountErrors" />
+    @if (Model.State.Confirmed is { } current) { <p class="account-confirmed"><partial name="Shared/_Icon" model='@("check-circle")' />Đã xác minh: @current</p> }
+    else { <p>Chưa có email đã xác minh.</p> }
+    @if (Model.State.Pending is { } pending) { <p role="status">Đang chờ xác minh: @pending. Mở thư trong 30 phút; kiểm tra cả thư rác.</p> }
+    @if (Model.HasPassword || Model.GoogleConfirmed) {
+        <label asp-for="Email">Email khôi phục</label><input asp-for="Email" type="email" autocomplete="email" maxlength="254" placeholder="ban@example.com" aria-describedby="email-use" />
+        <p class="hint" id="email-use">Dùng địa chỉ bạn quản lý. Email được lưu cho tài khoản và chuyển tới dịch vụ gửi thư để xác minh, khôi phục.</p>
+        <span class="error" id="error-Email" asp-validation-for="Email"></span>
+        @if (Model.HasPassword) {
+            <label asp-for="Password">Mật khẩu hiện tại</label>
+            <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+            <span class="error" id="error-Password" asp-validation-for="Password"></span>
+        }
+        <div class="actions"><button class="primary" type="submit">Gửi email xác minh</button>
+        @if (Model.State.Confirmed is not null) { <button type="submit" asp-page-handler="Remove" formnovalidate>Gỡ email khôi phục</button> }
+        <a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
+    } else {
+        <p>Xác nhận bằng Google trước khi thêm, đổi hoặc gỡ email.</p>
+        <div class="actions">
+        @if (Model.GoogleEnabled) { <button id="google-confirm" class="primary" type="submit" asp-page-handler="Google" formnovalidate>Xác nhận bằng Google</button> }
+        else { <p id="google-confirm">Google đang tắt. Bật lại Google để xác nhận tài khoản.</p> }
+        <a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
+    }
+    @if (Model.State.Pending is not null) { <div class="actions"><button type="submit" asp-page-handler="Cancel" formnovalidate>Hủy email đang chờ</button></div> }
+</form>

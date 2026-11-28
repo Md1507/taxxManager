@@ -10,7 +10,7 @@
     <label asp-for="Password">Mật khẩu</label>
     <div class="password-input"><input asp-for="Password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required aria-describedby="password-condition password-help" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
     <p class="password-condition" id="password-condition" data-password-condition aria-live="polite" aria-atomic="true"><span data-condition-idle><partial name="Shared/_Icon" model='@("password-condition")' /></span><span data-condition-valid hidden><partial name="Shared/_Icon" model='@("check-circle")' /></span><span data-condition-invalid hidden><partial name="Shared/_Icon" model='@("warning")' /></span><span data-condition-message>8–128 ký tự, không chỉ gồm khoảng trắng.</span></p>
-    <p class="hint" id="password-help">Có thể dán hoặc dùng trình quản lý mật khẩu. Lưu mật khẩu ở nơi riêng; bản thử chưa hỗ trợ phục hồi.</p>
+    <p class="hint" id="password-help">Có thể dán hoặc dùng trình quản lý mật khẩu. Lưu mật khẩu ở nơi riêng.</p>
     <span class="error" id="error-Password" asp-validation-for="Password"></span>
     <label asp-for="ConfirmPassword">Nhập lại mật khẩu</label>
     <div class="password-input"><input asp-for="ConfirmPassword" type="password" autocomplete="new-password" maxlength="128" required aria-describedby="password-match" /><partial name="Shared/_PasswordToggle" model='@("ConfirmPassword")' /></div>

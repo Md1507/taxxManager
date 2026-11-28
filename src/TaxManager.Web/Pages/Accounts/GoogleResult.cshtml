@@ -1,0 +1,28 @@
+@page "/tai-khoan/google/ket-qua"
+@model TaxManager.Web.Pages.Accounts.GoogleResultModel
+@{ ViewData["Title"] = "Xác nhận Google"; ViewData["AccountErrorFallback"] = "AcceptDataUse"; }
+<div class="page-heading"><div><h1>Xác nhận Google</h1></div></div>
+@if (Model.CreateAccount) {
+<form method="post" asp-page-handler="Create" class="input-panel">
+    <partial name="Shared/_AccountErrors" />
+    <h2>Bắt đầu với Google</h2>
+    <p>Tài khoản mới dùng Google để đăng nhập, không cần tạo mật khẩu riêng.</p>
+    <partial name="Shared/_LocalDataUseNotice" />
+    <label class="consent-choice" asp-for="AcceptDataUse"><input asp-for="AcceptDataUse" aria-describedby="error-AcceptDataUse" />Tôi đã đọc và đồng ý dùng dữ liệu thử như nội dung trên.</label>
+    <span class="error" id="error-AcceptDataUse" asp-validation-for="AcceptDataUse"></span>
+    <div class="actions"><button class="primary" type="submit">Đồng ý và bắt đầu</button><a class="button" asp-page="/Accounts/Login">Trở lại đăng nhập</a></div>
+</form>
+} else {
+<div class="input-panel">
+@if (Model.ConfirmationPage is not null) {
+    <p>Google đã xác nhận. Tiếp tục để kiểm tra tài khoản và hoàn tất thao tác bạn đã chọn.</p>
+    <div class="actions"><a class="button primary" asp-page="@Model.ConfirmationPage">Tiếp tục</a><a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
+} else if (Model.ContinueLink) {
+    <p>Google đã xác nhận. Tiếp tục để hoàn tất liên kết với tài khoản đang mở.</p>
+    <div class="actions"><a class="button primary" asp-page="/Accounts/Google">Tiếp tục xác nhận</a><a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
+} else {
+    <p role="status">@Model.Message</p>
+    <div class="actions"><a class="button primary" asp-page="/Accounts/Login">Trở lại đăng nhập</a><a class="button" asp-page="/Accounts/Register">Tạo tài khoản thử</a></div>
+}
+</div>
+}

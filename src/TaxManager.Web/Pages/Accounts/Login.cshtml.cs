@@ -17,6 +17,10 @@ public sealed class LoginModel(SignInManager<LocalUser> signIn) : PageModel
     public string? Password { get; set; }
     [BindProperty(SupportsGet = true)] public string? ReturnUrl { get; set; }
     [BindProperty(SupportsGet = true)] public bool Created { get; set; }
+    [BindProperty(SupportsGet = true)] public bool Deleted { get; set; }
+    [BindProperty(SupportsGet = true)] public bool Reset { get; set; }
+    [BindProperty(SupportsGet = true)] public bool EmailConfirmed { get; set; }
+    [BindProperty(SupportsGet = true)] public bool EmailRemoved { get; set; }
 
     public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? LocalRedirect("/ho-so") : Page();
     public async Task<IActionResult> OnPostAsync()

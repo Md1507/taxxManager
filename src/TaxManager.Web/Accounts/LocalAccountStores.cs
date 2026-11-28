@@ -7,6 +7,7 @@ namespace TaxManager.Web.Accounts;
 public sealed class LocalAccountStores : IDisposable
 {
     private readonly ConcurrentDictionary<string, Lazy<SyntheticDatabase>> stores = new();
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> accountGates = new();
     public string IdentityConnection { get; }
 
     public LocalAccountStores(SyntheticDatabase original)
@@ -31,6 +32,14 @@ public sealed class LocalAccountStores : IDisposable
         if (!string.Equals(store.RootPath, root, StringComparison.Ordinal))
             throw new InvalidOperationException("Kho tài khoản đã thay đổi. Cần khởi động lại.");
         return store;
+    }
+
+    // Account operations and different browser workspaces must share this boundary.
+    public SemaphoreSlim Gate(string userId) => accountGates.GetOrAdd(userId, _ => new(1, 1));
+
+    public void Forget(string userId)
+    {
+        if (stores.TryRemove(userId, out var cached) && cached.IsValueCreated) cached.Value.Dispose();
     }
 
     public void Dispose()

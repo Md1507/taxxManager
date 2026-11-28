@@ -6,7 +6,7 @@
 
 Cập nhật UI ngày 28/11/2026: danh sách `/ho-so` đã tách khỏi editor `/Forecast`, mỗi màn một nút chính; bảng gọn, form panel trắng và thanh hành động dính cuối, logo/icon SVG đồng bộ. Kiểm ảnh 320–1440px và 118 test Web qua; các mục nghiệm thu thủ công còn mở ghi tại [báo cáo UX](docs/reviews/2026-11-28-ui-accessibility.md). Không thay nghiệp vụ/Core/Data trong lượt bố cục này.
 
-Đ3–Đ5 đã có báo cáo/checklist, CSV, backup/khôi phục, kịch bản thưởng và đối chiếu nhập tay; xem trạng thái và giới hạn tại [roadmap](docs/product-roadmap.md). Đ6a/3.2 đã có Identity và kho synthetic riêng trong mode opt-in HTTPS, theo [contract](docs/design/local-accounts.md). Tiếp Đ6b với [ghi nhận đồng ý dùng dữ liệu thử](docs/design/local-data-use.md), không thay nghiệm thu pháp lý hoặc xuất/xóa toàn bộ tài khoản. Giữ nghiệm thu UX thủ công và review bảo mật trước dữ liệu thật còn mở.
+Đ3–Đ5 đã có báo cáo/checklist, CSV, backup/khôi phục, kịch bản thưởng và đối chiếu nhập tay; xem trạng thái và giới hạn tại [roadmap](docs/product-roadmap.md). Đ6a/3.2 đã có Identity và kho synthetic riêng trong mode opt-in HTTPS, theo [contract](docs/design/local-accounts.md). Đ6b–d đã có ghi nhận đồng ý dùng dữ liệu thử, xuất JSON kho gốc và xóa tài khoản synthetic đúng phạm vi; xem điều kiện kỹ thuật ở mục 4.1. Giữ nghiệm thu UX thủ công và review bảo mật trước dữ liệu thật còn mở.
 
 ---
 
@@ -302,6 +302,15 @@ Quy ước phối hợp tài liệu, cập nhật 28/11/2026: roadmap giữ ti�
 - Xuất Excel/PDF **tham khảo** (chưa phải tờ khai chính thức).
 - Chức năng đồng ý xử lý dữ liệu, xuất dữ liệu cá nhân, xóa tài khoản và dữ liệu.
 - Prototype Đ6c: đã có xuất JSON kho gốc tài khoản synthetic sau kiểm lại mật khẩu, theo [contract](docs/design/account-data-export.md) và [bằng chứng](docs/reviews/2026-11-28-account-export.md). JSON không mã hóa, không dùng khôi phục; xóa toàn bộ tài khoản và nghiệm thu dữ liệu thật vẫn mở.
+- Prototype Đ6d (29/11): đã có xóa tài khoản thử và kho gốc, kho khôi phục/preview của chủ còn được host quản lý; mật khẩu/checkbox/CSRF, manifest bền, gate theo subject để tiếp tục sau lỗi hoặc host mới. Contract `docs/design/account-deletion.md`, kiểm chứng `docs/reviews/2026-11-29-account-deletion.md`. Không sửa schema/migration thuế; giữ giới hạn bản sao bên ngoài, kho TEMP phiên trước và xóa vật lý. Nghiệm thu cho dữ liệu thật/qua mạng vẫn mở.
+
+- Rà kỹ thuật Đ6e (29/11): bổ sung kiểm lại security stamp và hạn ticket sau khi chờ gate; 5 ca phiên đăng nhập kiểm đọc/ghi, thu hồi và hạn cố định 30 phút. Bằng chứng `docs/reviews/2026-11-29-account-session-review.md`; không thay review bảo mật độc lập hoặc nghiệm thu dữ liệu thật.
+
+- Rà UX Đ6f (29/11): kiểm form tài khoản hiện có, khử ID lỗi trùng tại helper dùng chung; 16 lượt axe/bố cục 320/1280 và thao tác nút mắt/error action. Báo cáo `docs/reviews/2026-11-29-account-ux.md`; giữ mở nghiệm thu screenreader, password manager thật và UX tổng thể.
+
+- Đ6g (29/11): Google opt-in qua handler OAuth của framework: đăng nhập/tạo tài khoản không mật khẩu sau đồng ý dữ liệu thử, hoặc liên kết vào tài khoản local đang mở mà không hỏi lại mật khẩu. Không ghép theo email; chỉ scope openid, không lưu token. Google-only xác nhận xuất/xóa bằng proof Google ngắn hạn, ghim user/mục đích và dùng một lần; không được gỡ credential duy nhất. Gỡ Google khỏi tài khoản có mật khẩu vẫn kiểm mật khẩu và thu hồi phiên. Contract/cấu hình `docs/design/account-sign-in-options.md`, kiểm chứng `docs/reviews/2026-11-29-google-sign-in.md`. Thông báo v4 và export provider/subject; không sửa schema/migration. Email khôi phục được bổ sung ở Đ6h; passkey/mã dự phòng chưa triển khai. Google thật cần OAuth client của chủ dự án.
+
+- Đ6h (29/11): đã có quản lý/xác minh email và đặt lại mật khẩu qua liên kết 30 phút dùng một lần, thu hồi phiên cũ; email cũ giữ tới khi xác minh mới. Thêm/đổi/gỡ cần mật khẩu hoặc Google đúng chủ/mục đích; Google-only có thể tạo mật khẩu riêng qua email đã xác minh. Gửi thư opt-in qua Resend, cần sender/key/origin HTTPS loopback; mặc định tắt, kiểm chứng dùng sender giả. Giữ xanh/Inter, một primary mỗi trạng thái, kiểm mobile/desktop. Thông báo dữ liệu thử v5, export không có token/nonce. Contract/cấu hình `docs/design/account-sign-in-options.md`, kiểm chứng `docs/reviews/2026-11-29-email-recovery.md`. Liên kết mất hiệu lực sau restart do key ring development ephemeral; dữ liệu vẫn giữ. Passkey/mã dự phòng là bước tiếp theo; chưa nghiệm thu email thật hoặc vận hành qua mạng.
 
 #### Bước 4.2 – CI, sao lưu, deploy
 - GitHub Actions chạy `dotnet test` mỗi lần push.

@@ -1,0 +1,29 @@
+@page "/tai-khoan/google"
+@model TaxManager.Web.Pages.Accounts.GoogleModel
+@{ ViewData["Title"] = "Đăng nhập bằng Google"; ViewData["AccountErrorFallback"] = Model.Linked && Model.HasPassword ? "Password" : "google-start"; }
+<div class="page-heading"><div><h1>Đăng nhập bằng Google</h1><p>Giữ cùng tài khoản và kho dữ liệu thử hiện tại.</p></div></div>
+@if (Model.Changed && Model.Linked) { <p role="status">Đã liên kết Google. Lần sau bạn có thể dùng Google để đăng nhập.</p> }
+@if (Model.Linked && !Model.HasPassword) {
+<div class="input-panel"><h2>Google đã liên kết</h2><p>Bạn đang đăng nhập bằng Google. Đây là cách đăng nhập duy nhất của tài khoản nên hiện chưa thể gỡ liên kết.</p><div class="actions"><a class="button primary" asp-page="/Accounts/Index">Trở lại tài khoản</a></div></div>
+} else if (Model.Linked || Model.ReadyToLink) {
+<form method="post" asp-page-handler="@(Model.Linked ? "Remove" : "Complete")" class="input-panel" data-password-fields>
+    <partial name="Shared/_AccountErrors" />
+    <h2>@(Model.Linked ? "Google đã liên kết" : "Xác nhận liên kết Google")</h2>
+    <p>@(Model.Linked ? "Gỡ liên kết sẽ đăng xuất các phiên cũ. Mật khẩu và dữ liệu vẫn được giữ." : "Google đã xác nhận. Lưu liên kết để lần sau đăng nhập vào tài khoản này bằng Google.")</p>
+    @if (Model.Linked) {
+    <label asp-for="Password">Mật khẩu hiện tại</label>
+    <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" aria-describedby="error-Password" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+    <span class="error" id="error-Password" asp-validation-for="Password"></span>
+    }
+    <div class="actions"><button id="google-start" type="submit" class="primary">@(Model.Linked ? "Gỡ liên kết Google" : "Lưu liên kết Google")</button>
+    @if (Model.ReadyToLink && !Model.Linked) { <button type="submit" asp-page-handler="Cancel" formnovalidate>Hủy liên kết</button> }
+    else { <a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a> }</div>
+</form>
+} else {
+<form method="post" asp-page-handler="Start" class="input-panel">
+    <partial name="Shared/_AccountErrors" />
+    <h2>Chọn tài khoản Google</h2>
+    <p>Ứng dụng lưu mã định danh Google để mở đúng tài khoản; không đọc thư hoặc lấy email.</p>
+    <div class="actions"><button id="google-start" type="submit" class="primary">Tiếp tục với Google</button><a class="button" asp-page="/Accounts/Index">Trở lại tài khoản</a></div>
+</form>
+}

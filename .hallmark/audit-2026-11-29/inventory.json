@@ -1,0 +1,260 @@
+[
+  {
+    "route": "/ho-so",
+    "width": 390,
+    "bodyOverflow": false,
+    "mainHeight": 439,
+    "headings": [
+      {
+        "text": "Hồ sơ thuế",
+        "top": 161
+      }
+    ],
+    "regions": [],
+    "maxBackgroundRegionDepth": 0,
+    "buttons": 1,
+    "underlinedLinks": 2,
+    "badges": 0,
+    "actionbar": []
+  },
+  {
+    "route": "/Forecast?id=cc95ac70-98ee-4923-8604-82267d230438&month=6",
+    "width": 390,
+    "bodyOverflow": false,
+    "mainHeight": 6743,
+    "headings": [
+      {
+        "text": "Hồ sơ thuế năm 2026",
+        "top": 209
+      },
+      {
+        "text": "Nhập lương theo giai đoạn",
+        "top": 313
+      },
+      {
+        "text": "Thưởng từ nơi trả lương hiện tại",
+        "top": 1091
+      },
+      {
+        "text": "Dữ liệu riêng theo tháng",
+        "top": 2560
+      },
+      {
+        "text": "Xem trước 12 tháng",
+        "top": 4078
+      },
+      {
+        "text": "Người phụ thuộc theo giai đoạn",
+        "top": 5261
+      },
+      {
+        "text": "Tổng quan năm 2026",
+        "top": 6098
+      },
+      {
+        "text": "Kết quả năm đã lưu",
+        "top": 6679
+      }
+    ],
+    "regions": [
+      {
+        "tag": "FIELDSET",
+        "heading": "Giai đoạn lương",
+        "height": 605
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Thưởng từ nơi trả lương hiện tại",
+        "height": 1437
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Dữ liệu riêng theo tháng",
+        "height": 1470
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Người phụ thuộc theo giai đoạn",
+        "height": 821
+      }
+    ],
+    "maxBackgroundRegionDepth": 1,
+    "buttons": 31,
+    "underlinedLinks": 13,
+    "badges": 51,
+    "actionbar": [
+      {
+        "height": 124,
+        "position": "sticky",
+        "top": 720
+      }
+    ]
+  },
+  {
+    "route": "/",
+    "width": 390,
+    "bodyOverflow": false,
+    "mainHeight": 1956,
+    "headings": [
+      {
+        "text": "Tính thuế lương theo tháng",
+        "top": 161
+      },
+      {
+        "text": "Nhập chung cho nhiều tháng",
+        "top": 426
+      },
+      {
+        "text": "Sửa từng tháng",
+        "top": 1075
+      }
+    ],
+    "regions": [
+      {
+        "tag": "SECTION",
+        "heading": "Nhập chung cho nhiều tháng",
+        "height": 617
+      }
+    ],
+    "maxBackgroundRegionDepth": 1,
+    "buttons": 14,
+    "underlinedLinks": 2,
+    "badges": 0,
+    "actionbar": [
+      {
+        "height": 68,
+        "position": "sticky",
+        "top": 776
+      }
+    ]
+  },
+  {
+    "route": "/ho-so",
+    "width": 1440,
+    "bodyOverflow": false,
+    "mainHeight": 390,
+    "headings": [
+      {
+        "text": "Hồ sơ thuế",
+        "top": 93
+      }
+    ],
+    "regions": [],
+    "maxBackgroundRegionDepth": 0,
+    "buttons": 1,
+    "underlinedLinks": 2,
+    "badges": 0,
+    "actionbar": []
+  },
+  {
+    "route": "/Forecast?id=cc95ac70-98ee-4923-8604-82267d230438&month=6",
+    "width": 1440,
+    "bodyOverflow": false,
+    "mainHeight": 6044,
+    "headings": [
+      {
+        "text": "Hồ sơ thuế năm 2026",
+        "top": 141
+      },
+      {
+        "text": "Nhập lương theo giai đoạn",
+        "top": 224
+      },
+      {
+        "text": "Thưởng từ nơi trả lương hiện tại",
+        "top": 850
+      },
+      {
+        "text": "Dữ liệu riêng theo tháng",
+        "top": 2311
+      },
+      {
+        "text": "Xem trước 12 tháng",
+        "top": 3611
+      },
+      {
+        "text": "Người phụ thuộc theo giai đoạn",
+        "top": 4757
+      },
+      {
+        "text": "Tổng quan năm 2026",
+        "top": 5578
+      },
+      {
+        "text": "Kết quả năm đã lưu",
+        "top": 5904
+      }
+    ],
+    "regions": [
+      {
+        "tag": "FIELDSET",
+        "heading": "Giai đoạn lương",
+        "height": 445
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Thưởng từ nơi trả lương hiện tại",
+        "height": 1429
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Dữ liệu riêng theo tháng",
+        "height": 1260
+      },
+      {
+        "tag": "SECTION",
+        "heading": "Người phụ thuộc theo giai đoạn",
+        "height": 813
+      }
+    ],
+    "maxBackgroundRegionDepth": 1,
+    "buttons": 31,
+    "underlinedLinks": 13,
+    "badges": 51,
+    "actionbar": [
+      {
+        "height": 76,
+        "position": "sticky",
+        "top": 824
+      }
+    ]
+  },
+  {
+    "route": "/",
+    "width": 1440,
+    "bodyOverflow": false,
+    "mainHeight": 1321,
+    "headings": [
+      {
+        "text": "Tính thuế lương theo tháng",
+        "top": 93
+      },
+      {
+        "text": "Nhập chung cho nhiều tháng",
+        "top": 345
+      },
+      {
+        "text": "Sửa từng tháng",
+        "top": 728
+      }
+    ],
+    "regions": [
+      {
+        "tag": "SECTION",
+        "heading": "Nhập chung cho nhiều tháng",
+        "height": 351
+      }
+    ],
+    "maxBackgroundRegionDepth": 1,
+    "buttons": 14,
+    "underlinedLinks": 2,
+    "badges": 0,
+    "actionbar": [
+      {
+        "height": 76,
+        "position": "sticky",
+        "top": 824
+      }
+    ]
+  }
+]

@@ -1,0 +1,29 @@
+@page "/tai-khoan/xoa"
+@model TaxManager.Web.Pages.Accounts.DeleteModel
+@{ ViewData["Title"] = "Xóa tài khoản thử"; ViewData["AccountWide"] = true; ViewData["AccountErrorFallback"] = Model.HasPassword ? "Password" : "google-confirm"; }
+<div class="page-heading"><div><h1>Xóa tài khoản thử</h1><p>Tài khoản đang chọn: <strong>@User.Identity?.Name</strong>.</p></div></div>
+<form method="post" class="input-panel account-deletion" data-password-fields>
+    <partial name="Shared/_AccountErrors" />
+    @if (Model.Pending && ViewData.ModelState.IsValid) {
+        <p role="status" class="account-delete-warning"><partial name="Shared/_Icon" model='@("warning")' /><span>Việc xóa chưa hoàn tất. Hồ sơ đã bị khóa truy cập; xác nhận lại để xóa tiếp.</span></p>
+    }
+    <h2>Dữ liệu sẽ xóa</h2>
+    <p>Tài khoản, xác nhận dữ liệu thử và kho gốc: hồ sơ, mọi phiên bản, kết quả đã lưu và nhật ký. Các kho khôi phục và bản xem trước của bạn còn được phiên chạy này quản lý cũng sẽ bị xóa.</p>
+    <p class="account-delete-warning"><partial name="Shared/_Icon" model='@("warning")' /><span>Không thể hoàn tác. Tệp đã tải, bản sao bên ngoài và kho khôi phục từ phiên chạy trước không nằm trong phạm vi này; bạn cần tự xóa chúng.</span></p>
+    @if (Model.HasPassword) {
+    <label asp-for="Password">Mật khẩu hiện tại</label>
+    <div class="password-input"><input asp-for="Password" type="password" autocomplete="current-password" maxlength="128" aria-describedby="error-Password" /><partial name="Shared/_PasswordToggle" model='@("Password")' /></div>
+    <span class="error" id="error-Password" asp-validation-for="Password"></span>
+    } else if (Model.GoogleConfirmed) { <p role="status">Đã xác nhận Google. Kiểm tra phạm vi rồi xác nhận xóa trong 5 phút.</p> }
+    else { <p>Xác nhận lại bằng Google trước khi xóa tài khoản.</p> }
+    @if (Model.HasPassword || Model.GoogleConfirmed) {
+    <label class="consent-choice" asp-for="ConfirmDeletion"><input asp-for="ConfirmDeletion" aria-describedby="error-ConfirmDeletion" />Tôi hiểu phạm vi và muốn xóa tài khoản cùng dữ liệu nêu trên.</label>
+    <span class="error" id="error-ConfirmDeletion" asp-validation-for="ConfirmDeletion"></span>
+    }
+    <div class="actions account-export-actions">
+    @if (Model.HasPassword || Model.GoogleConfirmed) { <button type="submit" class="primary"><partial name="Shared/_Icon" model='@("delete")' />@(Model.Pending ? "Tiếp tục xóa tài khoản" : "Xóa tài khoản và dữ liệu")</button> }
+    else if (Model.GoogleEnabled) { <button id="google-confirm" type="submit" asp-page-handler="Google" class="primary">Xác nhận bằng Google</button> }
+    else { <p id="google-confirm" role="status">Google đang tắt. Bật lại cấu hình Google để xác nhận tài khoản.</p> }
+    @if (Model.Pending) { <button type="submit" asp-page="/Accounts/Index" asp-page-handler="Logout" formnovalidate>Đăng xuất</button> }
+    else { <a class="button" asp-page="/Accounts/Index">Giữ tài khoản</a> }</div>
+</form>

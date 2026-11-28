@@ -12,7 +12,7 @@ namespace TaxManager.Web.Backup;
 public sealed class BackupWorkspaces : IDisposable
 {
     private readonly Dictionary<string, WorkspaceState> states = new();
-    private readonly List<SyntheticDatabase> restored = new();
+    private readonly Dictionary<SyntheticDatabase, WorkspaceState> restored = new();
     private readonly ITimer timer;
     private readonly TimeProvider clock;
     public BackupWorkspaces(TimeProvider clock)
@@ -36,7 +36,7 @@ public sealed class BackupWorkspaces : IDisposable
             if (restored.Count >= 8) throw new InvalidOperationException("Demo restored-store limit reached.");
             var preview = state.Preview ?? throw new InvalidOperationException("Preview is missing.");
             if (preview.ExpiresAt <= clock.GetUtcNow()) throw new InvalidOperationException("Preview expired.");
-            restored.Add(preview.Store);
+            restored.Add(preview.Store, state);
             state.Active = preview.Store;
             state.Preview = null;
             state.Generation++;
@@ -49,6 +49,38 @@ public sealed class BackupWorkspaces : IDisposable
         if (preview is null) return;
         preview.Store.Dispose();
         BackupStore.DeleteRoot(preview.Store.RootPath);
+    }
+    public string[] AccountRoots(string userId)
+    {
+        lock (states)
+        {
+            var owned = states.Where(pair => pair.Key.StartsWith(userId + ":", StringComparison.Ordinal))
+                .Select(pair => pair.Value).ToHashSet();
+            return restored.Where(pair => owned.Contains(pair.Value)).Select(pair => pair.Key.RootPath)
+                .Concat(owned.Where(state => state.Preview is not null).Select(state => state.Preview!.Store.RootPath))
+                .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        }
+    }
+    public void ForgetAccount(string userId)
+    {
+        lock (states)
+        {
+            var owned = states.Where(pair => pair.Key.StartsWith(userId + ":", StringComparison.Ordinal)).ToArray();
+            var ownedStates = owned.Select(pair => pair.Value).ToHashSet();
+            foreach (var pair in restored.Where(pair => ownedStates.Contains(pair.Value)).ToArray())
+            {
+                pair.Key.Dispose();
+                restored.Remove(pair.Key);
+            }
+            foreach (var pair in owned)
+            {
+                pair.Value.Preview?.Store.Dispose();
+                pair.Value.Preview = null;
+                pair.Value.Active = null;
+                pair.Value.Generation++;
+                states.Remove(pair.Key);
+            }
+        }
     }
     private void Sweep()
     {
@@ -69,7 +101,7 @@ public sealed class BackupWorkspaces : IDisposable
         lock (states)
         {
             foreach (var state in states.Values) Cancel(state);
-            foreach (var store in restored) store.Dispose(); // Confirmed roots remain durable for explicit reopen.
+            foreach (var store in restored.Keys) store.Dispose(); // Confirmed roots remain durable for explicit reopen.
         }
     }
 }
