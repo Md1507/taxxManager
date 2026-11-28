@@ -1,0 +1,14 @@
+{
+  "scanned": "2026-11-28",
+  "skillCommit": "04977e15f3dfd6ee4b74c887dac3eb52665d6c92",
+  "findings": {
+    "fonts": "Self-hosted Inter; src/TaxManager.Web/wwwroot/css/tokens.css:21",
+    "palette": "Green #395B40, white panels, green-tinted gray ground; tokens.css:2",
+    "motion": "No decorative animation; reduced-motion fallback in site.css",
+    "spacing": "Existing --space-* scale, capped content, sticky sidebar; tokens.css",
+    "framework": "ASP.NET Core 10 Razor Pages; DemoApplication.cs"
+  },
+  "preserve": ["palette", "Vietnamese voice", "Inter", "sidebar destinations and order", "form wiring", "nullable money"],
+  "introduce": ["Hallmark app-screen polish and finish review"],
+  "scope": "Monthly preview table and backup/restore screens; existing project system takes precedence over theme dealing"
+}

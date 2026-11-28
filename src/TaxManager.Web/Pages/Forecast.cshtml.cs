@@ -41,8 +41,8 @@ public sealed class ForecastModel : PageModel
 {
     private readonly IDataProtector draftProtector;
     private readonly TimeProvider clock;
-    private readonly SyntheticDatabase database;
-    public ForecastModel(IDataProtectionProvider protection, TimeProvider clock, SyntheticDatabase database)
+    private readonly TaxManager.Web.Backup.SelectedDatabase database;
+    public ForecastModel(IDataProtectionProvider protection, TimeProvider clock, TaxManager.Web.Backup.SelectedDatabase database)
     {
         draftProtector = protection.CreateProtector("TaxManager.Forecast.EntryDraft.v1");
         this.clock = clock;
@@ -139,6 +139,7 @@ public sealed class ForecastModel : PageModel
             var document = await store.ReadAsync(id.Value);
             if (document is null) { ModelState.AddModelError(string.Empty, "Không tìm thấy hồ sơ này."); return; }
             var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
+            if (draft.Periods is null || draft.Exceptions is null || draft.Stamps is null) throw new JsonException("Unsupported editor draft.");
             FromMonth = draft.FromMonth; ToMonth = draft.ToMonth; Gross = draft.Gross; Status = draft.Status;
             Source = draft.Source; Note = draft.Note; Periods = draft.Periods; Exceptions = draft.Exceptions;
             Bonuses = draft.Bonuses is { Count: > 0 } ? draft.Bonuses : [new()];
@@ -221,17 +222,9 @@ public sealed class ForecastModel : PageModel
 
     public static bool HasCompleteInputs(ForecastDocument document)
     {
-        var draft = JsonSerializer.Deserialize<SavedDraft>(document.Payload!) ?? throw new JsonException();
-        foreach (var month in Enumerable.Range(1, 12))
-        {
-            var entry = draft.Exceptions.FirstOrDefault(e => e.Month == month);
-            var gross = entry?.Gross ?? draft.Periods.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Gross
-                ?? (draft.FromMonth <= month && draft.ToMonth >= month ? draft.Gross : null);
-            var dependents = entry?.Dependents ?? draft.DependentPeriods?.LastOrDefault(p => p.FromMonth <= month && p.ToMonth >= month)?.Count;
-            if (gross is null || entry?.Insurance is null || dependents is null || entry?.Withheld is null)
-                return false;
-        }
-        return true;
+        var input = ForecastDraftReader.Read(document.Payload!);
+        var completeness = AnnualForecastCalculator.Assess(input.Months, input.Bonuses);
+        return completeness.MissingObligation.Count == 0 && completeness.MissingWithholdingMonths.Count == 0;
     }
 
     public bool HasMonthData(int index)

@@ -1,0 +1,16 @@
+@page "/khoi-phuc"
+@model TaxManager.Web.Pages.RestoreModel
+@{ ViewData["Title"] = "Khôi phục dữ liệu"; }
+<div class="page-heading"><div><h1>Khôi phục dữ liệu</h1><p>Kiểm tra bản sao trước khi mở trong một kho riêng.</p></div></div>
+<partial name="Shared/_Errors" />
+@if (Model.IsRestored) {
+<section class="input-panel"><h2>Đang dùng kho khôi phục</h2><p>Vào Sao lưu để giữ các chỉnh sửa và quay lại kho ban đầu trước khi mở bản sao khác.</p><a asp-page="/Backup">Đến Sao lưu</a></section>
+} else {
+<form method="post" enctype="multipart/form-data" class="input-panel backup-form">
+<label for="upload">Tệp bản sao</label><input id="upload" name="upload" type="file" accept=".taxbackup" required aria-describedby="upload-hint" />
+<p class="hint" id="upload-hint">Tệp .taxbackup được tạo bởi TaxManager, tối đa 17 MiB. Không chọn CSV báo cáo.</p>
+<label for="password">Mật khẩu bản sao</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required />
+<p>Kho đang dùng được giữ nguyên. Bước này chỉ xem trước, chưa chuyển kho.</p>
+<div class="actions"><button class="primary" type="submit">Kiểm tra bản sao</button><a asp-page="/Backup">Trở lại sao lưu</a></div>
+</form>
+}

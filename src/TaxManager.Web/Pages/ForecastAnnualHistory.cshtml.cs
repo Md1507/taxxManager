@@ -5,7 +5,7 @@ using TaxManager.Web.Demo;
 
 namespace TaxManager.Web.Pages;
 
-public sealed class ForecastAnnualHistoryModel(SyntheticDatabase database) : PageModel
+public sealed class ForecastAnnualHistoryModel(TaxManager.Web.Backup.SelectedDatabase database) : PageModel
 {
     public Guid Id { get; private set; }
     public bool ProfileExists { get; private set; }

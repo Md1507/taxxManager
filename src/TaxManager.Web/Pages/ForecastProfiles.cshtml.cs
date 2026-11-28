@@ -7,7 +7,7 @@ using TaxManager.Web.Demo;
 
 namespace TaxManager.Web.Pages;
 
-public sealed class ForecastProfilesModel(SyntheticDatabase database) : PageModel
+public sealed class ForecastProfilesModel(TaxManager.Web.Backup.SelectedDatabase database) : PageModel
 {
     public sealed record ProfileRow(Guid Id, int Revision, bool IsComplete);
     public IReadOnlyList<ProfileRow> Profiles { get; private set; } = [];
@@ -20,7 +20,8 @@ public sealed class ForecastProfilesModel(SyntheticDatabase database) : PageMode
             var documents = await new ForecastStore(context).ListAsync();
             Profiles = documents.Select(d => new ProfileRow(d.Id, d.Revision, ForecastModel.HasCompleteInputs(d))).ToArray();
         }
-        catch (Exception ex) when (ex is DataProtectionException or JsonException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException)
+        catch (Exception ex) when (ex is DataProtectionException or JsonException or DbUpdateException or Microsoft.Data.Sqlite.SqliteException
+            or ArgumentException or InvalidOperationException or KeyNotFoundException)
         {
             ModelState.AddModelError(string.Empty, "Không thể mở hồ sơ: kiểm tra khóa bảo vệ và dữ liệu.");
         }

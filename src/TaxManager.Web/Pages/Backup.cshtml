@@ -1,0 +1,17 @@
+@page "/sao-luu"
+@model TaxManager.Web.Pages.BackupModel
+@{ ViewData["Title"] = "Sao lưu dữ liệu"; }
+<div class="page-heading"><div><h1>Sao lưu dữ liệu</h1><p>Tải một bản sao có mật khẩu của toàn bộ kho đang dùng.</p></div></div>
+<partial name="Shared/_Errors" />
+@if (Model.IsRestored) {
+<aside class="input-panel" aria-label="Kho đang dùng"><h2>Đang dùng kho khôi phục</h2><p>Kho ban đầu vẫn được giữ nguyên. Tải bản sao sau khi chỉnh sửa để có thể mở lại ở phiên chạy sau.</p>
+<form method="post" asp-page-handler="Return"><button type="submit">Quay lại kho ban đầu</button></form></aside>
+}
+<form method="post" class="input-panel backup-form">
+<p>Bản sao giữ hồ sơ, các phiên bản, kết quả tính đã lưu, căn cứ luật và nhật ký thay đổi. Tệp CSV báo cáo không thay thế bản sao này.</p>
+<label for="password">Mật khẩu bản sao</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required aria-describedby="password-hint" />
+<p class="hint" id="password-hint">Từ 12 đến 128 ký tự. Lưu mật khẩu ở nơi riêng; mất mật khẩu thì không thể mở bản sao.</p>
+<label for="confirmation">Nhập lại mật khẩu</label><input id="confirmation" name="confirmation" type="password" autocomplete="new-password" minlength="12" maxlength="128" required />
+<div class="actions"><button class="primary" type="submit"><partial name="Shared/_Icon" model='@("download")' />Tải bản sao</button><a asp-page="/Restore">Khôi phục từ bản sao</a></div>
+</form>
+<p class="hint">Chỉ dành cho dữ liệu mẫu trong Demo local. Kho và bản xem trước có thể để lại dữ liệu trong TEMP; xóa tệp không bảo đảm xóa vật lý.</p>

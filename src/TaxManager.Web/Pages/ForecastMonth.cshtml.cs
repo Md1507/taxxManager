@@ -7,7 +7,7 @@ using TaxManager.Web.Demo;
 
 namespace TaxManager.Web.Pages;
 
-public sealed class ForecastMonthModel(SyntheticDatabase database) : PageModel
+public sealed class ForecastMonthModel(TaxManager.Web.Backup.SelectedDatabase database) : PageModel
 {
     public ForecastMonthView? Month { get; private set; }
     public Guid ProfileId { get; private set; }

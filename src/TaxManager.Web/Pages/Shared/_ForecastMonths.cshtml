@@ -1,11 +1,10 @@
 @model TaxManager.Web.Pages.ForecastModel
 @using TaxManager.Core.Forecasting
 @using TaxManager.Web.Pages
-<section id="bang-thang" data-navigation-section="du-lieu" aria-labelledby="months-heading">
+<section id="bang-thang" class="monthly-preview" data-navigation-section="du-lieu" aria-labelledby="months-heading">
 <h2 id="months-heading">Xem trước 12 tháng</h2>
 <p>Kiểm tra từng chỉ tiêu trước khi lưu. Dữ liệu nhập riêng cho một tháng luôn được giữ.</p>
-<div class="status-legend" role="group" aria-label="Chú giải trạng thái"><partial name="_ForecastStatus" model="ForecastStatus.Actual" /><partial name="_ForecastStatus" model="ForecastStatus.Planned" /><partial name="_ForecastStatus" model="ForecastStatus.Assumed" /></div>
-<p class="hint" id="table-hint">Bảng có thể cuộn ngang. Chọn sửa tháng để bổ sung số liệu và nguồn.</p>
+<p class="hint" id="table-hint">Chọn Sửa để bổ sung số liệu và nguồn. Bảng có thể cuộn ngang trên màn hình nhỏ.@if (Model.ProfileId is not null && Model.SavedInputConfirmed) { <span> Chi tiết mở dữ liệu từ bản đã lưu.</span> }</p>
 @foreach (var conflict in Model.Preview!.ConflictingMonths) { <p>Tháng @conflict là ngoại lệ và được giữ nguyên.</p> }
 <div class="table-scroll" role="region" aria-label="Dữ liệu 12 tháng" aria-describedby="table-hint" tabindex="0">
 <table class="forecast-preview"><thead><tr><th scope="col">Tháng</th><th scope="col" class="money">Lương gross</th><th scope="col" class="money">Bảo hiểm</th><th scope="col" class="money">Người phụ thuộc</th><th scope="col" class="money">Khấu trừ</th><th scope="col">Thao tác</th></tr></thead><tbody>
@@ -13,11 +12,11 @@
 var insurance = Model.InsurancePreview.GetValueOrDefault(month.Key);
 var dependents = Model.DependentsPreview.GetValueOrDefault(month.Key);
 var withheld = Model.WithheldPreview.GetValueOrDefault(month.Key);
-<tr><th scope="row">Tháng @month.Key</th><td data-label="Lương">@(month.Value is null ? "Chưa nhập" : ForecastModel.FormatAmount(month.Value.Value) + " đ")@if (month.Value is not null) { <partial name="_ForecastStatus" model="month.Value.Status" /> }</td><td class="money">@(insurance is null ? "Chưa nhập" : ForecastModel.FormatAmount(insurance.Value) + " đ")@if (insurance is not null) { <partial name="_ForecastStatus" model="insurance.Status" /> }</td><td class="money">@(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <partial name="_ForecastStatus" model="dependents.Status" /> }</td><td class="money">@(withheld is null ? "Chưa nhập" : ForecastModel.FormatAmount(withheld.Value) + " đ")@if (withheld is not null) { <partial name="_ForecastStatus" model="withheld.Status" /> }</td><td class="table-actions"><button type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@month.Key" formnovalidate>Sửa tháng @month.Key</button>
+<tr><th scope="row">Tháng @month.Key</th><td class="money" data-label="Lương">@(month.Value is null ? "Chưa nhập" : ForecastModel.FormatAmount(month.Value.Value) + " đ")@if (month.Value is not null) { <partial name="_ForecastStatus" model="month.Value.Status" /> }</td><td class="money">@(insurance is null ? "Chưa nhập" : ForecastModel.FormatAmount(insurance.Value) + " đ")@if (insurance is not null) { <partial name="_ForecastStatus" model="insurance.Status" /> }</td><td class="money">@(dependents is null ? "Chưa nhập" : dependents.Value.ToString())@if (dependents is not null) { <partial name="_ForecastStatus" model="dependents.Status" /> }</td><td class="money">@(withheld is null ? "Chưa nhập" : ForecastModel.FormatAmount(withheld.Value) + " đ")@if (withheld is not null) { <partial name="_ForecastStatus" model="withheld.Status" /> }</td><td><div class="month-row-actions"><button class="text-action" aria-label="Sửa tháng @month.Key" type="submit" asp-page-handler="SelectMonth" asp-fragment="sua-thang" name="targetMonth" value="@month.Key" formnovalidate>Sửa</button>
 @if (Model.ProfileId is not null && Model.SavedInputConfirmed) {
-<a asp-page="/ForecastMonth" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision" asp-route-month="@month.Key">Chi tiết tháng @month.Key từ bản đã lưu</a>
+<a aria-label="Chi tiết tháng @month.Key từ bản đã lưu" asp-page="/ForecastMonth" asp-route-id="@Model.ProfileId" asp-route-revision="@Model.Revision" asp-route-month="@month.Key">Chi tiết</a>
 }
-</td></tr>
+</div></td></tr>
 }
 </tbody></table></div>
 <details><summary>Nguồn và ghi chú của bản xem trước</summary>

@@ -7,7 +7,7 @@ using TaxManager.Web.Demo;
 
 namespace TaxManager.Web.Pages;
 
-public sealed class ForecastDeleteModel(SyntheticDatabase database) : PageModel
+public sealed class ForecastDeleteModel(TaxManager.Web.Backup.SelectedDatabase database) : PageModel
 {
     [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
     [BindProperty(SupportsGet = true)] public int Revision { get; set; }

@@ -2,6 +2,8 @@ using System.Net;
 using Microsoft.AspNetCore.DataProtection;
 using TaxManager.Web.Demo;
 using TaxManager.Web.MonthlySalary;
+using TaxManager.Web.Backup;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace TaxManager.Web;
 
@@ -27,7 +29,12 @@ public static class DemoApplication
         builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
         builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddSingleton(_ => new SyntheticDatabase(Directory.GetCurrentDirectory(), builder.Configuration["SyntheticStore"]));
-        builder.Services.AddScoped<ISalaryCalculator, SalaryCalculator>();
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddSingleton<BackupStore>();
+        builder.Services.AddSingleton<BackupWorkspaces>();
+        builder.Services.AddScoped<SelectedDatabase>();
+        builder.Services.AddSingleton<IAntiforgeryAdditionalDataProvider, WorkspaceAntiforgery>();
+        builder.Services.AddScoped<ISalaryCalculator>(services => new SalaryCalculator(services.GetRequiredService<SelectedDatabase>().Database));
         builder.Services.AddRazorPages();
         configureServices?.Invoke(builder.Services);
         var app = builder.Build();
@@ -43,6 +50,13 @@ public static class DemoApplication
             await next();
         });
         app.UseStaticFiles();
+        app.Use(async (context, next) =>
+        {
+            var workspace = context.RequestServices.GetRequiredService<SelectedDatabase>();
+            await workspace.State.Gate.WaitAsync(context.RequestAborted);
+            try { await next(); }
+            finally { workspace.State.Gate.Release(); }
+        });
         app.MapRazorPages();
         return app;
     }

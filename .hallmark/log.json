@@ -1,0 +1,28 @@
+[
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Reduce visual clutter in the 12-month salary preview; preserve green palette and Vietnamese voice. Apply Hallmark alongside frontend-design and ui-ux-pro-max.",
+    "signature": "Monthly salary ledger, with exact amounts and factual input statuses",
+    "waived": [],
+    "review": "fresh-context subagent: ship, zero findings in supplied desktop/mobile captures and source",
+    "verification": "docs/reviews/2026-11-28-protected-backup.md",
+    "lint": "Static tool reported gate 56 (independent sticky scroll contexts), gate 37 (font size tokens counted as families), and F7 (shared control recipe). Manually checked; no font or sticky-context defect. Native render tier unavailable: puppeteer-core missing. Orca render/axe used instead."
+  },
+  {
+    "date": "2026-11-28",
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "app",
+    "theme": "project green (user named)",
+    "prompt": "Fix misaligned monthly calculator fields from user screenshot; keep existing palette and wiring.",
+    "signature": "Month legend above three aligned salary inputs",
+    "waived": [],
+    "review": "In-thread Codex finish review of desktop/mobile captures; aligned inputs and even density; no independent reviewer claim.",
+    "verification": "docs/reviews/2026-11-28-protected-backup.md#sửa-lệch-form-công-cụ-tính-tháng-theo-ảnh-phản-hồi",
+    "lint": "Unchanged static findings 56/37/F7, explanations in linked review. Native render tier unavailable; Orca captures and geometry probes at 320–1920 px used."
+  }
+]

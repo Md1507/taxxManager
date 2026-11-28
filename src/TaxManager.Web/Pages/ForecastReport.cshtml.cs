@@ -7,7 +7,7 @@ using TaxManager.Web.Reporting;
 
 namespace TaxManager.Web.Pages;
 
-public sealed class ForecastReportModel(SyntheticDatabase database) : PageModel
+public sealed class ForecastReportModel(TaxManager.Web.Backup.SelectedDatabase database) : PageModel
 {
     public ForecastReport? Report { get; private set; }
     public string? Error { get; private set; }

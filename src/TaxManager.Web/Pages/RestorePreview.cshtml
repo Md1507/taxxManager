@@ -1,0 +1,19 @@
+@page "/khoi-phuc/xem-truoc"
+@model TaxManager.Web.Pages.RestorePreviewModel
+@{ ViewData["Title"] = "Xem trước bản sao"; }
+<div class="page-heading"><div><h1>Xem trước bản sao</h1><p>Kiểm tra nội dung trước khi chuyển sang kho khôi phục.</p></div></div>
+<partial name="Shared/_Errors" />
+@if (Model.Preview is { } preview) {
+<section class="input-panel"><h2>Nội dung đã kiểm tra</h2>
+<dl class="annual-totals"><dt>Ngày tạo bản sao (giờ Việt Nam)</dt><dd>@preview.Summary.CreatedAt.ToOffset(TimeSpan.FromHours(7)).ToString("dd/MM/yyyy HH:mm")</dd>
+<dt>Hồ sơ hiện hành</dt><dd>@preview.Summary.Profiles</dd><dt>Phiên bản hồ sơ năm</dt><dd>@preview.Summary.Versions</dd>
+<dt>Kết quả tính tháng đã lưu</dt><dd>@preview.Summary.MonthlyResults</dd><dt>Kết quả tính năm đã lưu</dt><dd>@preview.Summary.AnnualResults</dd>
+<dt>Nhật ký thay đổi</dt><dd>@preview.Summary.AuditEvents</dd></dl>
+<p>@preview.Duplicates hồ sơ có cùng mã với kho đang dùng. Mở kho riêng sẽ giữ nguyên các hồ sơ này ở cả hai kho.</p>
+<p>Hồ sơ, nguồn, ghi chú, các phiên bản, kết quả tính và luật được giữ nguyên như lúc sao lưu. Không gộp hoặc ghi đè kho hiện hành.</p>
+<p class="hint">Bản xem trước hết hạn sau 10 phút. Kho đang chọn chỉ giữ trong phiên chạy ứng dụng; tải bản sao mới sau khi chỉnh sửa.</p>
+<form method="post"><input type="hidden" name="handle" value="@preview.Handle" /><div class="actions"><button class="primary" type="submit">Mở kho khôi phục</button><button type="submit" asp-page-handler="Cancel">Hủy</button></div></form>
+</section>
+} else {
+<section class="input-panel"><h2>Bản xem trước đã hết hạn hoặc đã dùng</h2><p>Chọn lại tệp và mật khẩu để kiểm tra một bản sao mới.</p><a class="button primary" asp-page="/Restore">Chọn lại bản sao</a></section>
+}

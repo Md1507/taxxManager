@@ -62,7 +62,7 @@ công cụ tính tháng (/)                 dữ liệu và tài khoản (khi c�
 | Lịch sử tính | `/ho-so/{id}/lich-su` | Đọc các lần đã tính | Thời điểm, phạm vi, độ phủ, phiên bản luật | tính lại | Đ2; `/ForecastAnnualHistory?id={id}` đã có và được chuẩn hóa |
 | Chi tiết lần tính | `/ho-so/{id}/lich-su/{recordId}` | Đọc bản đã lưu | Snapshot đầu vào, kết quả, căn cứ cũ | tính lại | Đ2; `record={recordId}` tại route lịch sử đã có |
 | Báo cáo và checklist | `/ho-so/{id}/bao-cao` | Chuẩn bị trao đổi/quyết toán | Báo cáo bản lưu, nguồn, phần thiếu | xuất CSV | Đ3; đã có bản đầu, backup chưa có |
-| Sao lưu và khôi phục | `/du-lieu` | Tự giữ bản có thể khôi phục | Phạm vi, phiên bản, kết quả kiểm tra bản nhập | tạo bản sao lưu | Đ3; chưa có |
+| Sao lưu và khôi phục | `/sao-luu`, `/khoi-phuc`, `/khoi-phuc/xem-truoc` | Tự giữ bản có thể khôi phục | Ngày, số hồ sơ/phiên bản/lịch sử, ID trùng, mở kho riêng | Tải bản sao / Kiểm tra / Mở kho khôi phục theo màn | Đ3; đã có, local synthetic |
 | Xem trước khôi phục | `/du-lieu/khoi-phuc` | Kiểm tra trước khi ghi | Hồ sơ sẽ thêm, trùng, lỗi, phiên bản | khôi phục bản đã kiểm tra | Đ3; chưa có |
 | Hai kịch bản | `/ho-so/{id}/kich-ban` | Thử thêm thưởng giả định | Cơ sở, khoản bổ sung, hai kết quả | so sánh kịch bản | Đ4; chưa có |
 | Đối chiếu nguồn | `/ho-so/{id}/doi-chieu` | So số cùng nghĩa và kỳ | Hồ sơ, công ty/eTax, chênh lệch | đối chiếu số liệu | Đ5; nhập thủ công |
@@ -666,7 +666,7 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 |---|---|---|
 | Đ1 | Chặng 1–2, bước 3.1/3.1b | Đã chuẩn hóa token/sidebar/form/bảng và nối chi tiết tháng từ forecast đã lưu; HTTP, host mới, menu/lỗi bằng phím và reflow đã kiểm. Còn luồng bàn phím đầy đủ, focus khi cửa sổ hoạt động, screenreader và zoom native. |
 | Đ2 | Chặng 3, bước 3.3 | Nền chặng 3 đã done. Đã tái bố trí kết quả năm, thưởng, phụ thuộc theo số lượng và lịch sử; giữ service hiện có. |
-| Đ3 | Chặng 4, bước 4.1/4.2 | Đã có báo cáo/checklist dữ liệu và CSV từ bản lưu theo contract riêng; backup/khôi phục chưa triển khai, chặng 4 chưa hoàn tất. |
+| Đ3 | Chặng 4, bước 4.1/4.2 | Đã có báo cáo/checklist dữ liệu, CSV và backup/khôi phục có mật khẩu vào kho riêng theo [contract](docs/design/protected-backup.md), xem [kiểm chứng](docs/reviews/2026-11-28-protected-backup.md). Nghiệm thu UX tổng thể vẫn còn mở. |
 | Đ4 | Chặng 5 | Chưa triển khai; chỉ bắt đầu sau chặng 4. |
 | Đ5 | Chặng 6 | Chưa triển khai; chỉ bắt đầu sau chặng 5. |
 | Đ6 | Bước 3.2 và quyền dữ liệu 4.1 | Chưa triển khai; điều kiện trước phục vụ nhiều người qua mạng, không phải chặng sản phẩm 6. |
@@ -694,8 +694,8 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 
 - [x] Một trang báo cáo/checklist dữ liệu, xuất bảng tham khảo đọc được bằng Excel; giữ revision, metadata, trạng thái và kết quả năm đã lưu. Xem [contract](docs/design/forecast-report.md). Checklist không thay điều kiện quyết toán pháp lý.
 - [x] Chọn CSV UTF-8 BOM, quoting/CRLF, số decimal invariant và bảo vệ ô chữ khỏi công thức; không gọi CSV là bản sao lưu.
-- [ ] Trang sao lưu và xem trước khôi phục; kiểm loại/phiên bản, trùng hồ sơ, metadata và lịch sử trước khi ghi.
-- [ ] Bản sao phải được bảo vệ; UI nêu cách mở lại và xử lý mất bí mật khôi phục theo contract đã triển khai, không xuất kèm khóa kho gốc trong gói không được bảo vệ. Chưa có contract an toàn thì chưa bật sao lưu.
+- [x] Trang sao lưu và xem trước khôi phục; kiểm loại/phiên bản, schema/catalog/sentinel, trùng hồ sơ, metadata và lịch sử trước khi mở kho riêng; không merge/ghi đè kho gốc.
+- [x] Bản sao có mật khẩu, AES-GCM và PBKDF2 theo contract; UI nêu không phục hồi mật khẩu và chọn kho chỉ tồn tại trong phiên chạy. Khóa đọc kho nằm trong gói mã hóa, không có key sidecar.
 - [ ] Xong khi: báo cáo khớp hồ sơ, giữ nhãn/phần thiếu; backup khôi phục được metadata/lịch sử/phiên bản; dữ liệu hỏng bị từ chối, không ghi đè âm thầm; QA qua.
 
 ### Đợt 4. Hai kịch bản
@@ -732,6 +732,8 @@ Chặng 3 đã done; phần chuẩn hóa Đ1–Đ2 và màn tháng gắn kết q
 | OCR, XML | Chừa ranh giới nhập/xuất, chưa upload file hay tạo tờ khai; XML cần cấu trúc chính thức và thử import riêng. |
 
 ## 12. Quy tắc cho công cụ vibecode khi code giao diện
+
+Ngày 28/11/2026: dùng thêm [Hallmark v2](https://github.com/nutlope/hallmark/tree/04977e15f3dfd6ee4b74c887dac3eb52665d6c92/skills/hallmark) theo yêu cầu người dùng, cùng frontend-design và ui-ux-pro-max. Áp dụng nhánh app screen/polish trên hệ thống xanh đã chốt; không bốc theme/scaffold mới cho mỗi màn. Bảng ưu tiên nhịp hàng, chữ và số; nhãn trạng thái không cần khung riêng, thao tác ngắn nhưng accessible name đủ ngữ cảnh. Lượt kiểm tĩnh, render Orca và review độc lập ghi tại [báo cáo](docs/reviews/2026-11-28-protected-backup.md); cache/log trong `.hallmark/`. Không lấy số gate hoặc báo cáo tự động thay việc nhìn màn hình thật.
 
 - Mỗi lần chỉ làm một màn hình và các phần dùng chung tối thiểu của màn hình đó; không triển khai cả roadmap trong một lượt.
 - **Chỉ dùng token, không viết giá trị rời.** Ngoại lệ phải ghi ở mục 10 trước khi áp dụng.
@@ -784,8 +786,8 @@ Ghi thời gian hoàn thành, chỗ cần trợ giúp, câu diễn giải của 
 | Báo cáo đầu tiên? | CSV tương thích Excel hoặc XLSX/PDF | CSV tham khảo trước; PDF đẹp và XLSX chỉ làm khi có nhu cầu, backup tách biệt. |
 | Nguồn có bắt buộc khi chọn thực tế? | Bắt buộc hoặc khuyến khích | Khuyến khích, có thể lưu chưa ghi nguồn; không gọi là đã xác minh. |
 | Xóa hồ sơ giữ gì? | Xóa thường hoặc purge có mục đích | Dùng đúng service hiện có và nói rõ phạm vi; không hứa xóa WAL/backups hay tự cung cấp purge vận hành. |
-| Khôi phục khi trùng? | Ghi đè hoặc tạo bản riêng | Tạo bản riêng sau xem trước nếu contract hỗ trợ; chưa hỗ trợ thì từ chối trùng, không ghi đè. |
-| Bảo vệ bản sao bằng gì? | Bí mật do người dùng giữ hoặc cơ chế quản lý khóa phù hợp môi trường | Chốt contract trước Đ3, ưu tiên bản mã hóa có thể mở lại độc lập; chưa chọn thư viện/định dạng ở tác vụ UI. |
+| Khôi phục khi trùng? | Ghi đè hoặc tạo bản riêng | Đã chốt: mở toàn kho riêng sau xem trước, giữ ID/lịch sử, không merge hay ghi đè. Có thao tác quay về kho ban đầu. |
+| Bảo vệ bản sao bằng gì? | Bí mật do người dùng giữ hoặc cơ chế quản lý khóa phù hợp môi trường | Đã chốt [contract v1](docs/design/protected-backup.md): AES-256-GCM, PBKDF2-SHA256 600.000 vòng, mật khẩu do người dùng giữ, không key sidecar; chỉ synthetic. |
 | Khi nào dữ liệu thật/public? | Sau UI hoặc sau điều kiện vận hành | Chỉ sau review bảo mật, quyền dữ liệu, auth/cách ly cần thiết; kế hoạch này không cấp quyền triển khai. |
 
 ### Lưu ý trung thực
